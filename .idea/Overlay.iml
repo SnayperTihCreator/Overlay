@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/API" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/GlobalListener" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/UIWidget" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/configs" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tools" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tools_folder" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/uis" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/utils" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+    </content>
+    <orderEntry type="jdk" jdkName="Python 3.11 (Overlay)" jdkType="Python SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

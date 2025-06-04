@@ -1,0 +1,8 @@
+#CentralWidget {{
+    border-radius: 20px;
+    font: 15px bold !important;
+}}
+
+QPushButton {{
+    border: none;
+}}

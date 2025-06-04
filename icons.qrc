@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="main">
+        <file alias="overlay.png">icons/overlay.png</file>
+        <file alias="loader.png">icons/loader.png</file>
+  </qresource>
+</RCC>
