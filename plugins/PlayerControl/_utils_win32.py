@@ -1,6 +1,8 @@
 from enum import StrEnum
 import os
 
+from PySide6.QtCore import qDebug
+
 
 def is_running_under_proton():
     # Проверяем специфичные для Proton переменные

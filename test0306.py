@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import Enum, IntEnum, StrEnum
 
 class A(IntEnum):
     VK_NONE = (-1, "none", "none")
@@ -34,8 +34,22 @@ class A(IntEnum):
                 return member
         return cls.VK_NONE
     
-import string
-for word in string.digits:
-    print(f"""VK_{word.upper()} = (ord("{word.upper()}"), "{word}", "{word}")""")
+# import string
+# for word in string.digits:
+#     print(f"""VK_{word.upper()} = (ord("{word.upper()}"), "{word}", "{word}")""")
 
 # print(A(0, "a", "a"))
+
+class B(StrEnum):
+
+    A = ("X11", 0)
+
+    V = ("b", 0)
+
+    def __new__(cls, value, x):
+        obj = str.__new__(cls, value)
+        obj._value_ = value
+        obj.x = x
+        return obj
+
+print(B.A)

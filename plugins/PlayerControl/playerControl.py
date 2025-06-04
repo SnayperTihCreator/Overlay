@@ -112,7 +112,7 @@ class PlayerControl(DraggableWindow):
     
     def toggle_play_pause(self):
         self.runs = True
-        self.backed.self.sender_media(self.backed.PlayerCode.PLAY_PAUSE)
+        self.backed.send_key(self.backed.PlayerCode.PLAY_PAUSE)
     
     def getIcon(self, name):
         return QIcon(f":/player_control/{name}.png")
