@@ -11,4 +11,5 @@ wheels/
 /tools/windows/*
 /tools/linux/*
 /tools/common/*
-/configs/
+/configs
+/plugins
