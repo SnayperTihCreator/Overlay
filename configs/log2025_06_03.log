@@ -1,6 +1,0 @@
-2025-06-03 23:59:39 - Qt - INFO - Added hotkey: shift+alt+o (uname: toggle_show) [baseHotkeyHandler.py: 30]
-2025-06-03 23:59:39 - Qt - DEBUG - Успешно импортирован пакет: ClockDateWidget [mainWindow.py: 171]
-2025-06-03 23:59:39 - Qt - DEBUG - Успешно импортирован пакет: PlayerControl [mainWindow.py: 171]
-2025-06-03 23:59:39 - Qt - DEBUG - Успешно импортирован пакет: PowerWidget [mainWindow.py: 171]
-2025-06-03 23:59:40 - Qt - DEBUG - Успешно импортирован пакет: VirtualizationWidget [mainWindow.py: 171]
-2025-06-03 23:59:40 - Qt - INFO - Added hotkey: play/pause media (uname: toggle_play) [baseHotkeyHandler.py: 30]
