@@ -9,7 +9,6 @@ wheels/
 # Virtual environments
 .venv
 .idea
-.python-version
 /tools/windows/*
 /tools/linux/*
 /tools/common/*
