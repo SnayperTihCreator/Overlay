@@ -30,7 +30,7 @@ def setup_exception_handler():
         )
 
         # Выводим в stderr
-        sys.stderr.write(f"[!] Произошла ошибка (подробности в errors.log)\n")
+        sys.stderr.write(f"[!] Произошла ошибка (подробности в {handler.baseFilename}\n")
 
     sys.excepthook = exception_handler
 

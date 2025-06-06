@@ -5,6 +5,7 @@ from PySide6.QtGui import QPixmap
 from qt_material import apply_stylesheet
 
 from UIWidget.mainWindow import Overlay
+from PrintManager import PrintManager
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -18,12 +19,13 @@ if __name__ == "__main__":
             "secondaryTextColor": "#9ad789",
         },
     )
-    
-    pixmap = QPixmap(":/main/loader.png")
-    splash = QSplashScreen(pixmap)
-    splash.show()
-    
-    app.setQuitOnLastWindowClosed(False)
-    window = Overlay()
-    splash.finish(window)
-    app.exec()
+    with PrintManager() as pm:
+        pm.show_caller_info(True)
+        pixmap = QPixmap(":/main/loader.png")
+        splash = QSplashScreen(pixmap)
+        splash.show()
+        
+        app.setQuitOnLastWindowClosed(False)
+        window = Overlay()
+        splash.finish(window)
+        app.exec()

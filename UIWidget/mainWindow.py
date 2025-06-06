@@ -28,8 +28,8 @@ import icons_rc
 
 
 class Overlay(QMainWindow, Ui_MainWindow):
+    handled_global_shortkey = Signal(str)
     
-    handled_global_shortkey =  Signal(str)
     def __init__(self):
         super().__init__(None, flags)
         self.setupUi(self)
@@ -103,11 +103,10 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def loadConfigs(self):
         self.settings.beginGroup("windows")
         for win_name in self.settings.childGroups():
+            print(win_name)
             items = self.listPlugins.findItems(win_name, Qt.MatchFlag.MatchContains)
             if items:
                 self.listPlugins.takeItem(self.listPlugins.row(items[0]))
-            else:
-                continue
             win, item = DraggableWindow.dumper.loaded(self.settings, win_name, self)
             self.windows[item.text()] = win
             self.listPlugins.addItem(item)
@@ -117,8 +116,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
             items = self.listPlugins.findItems(wid_name, Qt.MatchFlag.MatchContains)
             if items:
                 self.listPlugins.takeItem(self.listPlugins.row(items[0]))
-            else:
-                continue
             wid, item = OverlayWidget.dumper.loaded(self.settings, wid_name, self)
             self.widgets[item.text()] = wid
             self.listPlugins.addItem(item)
@@ -135,6 +132,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         act_show_overlay = menu.addAction("Show overlay")
         act_show_overlay.triggered.connect(self.showOverlay)
+        
+        act_stop_overlay = menu.addAction("Stop overlay")
+        act_stop_overlay.triggered.connect(self.stopOverlay)
         
         self.tray.setContextMenu(menu)
         
@@ -260,7 +260,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.listPlugins.takeItem(self.listPlugins.row(item))
     
     def handeled_shortcut(self, name):
-        print(name)
         match name:
             case "toggle_show":
                 self.hideOverlay() if self.isVisible() else self.showOverlay()
@@ -268,7 +267,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 if name in self.shortcuts:
                     self.shortcuts[name].shortcut_run(name)
         return True
-        
     
     @staticmethod
     def getModuleTypePlugin(module):
