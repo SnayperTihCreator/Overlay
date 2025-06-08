@@ -1,11 +1,13 @@
 import sys
 from collections import deque
 
-from API import Config, DraggableWindow
-
 from PySide6.QtGui import QLinearGradient, QBrush
-from PySide6.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QComboBox, QPushButton, QFormLayout
 from PySide6.QtCore import Qt, QTimer
+from box import Box
+
+from API import Config, DraggableWindow
+from API.PluginSetting import PluginSettingWindow
 
 import pyqtgraph as pg
 import numpy as np
@@ -23,20 +25,54 @@ SILENCE_THRESHOLD = 50  # Эмпирическое значение, можно 
 SILENCE_DURATION = 15  # Количество кадров тишины перед выводом сообщения
 
 
+class CustomPluginWindow(PluginSettingWindow):
+    
+    def __init__(self, obj, name_plugin, parent=None):
+        super().__init__(obj, name_plugin, parent)
+        self.p_audio = pyaudio.PyAudio()
+        self.comboListDevice = QComboBox()
+        self.listDevice = set()
+        self.updateLoaderDevice()
+        self.formLayout.addRow("Устройство", self.comboListDevice)
+        
+        self.btnUpdateDevice = QPushButton("Обновить устройства")
+        self.btnUpdateDevice.pressed.connect(self.updateLoaderDevice)
+        self.formLayout.addRow(self.btnUpdateDevice)
+        # self.formLayout.setWidget(-1, QFormLayout.ItemRole.SpanningRole, self.btnUpdateDevice)
+        
+    def loader(self):
+        super().loader()
+        idx = self.comboListDevice.findData({"idx": self.obj.idx_device or 0}, Qt.ItemDataRole.UserRole, Qt.MatchFlag.MatchContains)
+        self.comboListDevice.setCurrentIndex(idx)
+    
+    def updateLoaderDevice(self):
+        self.comboListDevice.clear()
+        self.listDevice.clear()
+        for idx in range(self.p_audio.get_device_count()):
+            info = self.p_audio.get_device_info_by_index(idx)
+            if info["maxInputChannels"]<=0: continue
+            name = info["name"].encode("cp1251").decode("utf-8")
+            if name in self.listDevice: continue
+            self.comboListDevice.addItem(name, {"idx":idx})
+            self.listDevice.add(name)
+            
+    def send_data(self):
+        data = super().send_data()
+        idx = self.comboListDevice.currentIndex()
+        uData = self.comboListDevice.itemData(idx, Qt.ItemDataRole.UserRole)
+        return data|{"idx_device": uData["idx"]}
+
+
 class Virtualization(DraggableWindow):
     def __init__(self, parent=None):
         super().__init__(Config(__file__, "draggable_window"), parent)
         
+        self.idx_device = None
+        self.stream = None
+        
         # Инициализация PyAudio
         self.p = pyaudio.PyAudio()
-        self.stream = self.p.open(
-            format=FORMAT,
-            channels=CHANNELS,
-            rate=RATE,
-            input=True,
-            frames_per_buffer=CHUNK,
-            input_device_index=3,  # Подбери нужное устройство!
-        )
+        self.updateStream()
         
         pg.setConfigOptions(antialias=True, useNumba=True)
         
@@ -97,6 +133,8 @@ class Virtualization(DraggableWindow):
     
     def updateData(self):
         # Чтение аудиоданных
+        if self.stream is None: return
+        
         data = self.stream.read(CHUNK, exception_on_overflow=False)
         audio = np.frombuffer(data, dtype=np.int16)
         freqs = np.fft.fftfreq(CHUNK, 1 / RATE)[: CHUNK // 2]
@@ -154,3 +192,36 @@ class Virtualization(DraggableWindow):
         self.stream.close()
         self.p.terminate()
         event.accept()
+    
+    @classmethod
+    def createSettingWidget(cls, window: "DraggableWindow", name_plugin: str, parent):
+        return CustomPluginWindow(window, name_plugin, parent)
+    
+    def restoreConfig(self, config):
+        super().restoreConfig(config)
+        if isinstance(config.idx_device, Box) or config.idx_device <= 0: return
+        self.idx_device = config.idx_device
+        self.updateStream()
+        
+    def savesConfig(self):
+        data = super().savesConfig()
+        return data|{
+            "idx_device": self.idx_device
+        }
+        
+        
+    def updateStream(self):
+        if self.stream is not None:
+            self.stream.stop_stream()
+            self.stream.close()
+            self.stream = None
+        self.stream = self.p.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=CHUNK,
+            input_device_index=self.idx_device,  # Подбери нужное устройство!
+        )
+        
+        

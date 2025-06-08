@@ -4,13 +4,14 @@ from PySide6.QtCore import Qt, QPoint, QTimer, qWarning
 from qt_material import apply_stylesheet
 
 from API.config import Config
-from API.pluginSettringWidget import PluginSettingsWidget
+from API.core import APIBaseWidget
+from API.PluginSetting import PluginSettingWindow
 
 from .dumper import DraggableWindowDumper
 from utils import clampAllDesktopP, clampAllDesktop
 
 
-class DraggableWindow(QMainWindow):
+class DraggableWindow(QMainWindow, APIBaseWidget):
     dumper = DraggableWindowDumper()
 
     def __init__(self, config, parent=None):
@@ -82,6 +83,13 @@ class DraggableWindow(QMainWindow):
 
         self.updateData()
         
+    def savesConfig(self):
+        return {
+            "hasMoved": int(self.hasMoved),
+            "noClicked": int(self.windowFlags() & Qt.WindowType.WindowTransparentForInput),
+            "position": [self.x(), self.y()]
+        }
+        
     def shortcut_run(self, name):
         pass
 
@@ -117,65 +125,20 @@ class DraggableWindow(QMainWindow):
             self.parent().keyPressEvent(event)
         return super().keyPressEvent(event)
 
-    def coordinatesWindow(self):
-        if self.windowFlags() & Qt.WindowType.WindowStaysOnTopHint:
-            return 2
-        if self.windowFlags() & Qt.WindowType.WindowStaysOnBottomHint:
-            return 0
-        return 1
-
-    def setCoordinatesWindow(self, value):
-        _position = [
-            Qt.WindowType.WindowStaysOnBottomHint,
-            Qt.WindowType.Window,
-            Qt.WindowType.WindowStaysOnTopHint,
-        ]
-        pos = _position[self.coordinatesWindow()]
-        if pos != value:
-            if value == 1:
-                return
-            if 2 == value:
-                self.setWindowFlags(
-                    self.windowFlags() & ~Qt.WindowType.WindowStaysOnBottomHint
-                )
-                self.setWindowFlags(
-                    self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint
-                )
-            else:
-                self.setWindowFlags(
-                    self.windowFlags() & ~Qt.WindowType.WindowStaysOnTopHint
-                )
-                self.setWindowFlags(
-                    self.windowFlags() | Qt.WindowType.WindowStaysOnBottomHint
-                )
-
-    def savesConfig(self):
-        return {
-            "TranspFI": int(bool(
-                self.windowFlags() & Qt.WindowType.WindowTransparentForInput
-            )),
-            "mobility": self.hasMoved,
-            "transparency": self.windowOpacity(),
-            "coordinates": [self.x(), self.y()],
-            "position": int(self.coordinatesWindow()),
-        }
-
     def restoreConfig(self, config):
         if not config:
             return
         visible = self.isVisible()
-        self.toggle_input(config.TranspFI)
+        self.toggle_input(config.noClicked)
         self.setVisible(visible)
-        self.hasMoved = config.mobility
-        self.setWindowOpacity(config.transparency)
+        self.hasMoved = config.hasMoved
         try:
-            x, y = config.coordinates[0], config.coordinates[1]
+            x, y = config.position[0], config.position[1]
         except TypeError:
-            x, y = config.coordinates.x(), config.coordinates.y()
+            x, y = config.position.x(), config.position.y()
 
         pos = clampAllDesktop(x, y, self.width(), self.height())
         self.setGeometry(pos.x(), pos.y(), self.width(), self.height())
-        self.setCoordinatesWindow(config.position)
 
     def highlightBorder(self):
         self.colorize_effect.setStrength(0.7)  # Интенсивность
@@ -184,4 +147,4 @@ class DraggableWindow(QMainWindow):
 
     @classmethod
     def createSettingWidget(cls, window: "DraggableWindow", name_plugin: str, parent):
-        return PluginSettingsWidget(window, name_plugin, parent)
+        return PluginSettingWindow(window, name_plugin, parent)

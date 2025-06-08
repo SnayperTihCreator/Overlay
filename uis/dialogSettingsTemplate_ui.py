@@ -24,13 +24,14 @@ class Ui_Form(object):
         if not Form.objectName():
             Form.setObjectName(u"Form")
         Form.resize(400, 300)
+        font = QFont()
+        font.setFamilies([u"Segoe UI"])
+        Form.setFont(font)
         self.verticalLayout_2 = QVBoxLayout(Form)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setSizeConstraint(QLayout.SetMinimumSize)
+        self.verticalLayout_3.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.labelNamePlugin = QLabel(Form)
         self.labelNamePlugin.setObjectName(u"labelNamePlugin")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
@@ -57,15 +58,17 @@ class Ui_Form(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.spinBox = QSpinBox(Form)
-        self.spinBox.setObjectName(u"spinBox")
+        self.spinBoxX = QSpinBox(Form)
+        self.spinBoxX.setObjectName(u"spinBoxX")
+        self.spinBoxX.setMaximum(65536)
 
-        self.horizontalLayout.addWidget(self.spinBox)
+        self.horizontalLayout.addWidget(self.spinBoxX)
 
-        self.spinBox_2 = QSpinBox(Form)
-        self.spinBox_2.setObjectName(u"spinBox_2")
+        self.spinBoxY = QSpinBox(Form)
+        self.spinBoxY.setObjectName(u"spinBoxY")
+        self.spinBoxY.setMaximum(65536)
 
-        self.horizontalLayout.addWidget(self.spinBox_2)
+        self.horizontalLayout.addWidget(self.spinBoxY)
 
 
         self.formLayout.setLayout(0, QFormLayout.ItemRole.FieldRole, self.horizontalLayout)
@@ -74,10 +77,12 @@ class Ui_Form(object):
         self.verticalLayout_3.addLayout(self.formLayout)
 
 
-        self.verticalLayout.addLayout(self.verticalLayout_3)
+        self.verticalLayout_2.addLayout(self.verticalLayout_3)
 
+        self.box = QVBoxLayout()
+        self.box.setObjectName(u"box")
 
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.verticalLayout_2.addLayout(self.box)
 
         self.buttonBox = QDialogButtonBox(Form)
         self.buttonBox.setObjectName(u"buttonBox")

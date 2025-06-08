@@ -9,8 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .idea
-/tools/windows/*
-/tools/linux/*
-/tools/common/*
+/tools/windows/
+/tools/linux/
+/tools/common/
 /configs
 /plugins

@@ -1,13 +1,23 @@
 import sys
+import os
 from pathlib import Path
 from functools import cache
 
 from PySide6.QtCore import QRect, QPoint
 from PySide6.QtWidgets import QApplication
+import requests
 
 from .openFolderExplorer import open_file_manager
 from .dumper import Dumper
+from .limit_called import limit_calls_per_day
 
+
+@limit_calls_per_day(3)
+def getCurrentWeather(city):
+    api_key = os.environ.get("API_WEATHER")
+    url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={city}&lang=ru"
+    return requests.get(url).json()
+    
 
 def getAllSizeDesktop() -> QRect:
     screens = QApplication.screens()

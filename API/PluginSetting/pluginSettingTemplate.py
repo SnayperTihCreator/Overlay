@@ -1,13 +1,15 @@
 import os
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import QPoint
 from box import Box
 
 from uis.dialogSettingsTemplate_ui import Ui_Form
 from utils import getAppPath, open_file_manager
-from API.OverlayWidget import OverlayWidget
 from API.config import Config
+from API.core import APIBaseWidget
+
+from .overlayWidget import OverlayWidget
 
 
 class PluginSettingTemplate(OverlayWidget, Ui_Form):
@@ -15,7 +17,7 @@ class PluginSettingTemplate(OverlayWidget, Ui_Form):
         super().__init__(Config(__file__, "overlay_widget", "settings", False), parent)
         self.setupUi(self)
         
-        self.obj = obj
+        self.obj: APIBaseWidget = obj
         self.labelNamePlugin.setText(name_plugin)
         self.folder = getAppPath() / Path(obj.__class__.__module__.replace(".", os.sep)).parent
         
@@ -27,10 +29,17 @@ class PluginSettingTemplate(OverlayWidget, Ui_Form):
         open_file_manager(self.folder)
     
     def confirming(self):
-        pass
+        self.obj.restoreConfig(Box(self.send_data(), default_box=True))
     
     def canceling(self):
-        pass
+        self.loader()
     
     def loader(self):
+        self.spinBoxX.setValue(self.obj.x())
+        self.spinBoxY.setValue(self.obj.y())
         super().loader()
+    
+    def send_data(self):
+        return {
+            "position": QPoint(self.spinBoxX.value(), self.spinBoxY.value())
+        }

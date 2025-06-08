@@ -1,14 +1,14 @@
-import os
-
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 
 from API.config import Config
+from API.core import APIBaseWidget
 
 from .dumper import OverlayWidgetDumper
+from API.PluginSetting import PluginSettingWidget
 
 
-class OverlayWidget(QWidget):
+class OverlayWidget(QWidget, APIBaseWidget):
     dumper = OverlayWidgetDumper()
     
     def __init__(self, config, parent=None):
@@ -34,5 +34,4 @@ class OverlayWidget(QWidget):
     
     @classmethod
     def createSettingWidget(cls, widget: "OverlayWidget", name_plugin: str, parent):
-        # return PluginSettingsWidget(window, name_plugin, parent)
-        return
+        return PluginSettingWidget(widget, name_plugin, parent)
