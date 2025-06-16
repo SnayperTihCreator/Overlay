@@ -24,5 +24,5 @@
 1. [ClockDateWidget](clockDateWidget.md)
 2. [PlayerControl](playerControl.md)
 3. [PowerWidget](powerWidget.md)
-4. VirtualizationWidget
+4. [VirtualizationWidget](virtualizationWidget.md)
 5. ~~ManagerTask~~
