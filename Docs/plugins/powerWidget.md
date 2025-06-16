@@ -1,3 +1,5 @@
+[Главная](../README.md) | [Плагины](index.md)
+
 # PowerWidget
 
 ## Описание
