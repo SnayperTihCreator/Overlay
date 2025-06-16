@@ -1,7 +1,0 @@
-[window]
-width = 300
-height = 50
-styleFile = "style.css"
-opacity = 0.75
-[powerFormat]
-unitFormat = "%u%"
