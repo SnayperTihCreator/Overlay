@@ -1,0 +1,48 @@
+from functools import cache
+
+from APIService.platformCurrent import getSystem
+from .enums import BaseCommonKey, BaseWindowsKey, BaseLinuxKey
+
+
+class EmitterFakeInput:
+    def __init__(self, c_keycode: type[BaseCommonKey], w_keycode: type[BaseWindowsKey], l_keycode: type[BaseLinuxKey]):
+        self.c_keycode = c_keycode
+        self.w_keycode = w_keycode
+        self.l_keycode = l_keycode
+        self.platform, self.windowed = getSystem()
+        match [self.platform, self.windowed]:
+            case ["win32", "native"]:
+                from .windowsNativeFakeInput import WindowsNativeFakeInput
+                self.handler = WindowsNativeFakeInput()
+            case ["win32", "proton"]:
+                from .windowsProtonFakeInput import WindowsProtonFakeInput
+                self.handler = WindowsProtonFakeInput()
+    
+    @cache
+    def _get_keycode_enum(self, keycode: BaseCommonKey):
+        if isinstance(keycode, BaseLinuxKey):
+            return keycode
+        if isinstance(keycode, BaseWindowsKey):
+            return keycode
+        
+        match [self.platform, self.windowed]:
+            case ["windows", "native"]:
+                return self.w_keycode(keycode.value)
+            case ["windows", "proton"]:
+                return keycode
+    
+    def send_key_press(self, keycode: BaseCommonKey):
+        keycode = self._get_keycode_enum(keycode)
+        self.handler.send_key_press(keycode)
+    
+    def send_key_release(self, keycode: BaseCommonKey):
+        keycode = self._get_keycode_enum(keycode)
+        self.handler.send_key_release(keycode)
+    
+    def send_key(self, keycode: BaseCommonKey):
+        keycode = self._get_keycode_enum(keycode)
+        self.send_key_press(keycode)
+        self.send_key_release(keycode)
+    
+    def isPlayingMusic(self):
+        return self.handler.isPlayingMusic()

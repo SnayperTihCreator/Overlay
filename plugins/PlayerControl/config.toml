@@ -5,4 +5,4 @@ styleFile = "style.css"
 opacity = 0.8
 [icons]
 size = 30
-theme = "white"
+modulate = "#fff"

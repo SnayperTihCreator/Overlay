@@ -11,9 +11,9 @@ class Defaults:
     draggable_window = {"window": {"width": 300, "height": 200}}
     overlay_widget = {}
     apps = {
-        "websockets":{
-            "ports_in": [8000, 8010],
-            "ports_out": [8015, 8020]
+        "websockets": {
+            "IN": [8000, 8010],
+            "OUT": [8015, 8020]
         }
     }
 
@@ -25,7 +25,7 @@ class Config:
         self._default_config = getattr(Defaults, plugin_type)
         self._load_path = None
         self._config: Box = self._load_config(path)
-
+    
     def _load_config(self, path) -> Box[str, Any]:
         self._load_path = path
         config_path = Path(path).parent / f"{self._config_name}.toml"
@@ -38,12 +38,12 @@ class Config:
                 with open(config_path, "w", encoding="utf-8") as f:
                     toml.dump(self._default_config, f)
             return Box(self._default_config)
-
+    
     def __getattr__(self, item):
         return getattr(self._config, item)
-
+    
     def reload(self):
         self._config = self._load_config(self._load_path)
-
+    
     def plugin_path(self):
         return Path(self._load_path).parent

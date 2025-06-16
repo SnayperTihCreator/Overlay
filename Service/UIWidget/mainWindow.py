@@ -6,19 +6,19 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QSystemTrayIcon,
     QListWidgetItem,
-    QMenu, QApplication,
+    QMenu
 )
 from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize
 from PySide6.QtGui import QIcon, QKeyEvent, QAction, QColor
 
 from uis.main_ui import Ui_MainWindow
 
-from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager
+from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager, Config
 
 from APIService.path_controls import getAppPath
 from APIService.tools_folder import ToolsIniter
-from APIService.colorize import tint_icon
-from APIService.webControls import ServerWebSockets
+from APIService.colorize import modulateIcon
+from Service.webSocket import AppServerControl
 
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
@@ -41,8 +41,10 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         if old_lay := self.centralwidget.layout():
             old_lay.deleteLater()
-            
-        self.webSocketIn = ServerWebSockets(self)
+        
+        self.config = Config(getAppPath()/"main.py", "apps")
+        self.webSocketIn = AppServerControl(self.config.websockets.IN, self)
+        self.webSocketIn.action_triggered.connect(self.handled_shortcut)
         
         self.box = AnchorLayout()
         self.centralwidget.setLayout(self.box)
@@ -75,7 +77,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.settingWidget, [Qt.AnchorPoint.AnchorHorizontalCenter, Qt.AnchorPoint.AnchorVerticalCenter]
         )
         
-        icon = tint_icon(QIcon(":/main/setting.png"), QColor("#6a0497"))
+        icon = modulateIcon(QIcon(":/main/setting.png"), QColor("#6a0497"))
         
         self.btnSetting.setIconSize(QSize(50, 50))
         self.btnSetting.setIcon(icon)
@@ -90,7 +92,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.setStyleSheet("background-color: rgba(0, 0, 0, 50);")
         self.hide()
         
-        self.handled_global_shortkey.connect(self.handeled_shortcut)
+        self.handled_global_shortkey.connect(self.handled_shortcut)
         
         self.input_bridge = HotkeyManager()
         self.registered_handler("shift+alt+o", "toggle_show")
@@ -180,9 +182,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
             QSystemTrayIcon.MessageIcon.Information,
             1000,
         )
-    
-    def saveTypeWindow(self, item: QListWidgetItem):
-        pass
     
     def updateDataPlugins(self):
         self.listPlugins.clear()
@@ -294,7 +293,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         del self.windows[item.text()]
         self.listPlugins.takeItem(self.listPlugins.row(item))
     
-    def handeled_shortcut(self, name):
+    def handled_shortcut(self, name):
         match name:
             case "toggle_show":
                 self.hideOverlay() if self.isVisible() else self.showOverlay()

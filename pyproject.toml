@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "json5>=0.12.0",
-    "modulegraph>=0.19.6",
     "psutil>=7.0.0",
     "pyinstaller>=6.13.0",
     "pyside6>=6.9.0",
@@ -20,4 +19,5 @@ dependencies = [
     "pyyaml>=6.0.2",
     "attrs>=25.3.0",
     "websockets>=15.0.1",
+    "pycaw>=20240210; sys_platform == 'win32'",
 ]

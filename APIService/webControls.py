@@ -6,9 +6,6 @@ from PySide6.QtCore import Signal, QThread, qDebug
 import websockets
 from websockets.asyncio.server import serve
 
-from APIService.path_controls import getAppPath
-from API.config import Config
-
 
 def find_free_port(start_port=8000, end_port=9000):
     """Находит первый свободный порт в заданном диапазоне"""
@@ -26,10 +23,9 @@ def find_free_port(start_port=8000, end_port=9000):
 class ServerWebSockets(QThread):
     message_received = Signal(str)
     
-    def __init__(self, parent=None):
+    def __init__(self, ports, parent=None):
         super().__init__(parent)
-        self.config = Config(getAppPath(), "apps")
-        self.free_port = find_free_port(*self.config.websockets.ports_in)
+        self.free_port = find_free_port(*ports)
         self._is_running = False
     
     async def handle_connection(self, websocket):
@@ -62,10 +58,9 @@ class ServerWebSockets(QThread):
 
 
 class ClientWebSockets:
-    def __init__(self, parent=None):
+    def __init__(self, ports, parent=None):
         super().__init__(parent)
-        self.config = Config(getAppPath(), "apps")
-        self.free_port = find_free_port(*self.config.websockets.ports_in)
+        self.free_port = find_free_port(ports)
     
     def send_message(self, message):
         asyncio.run(self.run_connect(message))
