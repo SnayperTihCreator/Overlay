@@ -3,9 +3,9 @@ from types import ModuleType
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtWidgets import QListWidgetItem, QMenu, QWidget
 
-from utils import Dumper
+from APIService.dumper import Dumper
 
-from core import ItemRole
+from Service.core import ItemRole
 
 
 class DraggableWindowDumper(Dumper):

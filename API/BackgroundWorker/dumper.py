@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QListWidgetItem, QMenu
 
 from utils import Dumper
 
-from core import ItemRole
+from Service.core import ItemRole
 
 
 class WorkerDumper(Dumper):

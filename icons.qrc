@@ -2,5 +2,6 @@
     <qresource prefix="main">
         <file alias="overlay.png">icons/overlay.png</file>
         <file alias="loader.png">icons/loader.png</file>
+        <file alias="setting.png">icons/setting.png</file>
   </qresource>
 </RCC>

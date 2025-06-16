@@ -1,13 +1,17 @@
 import sys
+import os
 
 from PySide6.QtWidgets import QApplication, QSplashScreen
 from PySide6.QtGui import QPixmap
 from qt_material import apply_stylesheet
 
-from UIWidget.mainWindow import Overlay
-from PrintManager import PrintManager
+from Service.UIWidget.mainWindow import Overlay
+from Service.PrintManager import PrintManager
 
 if __name__ == "__main__":
+    if sys.platform == "linux":
+        os.environ["QT_QPA_PLATFORM"] = "xcb"
+    
     app = QApplication(sys.argv)
     apply_stylesheet(
         app,

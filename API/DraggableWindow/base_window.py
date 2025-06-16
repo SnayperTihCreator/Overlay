@@ -8,7 +8,7 @@ from API.core import APIBaseWidget
 from API.PluginSetting import PluginSettingWindow
 
 from .dumper import DraggableWindowDumper
-from utils import clampAllDesktopP, clampAllDesktop
+from APIService.clamps import clampAllDesktop, clampAllDesktopP
 
 
 class DraggableWindow(QMainWindow, APIBaseWidget):

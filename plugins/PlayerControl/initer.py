@@ -2,9 +2,7 @@ import sys
 import runpy
 import io
 
-import contextlib
-
-from utils import getAppPath
+from APIService.path_controls import getAppPath
 
 
 def initer():

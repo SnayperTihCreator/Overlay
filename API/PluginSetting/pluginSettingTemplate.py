@@ -5,7 +5,8 @@ from PySide6.QtCore import QPoint
 from box import Box
 
 from uis.dialogSettingsTemplate_ui import Ui_Form
-from utils import getAppPath, open_file_manager
+from APIService.path_controls import getAppPath
+from APIService.openFolderExplorer import open_file_manager
 from API.config import Config
 from API.core import APIBaseWidget
 

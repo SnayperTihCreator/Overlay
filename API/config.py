@@ -10,6 +10,12 @@ from box import Box
 class Defaults:
     draggable_window = {"window": {"width": 300, "height": 200}}
     overlay_widget = {}
+    apps = {
+        "websockets":{
+            "ports_in": [8000, 8010],
+            "ports_out": [8015, 8020]
+        }
+    }
 
 
 class Config:

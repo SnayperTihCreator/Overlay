@@ -17,4 +17,7 @@ dependencies = [
     "evdev; sys_platform == 'linux'",
     "keyboard>=0.13.5",
     "requests>=2.32.3",
+    "pyyaml>=6.0.2",
+    "attrs>=25.3.0",
+    "websockets>=15.0.1",
 ]
