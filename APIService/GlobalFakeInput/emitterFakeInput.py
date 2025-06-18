@@ -26,9 +26,9 @@ class EmitterFakeInput:
             return keycode
         
         match [self.platform, self.windowed]:
-            case ["windows", "native"]:
-                return self.w_keycode(keycode.value)
-            case ["windows", "proton"]:
+            case ["win32", "native"]:
+                return getattr(self.w_keycode, keycode.value)
+            case ["win32", "proton"]:
                 return keycode
     
     def send_key_press(self, keycode: BaseCommonKey):

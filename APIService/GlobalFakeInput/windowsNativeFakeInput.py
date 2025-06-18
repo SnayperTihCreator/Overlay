@@ -24,11 +24,11 @@ class WindowsNativeFakeInput(BaseHandlerFakeInput):
         return False
     
     @classmethod
-    def send_press_key(cls, keycode: BaseWindowsKey):
+    def send_key_press(cls, keycode: BaseWindowsKey):
         hwcode = win32api.MapVirtualKey(keycode, 0)
         win32api.keybd_event(keycode, hwcode, EVENT_PRESS, 0)
     
     @classmethod
-    def send_release_key(cls, keycode: BaseWindowsKey):
+    def send_key_release(cls, keycode: BaseWindowsKey):
         hwcode = win32api.MapVirtualKey(keycode, 0)
         win32api.keybd_event(keycode, hwcode, EVENT_RELEASE, 0)
