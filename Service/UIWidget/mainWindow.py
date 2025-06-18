@@ -197,13 +197,17 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 package_name = package_dir.name
                 try:
                     module = importlib.import_module(f"plugins.{package_name}")
-                    for pluginType in self.getModuleTypePlugin(module):
-                        match pluginType:
-                            case "Window":
-                                item = DraggableWindow.dumper.overCreateItem(module, package_name)
-                            case "Widget":
-                                item = OverlayWidget.dumper.overCreateItem(module, package_name)
-                        self.listPlugins.addItem(item)
+                    pluginTypes = self.getModuleTypePlugin(module)
+                    if pluginTypes:
+                        for pluginType in pluginTypes:
+                            match pluginType:
+                                case "Window":
+                                    item = DraggableWindow.dumper.overCreateItem(module, package_name)
+                                case "Widget":
+                                    item = OverlayWidget.dumper.overCreateItem(module, package_name)
+                            self.listPlugins.addItem(item)
+                    else:
+                        qDebug(f"Пакет без инициализации: {package_name}")
                     qDebug(f"Успешно импортирован пакет: {package_name}")
                 except ImportError as e:
                     trace = "".join(traceback.format_exception(e))

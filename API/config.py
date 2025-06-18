@@ -8,13 +8,12 @@ from box import Box
 
 @dataclass
 class Defaults:
-    draggable_window = {"window": {"width": 300, "height": 200}}
+    draggable_window = {
+        "window": {"width": 300, "height": 200}
+    }
     overlay_widget = {}
     apps = {
-        "websockets": {
-            "IN": [8000, 8010],
-            "OUT": [8015, 8020]
-        }
+        "websockets": {"IN": [8000, 8010], "OUT": [8015, 8020]}
     }
 
 
