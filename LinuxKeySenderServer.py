@@ -23,6 +23,7 @@ class PlayerCode(StrEnum):
         obj.keycode = keycode
         return obj
 
+
 def detect_display_server():
     return os.environ["XDG_SESSION_TYPE"]
 
@@ -47,19 +48,19 @@ def emulate_key(command):
 def run_server():
     display_server = detect_display_server()
     print(f"Сервер запущен ({display_server.upper()}). Ожидание команд...")
-
+    
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     socket_path = "/tmp/keypress_socket.sock"
-
+    
     # Удаляем старый сокет, если он есть
     try:
         os.unlink(socket_path)
     except FileNotFoundError:
         pass
-
+    
     sock.bind(socket_path)
     sock.listen(1)
-
+    
     while True:
         conn, _ = sock.accept()
         try:
@@ -69,6 +70,7 @@ def run_server():
                 emulate_key(data)
         finally:
             conn.close()
+
 
 if __name__ == "__main__":
     run_server()

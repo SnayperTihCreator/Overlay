@@ -7,8 +7,8 @@ from qt_material import apply_stylesheet
 
 from Service.UIWidget.mainWindow import Overlay
 from Service.PrintManager import PrintManager
-from APIService.path_controls import getAppPath
-from API.config import Config
+from APIService import getAppPath
+from API import Config
 
 if __name__ == "__main__":
     if sys.platform == "linux":

@@ -87,3 +87,5 @@ def modulateImage(image: QImage, color: QColor) -> QImage:
     painter.end()
     
     return tinted_image
+
+__all__ = ["modulateIcon", "modulateImage", "modulatePixmap"]

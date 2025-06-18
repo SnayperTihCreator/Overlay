@@ -22,3 +22,6 @@ def clampAllDesktopP(point: QPoint, w, h) -> QPoint:
     x = max(global_rect.left(), min(point.x(), global_rect.right() - w))
     y = max(global_rect.top(), min(point.y(), global_rect.bottom() - h))
     return QPoint(x, y)
+
+
+__all__ = ["clampAllDesktop", "clampAllDesktopP", "getAllSizeDesktop"]
