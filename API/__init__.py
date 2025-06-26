@@ -3,6 +3,7 @@ from .OverlayWidget import OverlayWidget
 from .BackgroundWorker import BackgroundWorkerManager, BackgroundWorker
 from .config import Config
 from .BackendControl import Backend
+from .ResourceControl import load as loadResource, save as saveResource
 
 __all__ = [
     "Config",
@@ -11,4 +12,7 @@ __all__ = [
     "OverlayWidget",
     "BackgroundWorker",
     "BackgroundWorkerManager",
+    
+    "loadResource",
+    "saveResource"
 ]

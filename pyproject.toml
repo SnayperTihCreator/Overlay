@@ -11,7 +11,6 @@ dependencies = [
     "pyside6>=6.9.0",
     "python-box>=7.3.2",
     "pywin32>=310; sys_platform == 'win32'",
-    "qt-material>=2.17",
     "toml>=0.10.2",
     "evdev; sys_platform == 'linux'",
     "keyboard>=0.13.5",
@@ -20,4 +19,6 @@ dependencies = [
     "attrs>=25.3.0",
     "websockets>=15.0.1",
     "pycaw>=20240210; sys_platform == 'win32'",
+    "markupsafe>=3.0.2",
+    "typer>=0.16.0",
 ]

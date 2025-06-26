@@ -32,6 +32,7 @@ class OverlayWidgetDumper(Dumper):
     @classmethod
     def activatedWidget(cls, state, target):
         if state == Qt.CheckState.Checked:
+            target.loader()
             target.show()
         else:
             target.hide()

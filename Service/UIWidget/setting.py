@@ -25,6 +25,8 @@ class SettingWidget(QWidget, Ui_Setting):
     def checkes_pws_active(self, state):
         if state:
             self.parent().active_web_sockets()
+        else:
+            self.parent().deactive_web_sockets()
             
             
     def setOptions(self, data: dict):
@@ -32,3 +34,4 @@ class SettingWidget(QWidget, Ui_Setting):
             case {"btn": state}:
                 if self.pws_activateCheckBox.isChecked() != state:
                     self.pws_activateCheckBox.setChecked(state)
+                    

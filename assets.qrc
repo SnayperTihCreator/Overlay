@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="main">
+        <file alias="overlay.png">assets/icons/overlay.png</file>
+        <file alias="loader.png">assets/icons/loader.png</file>
+        <file alias="setting.png">assets/icons/setting.png</file>
+        <file alias="u_checkbox.png">assets/icons/uncheck_checkbox.png</file>
+        <file alias="c_checkbox.png">assets/icons/check_checkbox.png</file>
+        <file alias="main.css">assets/css/main.qss</file>
+        <file alias="overlay.css">assets/css/overlay.qss</file>
+  </qresource>
+</RCC>

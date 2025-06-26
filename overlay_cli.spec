@@ -1,11 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
-import shutil
-import sys
-import os
 
 
 a = Analysis(
-    ['LinuxKeySenderServer.py'],
+    ['overlay_cli.py'],
     pathex=[],
     binaries=[],
     datas=[],
@@ -13,7 +10,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=["PySide6", "shiboken6"],
     noarchive=False,
     optimize=0,
 )
@@ -25,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='LinuxKeySenderServer',
+    name='OverlayCLI',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -39,13 +36,3 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
-
-#if not sys.argv[-1] == '--no-remove-build':  # Опционально: флаг для отмены удаления
-#    shutil.rmtree('build', ignore_errors=True)
-
-dist_path = os.path.join('dist', exe.name)  # Путь к собранному приложению
-target_path = './'  # Куда переместить
-
-if os.path.exists(dist_path):
-    shutil.move(dist_path, target_path)
-    shutil.rmtree('dist', ignore_errors=True)

@@ -1,0 +1,146 @@
+/* Основной стиль для виджетов */
+* {
+    font-family: Arial;
+    font-size: 15px;
+    font-weight: bold;
+    background-color: rgba(42, 42, 42, 127);
+    color: #009b34; /* primaryTextColor */
+    border-radius: 20px;
+}
+
+/* Стиль для QPushButton */
+QPushButton {
+    color: #bf00e0; /* primaryTextColor */
+    border: 1px solid #8b13a0;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 5px;
+}
+
+QPushButton:hover {
+    background-color: #9a1fb0;
+}
+
+QPushButton:pressed {
+    background-color: #7a0d90;
+}
+
+/* Стиль для QLabel */
+QLabel {
+    color: #009b34; /* primaryTextColor */
+}
+
+QLabel:disabled {
+    color: #9ad789; /* secondaryTextColor */
+}
+
+/* Стиль для QLineEdit, QTextEdit */
+QLineEdit, QTextEdit {
+    background-color: #333333;
+    color: #009b34; /* primaryTextColor */
+    border: 1px solid #8b13a0; /* primaryColor */
+    border-radius: 4px;
+    padding: 3px;
+}
+
+/* Стиль для QComboBox */
+QComboBox {
+    background-color: #333333;
+    color: #009b34;
+    border: 1px solid #8b13a0;
+    border-radius: 4px;
+    padding: 3px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #333333;
+    color: #009b34;
+    selection-background-color: #8b13a0;
+}
+
+/* Стиль для QCheckBox, QRadioButton */
+QCheckBox, QRadioButton {
+    color: #009b34;
+}
+
+QCheckBox::indicator, QRadioButton::indicator, QListView::indicator{
+    width: 32px;
+    height: 32px;
+}
+
+QCheckBox::indicator:unchecked, QCheckBox::indicator:unchecked, QListView::indicator:unchecked{
+    image: url(:/main/u_checkbox.png);
+}
+
+QCheckBox::indicator:checked, QRadioButton::indicator:checked, QListView::indicator:checked{
+    image: url(:/main/c_checkbox.png);
+    color: #9a1fb0;
+
+}
+
+QListView::item {
+    padding: 10px 5px;
+}
+
+/* Стиль для QSlider */
+QSlider::groove:horizontal {
+    height: 8px;
+    background: #333333;
+    border-radius: 4px;
+}
+
+QSlider::handle:horizontal {
+    background: #8b13a0;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+}
+
+/* Стиль для QProgressBar */
+QProgressBar {
+    border: 1px solid #8b13a0;
+    border-radius: 4px;
+    text-align: center;
+    color: #009b34;
+}
+
+QProgressBar::chunk {
+    background-color: #8b13a0;
+}
+
+/* Стиль для QMenuBar, QMenu */
+QMenuBar {
+    background-color: #2a2a2a;
+    color: #009b34;
+}
+
+QMenuBar::item:selected {
+    background-color: #3a3a3a;
+    color: #7affc7;
+}
+
+QMenu {
+    background-color: #ff2a2a2a;
+    color: #009b34;
+    border: 1px solid #8b13a0;
+}
+
+QMenu::item:selected {
+    background-color: #3a3a3a;
+    color: #7affc7; 
+}
+
+/* Стиль для QScrollBar */
+QScrollBar:vertical {
+    background: #2a2a2a;
+    width: 12px;
+}
+
+QScrollBar::handle:vertical {
+    background: #8b13a0;
+    min-height: 20px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    background: none;
+}

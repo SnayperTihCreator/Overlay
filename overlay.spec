@@ -1,14 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
-import shutil
-import sys
-import os
+
+
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=["json", "psutil", "cProfile", "xml.etree.ElementTree", "sockets", "attrs", "requests"],
+    hiddenimports=["json", "psutil", "cProfile", "xml.etree.ElementTree", "attrs", "requests"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -38,13 +37,3 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
-
-#if not sys.argv[-1] == '--no-remove-build':  # Опционально: флаг для отмены удаления
-#    shutil.rmtree('build', ignore_errors=True)
-
-dist_path = os.path.join('dist', exe.name)  # Путь к собранному приложению
-target_path = './'  # Куда переместить
-
-if os.path.exists(dist_path):
-    shutil.move(dist_path, target_path)
-    shutil.rmtree('dist', ignore_errors=True)

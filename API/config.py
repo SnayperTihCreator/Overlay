@@ -4,6 +4,7 @@ from typing import Any
 from dataclasses import dataclass
 
 from box import Box
+from APIService.path_controls import PluginPath
 
 
 @dataclass
@@ -13,7 +14,8 @@ class Defaults:
     }
     overlay_widget = {}
     apps = {
-        "websockets": {"IN": [8000, 8010], "OUT": [8015, 8020]}
+        "websockets": {"IN": [8000, 8010], "OUT": [8015, 8020]},
+        "shortkey": {"open": "shift+alt+o"}
     }
 
 
@@ -22,27 +24,34 @@ class Config:
         self._config_name = config_name
         self._create_is_not = create_is_not
         self._default_config = getattr(Defaults, plugin_type)
-        self._load_path = None
-        self._config: Box = self._load_config(path)
+        self._plugin_type = plugin_type
+        self._load_path = PluginPath(Path(path).stem)
+        self._config: Box = self._load_config()
     
-    def _load_config(self, path) -> Box[str, Any]:
-        self._load_path = path
-        config_path = Path(path).parent / f"{self._config_name}.toml"
+    def _load_config(self) -> Box[str, Any]:
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with self.loadFile(f"{self._config_name}.toml") as f:
                 return Box(toml.load(f))
         except (FileNotFoundError, toml.TomlDecodeError):
             # Если файла нет или он поврежден, создаем новый с дефолтными значениями
             if self._create_is_not:
-                with open(config_path, "w", encoding="utf-8") as f:
-                    toml.dump(self._default_config, f)
+                with self.loadFile(f"{self._config_name}.toml", "w") as f:
+                    return Box(toml.load(f))
             return Box(self._default_config)
+    
+    def loadFile(self, path, mode="r", data_storage="auto"):
+        prefix = data_storage
+        if data_storage == "auto" and "w" not in mode:
+            prefix = "plugin" if self._plugin_type != "apps" else "project"
+        elif data_storage == "auto" and "w" in mode:
+            prefix = "plugin_data" if self._plugin_type != "apps" else "project"
+        return self._load_path.open(f"{prefix}:/{path}", mode)
     
     def __getattr__(self, item):
         return getattr(self._config, item)
     
     def reload(self):
-        self._config = self._load_config(self._load_path)
+        self._config = self._load_config()
     
     def plugin_path(self):
-        return Path(self._load_path).parent
+        return self._load_path

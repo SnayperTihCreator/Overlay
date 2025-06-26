@@ -1,6 +1,5 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, qWarning
-from qt_material import apply_stylesheet
 
 from API.config import Config
 from API.core import APIBaseWidget
@@ -38,21 +37,8 @@ class OverlayWidget(QWidget, APIBaseWidget):
         pass
     
     def loadConfig(self):
-        if self.config.widget:
-            try:
-                apply_stylesheet(
-                    self,
-                    theme="dark_purple.xml",
-                    extra={
-                        "font_size": "14px",
-                        "primaryColor": "#8b13a0",
-                        "primaryTextColor": "#41fd9f",
-                        "secondaryTextColor": "#9ad789",
-                    },
-                    css_file=self.config.plugin_path() / self.config.widget.styleFile,
-                )
-            except Exception as e:
-                qWarning(str(e))
+        with self.config.loadFile(self.config.widget.styleFile) as file:
+            self.setStyleSheet(file.read())
     
     @classmethod
     def createSettingWidget(cls, widget: "OverlayWidget", name_plugin: str, parent):

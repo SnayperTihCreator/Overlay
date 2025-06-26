@@ -4,10 +4,12 @@ from abc import ABC, abstractmethod
 
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtWidgets import QListWidgetItem, QMenu
+from PySide6.QtGui import QPixmap
 import json5
 from box import Box
 
 from Service.core import ItemRole
+from APIService.path_controls import PluginPath
 
 
 class Dumper(ABC):
@@ -29,7 +31,7 @@ class Dumper(ABC):
     @classmethod
     def loaded(cls, setting: QSettings, name: str, parent):
         setting.beginGroup(name)
-        config = json5.loads(setting.value("config"))
+        config = json5.loads(setting.value("config")) if setting.value("config") else {}
         active = getattr(
             Qt.CheckState, ("Checked" if int(setting.value("active")) else "Unchecked")
         )
@@ -51,6 +53,17 @@ class Dumper(ABC):
             cls.activatedWidget(active, target)
         setting.endGroup()
         return target, item
+    
+    @classmethod
+    def getIcon(cls, name):
+        path = PluginPath(name)
+        result = QPixmap()
+        try:
+            image_data = path.open("plugin:/icon.png", "rb").read()
+            result.loadFromData(image_data)
+        except FileNotFoundError as e:
+            print(e, name, path)
+        return result
 
     @classmethod
     @abstractmethod
@@ -61,9 +74,13 @@ class Dumper(ABC):
             name_type: str,
             checked: Qt.CheckState = Qt.CheckState.Unchecked,
     ) -> QListWidgetItem:
+        icon_name = name
         if f"({name_type})" not in name:
             name = f"{name}({name_type})"
-        item = QListWidgetItem(name)
+        if f"({name_type})" in icon_name:
+            icon_name = icon_name[:icon_name.rindex("(")]
+        icon = cls.getIcon(icon_name)
+        item = QListWidgetItem(icon, name)
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         item.setCheckState(checked)
         item.setData(ItemRole.MODULE, module)
@@ -102,6 +119,7 @@ class Dumper(ABC):
         d_item = QListWidgetItem(
             f"{item.text()}_{item.data(ItemRole.COUNT_DUPLICATE):04d}"
         )
+        d_item.setIcon(item.icon())
         d_item.setData(ItemRole.TYPE_NAME, item.data(ItemRole.TYPE_NAME))
         d_item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         d_item.setCheckState(Qt.CheckState.Unchecked)

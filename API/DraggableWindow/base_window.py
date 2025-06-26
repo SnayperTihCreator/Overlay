@@ -1,7 +1,6 @@
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QMainWindow, QGraphicsColorizeEffect, QWidget
 from PySide6.QtCore import Qt, QPoint, QTimer, qWarning
-from qt_material import apply_stylesheet
 
 from API.config import Config
 from API.core import APIBaseWidget
@@ -57,22 +56,8 @@ class DraggableWindow(QMainWindow, APIBaseWidget):
     def loadConfig(self):
         width, height = self.config.window.width, self.config.window.height
         self.setFixedSize(width, height)
-        try:
-            apply_stylesheet(
-                self.central_widget,
-                theme="dark_purple.xml",
-                extra={
-                    "font_size": "14px",
-                    "primaryColor": "#8b13a0",
-                    "primaryTextColor": "#41fd9f",
-                    "secondaryTextColor": "#9ad789",
-                },
-                css_file=self.config.plugin_path() / self.config.window.styleFile,
-            )
-        except Exception as e:
-            qWarning(str(e))
-
-        self.setStyleSheet("border-radius: 20px")
+        with self.config.loadFile(self.config.window.styleFile) as file:
+            self.setStyleSheet(file.read())
         self.setWindowOpacity(self.config.window.opacity)
 
     def reloadConfig(self):

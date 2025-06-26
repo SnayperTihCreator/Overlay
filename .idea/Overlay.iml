@@ -8,8 +8,8 @@
       <sourceFolder url="file://$MODULE_DIR$/plugins" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/uis" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/utils" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/APIService/tools_folder" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Service/UIWidget" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/assets" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/build" />

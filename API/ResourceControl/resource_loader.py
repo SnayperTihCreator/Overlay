@@ -1,14 +1,13 @@
 import yaml
-from pathlib import Path
+
+from API.config import Config
 
 
-def prePath(path, folders):
-    if "plugin:/" in path:
-        path = path.replace("plugin:/", "", 1)
-        return Path(folders["plugin"]) / path
+def load(path, config: Config):
+    with config.loadFile(path, data_storage="plugin_data") as file:
+        return yaml.load(file, yaml.SafeLoader)
 
 
-def load(path, folders):
-    path = prePath(path, folders)
-    with open(path, encoding="utf-8") as file:
-        return yaml.full_load(file)
+def save(path, config: Config, data):
+    with config.loadFile(path, "w", "plugin_data") as file:
+        return yaml.dump(data, file, yaml.SafeDumper)

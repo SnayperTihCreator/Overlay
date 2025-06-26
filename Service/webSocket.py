@@ -1,6 +1,6 @@
 from PySide6.QtCore import Signal
 
-from APIService.webControls import ServerWebSockets
+from APIService.qWebSockets import ServerWebSockets
 
 
 class AppServerControl(ServerWebSockets):
@@ -14,3 +14,5 @@ class AppServerControl(ServerWebSockets):
         match message.split(" "):
             case ["action", name]:
                 self.action_triggered.emit(name)
+            case ["print", message]:
+                print(message)

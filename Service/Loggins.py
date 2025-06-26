@@ -73,4 +73,4 @@ def qt_message_handler(mode: QtMsgType, context: QMessageLogContext, message):
 
 # Установка обработчика Qt-сообщений
 qInstallMessageHandler(qt_message_handler)
-setup_exception_handler()
+# setup_exception_handler()

@@ -9,9 +9,14 @@
 
 [Облако на котором хранятся бинарные файлы](https://drive.google.com/drive/folders/1jkbPM_lJKnIv-bnrRmSW4jxCYETueIty?usp=sharing)
 
-
 [Для пользователей](users/index.md)
 
 [Для разрабочиков плагинов](developers/index.md)
 
 [Индекс оффициальных плагинов](plugins//index.md)
+
+## Изменения
+
+[Приложения](changesMainProg/index.md)
+
+[Плагинов](changesPlugins/index.md)
