@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QSettings
 from PySide6.QtWidgets import QWidget, QTreeWidgetItem
 
 from uis.settings_ui import Ui_Setting
@@ -21,6 +21,25 @@ class SettingWidget(QWidget, Ui_Setting):
         self.allHide()
         obj: QWidget = getattr(self, f"page{item.text(column)}")
         obj.show()
+
+    def save_setting(self, setting: QSettings):
+        setting.beginGroup("setting_overlay")
+        try:
+            setting.beginGroup("webscokets")
+            setting.setValue("active", int(self.pws_activateCheckBox.isChecked()))
+            setting.endGroup()
+        finally:
+            setting.endGroup()
+
+    def restore_setting(self, setting: QSettings):
+        setting.beginGroup("setting_overlay")
+        try:
+            setting.beginGroup("webscokets")
+            webActive = bool(int(setting.value("active")))
+            self.pws_activateCheckBox.setChecked(webActive)
+            setting.endGroup()
+        finally:
+            setting.endGroup()
         
     def checkes_pws_active(self, state):
         if state:

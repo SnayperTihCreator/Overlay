@@ -27,6 +27,9 @@ class ServerWebSockets(QObject):
         self._server.newConnection.connect(self.actNewConnection)
         return True
     
+    def is_run(self):
+        return self._server is not None
+    
     def quit(self):
         if not self._server:
             return
