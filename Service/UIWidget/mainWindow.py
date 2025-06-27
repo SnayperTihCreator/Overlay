@@ -172,7 +172,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
         for item in self.listPlugins.findItems("", Qt.MatchFlag.MatchContains):
             if item.data(ItemRole.TYPE_NAME) not in ["Window", "Widget"]: return
             PluginControl.saveConfig(item, self.settings, {"windows": self.windows, "widgets": self.widgets})
-            
         self.settingWidget.save_setting(self.settings)
     
     def initSystemTray(self):
