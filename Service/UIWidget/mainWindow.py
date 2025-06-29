@@ -173,6 +173,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
             if item.data(ItemRole.TYPE_NAME) not in ["Window", "Widget"]: return
             PluginControl.saveConfig(item, self.settings, {"windows": self.windows, "widgets": self.widgets})
         self.settingWidget.save_setting(self.settings)
+        self.settings.sync()
+        qDebug("Сохранение приложения")
     
     def initSystemTray(self):
         menu = QMenu()
