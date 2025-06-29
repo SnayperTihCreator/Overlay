@@ -17,9 +17,17 @@ class EmitterFakeInput:
             case ["win32", "proton"]:
                 from .windowsProtonFakeInput import WindowsProtonFakeInput
                 self.handler = WindowsProtonFakeInput()
+            case ["linux", "wayland"]:
+                from .linuxWaylandFakeInput import LinuxWaylandFakeInput
+                self.handler = LinuxWaylandFakeInput()
+            case ["linux", "x11"]:
+                from .linuxX11FakeInput import LinuxX11FakeInput
+                self.handler = LinuxX11FakeInput()
     
     @cache
     def _get_keycode_enum(self, keycode: BaseCommonKey):
+        if isinstance(keycode, int):
+            return keycode
         if isinstance(keycode, BaseLinuxKey):
             return keycode
         if isinstance(keycode, BaseWindowsKey):
@@ -30,6 +38,8 @@ class EmitterFakeInput:
                 return getattr(self.w_keycode, keycode.value)
             case ["win32", "proton"]:
                 return keycode
+            case ["linux", window]:
+                return getattr(self.l_keycode, keycode.value).keycode
     
     def send_key_press(self, keycode: BaseCommonKey):
         keycode = self._get_keycode_enum(keycode)
