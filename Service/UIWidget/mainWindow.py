@@ -41,7 +41,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if old_lay := self.centralwidget.layout():
             old_lay.deleteLater()
         
-        self.config = Config(getAppPath()/"main.py", "apps")
+        self.config = Config(getAppPath() / "main.py", "apps")
         self.webSocketIn = AppServerControl(self.config.websockets.IN, self)
         self.webSocketIn.action_triggered.connect(self.handled_shortcut)
         
@@ -51,13 +51,13 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.listPlugins.itemChanged.connect(self.updateStateItem)
         self.listPlugins.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.listPlugins.customContextMenuRequested.connect(self.contextMenuItem)
-        self.listPlugins.setIconSize(QSize(1, 1)*32)
+        self.listPlugins.setIconSize(QSize(1, 1) * 32)
         
         self.settingWidget = SettingWidget(self)
         self.settingWidget.hide()
         
         self.addWidget(
-            self.listPlugins,
+            self.widgetListPlugin,
             [Qt.AnchorPoint.AnchorLeft, Qt.AnchorPoint.AnchorVerticalCenter],
             QMargins(20, 0, 0, 0),
         )
@@ -128,11 +128,11 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def registered_shortcut(self, comb, name, window):
         self.registered_handler(comb, name)
         self.shortcuts[name] = window
-        
+    
     def active_web_sockets(self):
         self.settingWidget.setOptions({"websoc": {"btn": True}})
         self.webSocketIn.start()
-        
+    
     def deactive_web_sockets(self):
         self.settingWidget.setOptions({"websoc": {"btn": False}})
         self.webSocketIn.quit()
@@ -164,7 +164,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 self.settings.endGroup()
                 qWarning(f"Модуль(Виджет) не найден: {wid_name}")
         self.settings.endGroup()
-
+        
         self.settingWidget.restore_setting(self.settings)
     
     def saveConfigs(self):
@@ -201,7 +201,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if not PACKAGES_DIR.exists():
             PACKAGES_DIR.mkdir(exist_ok=True)
             (PACKAGES_DIR / "__init__.py").touch(exist_ok=True)
-            
+        
         for zip_pack in PACKAGES_DIR.glob("*.zip"):
             plugin_name = zip_pack.stem
             importer = zipimport.zipimporter(str(zip_pack))
@@ -223,8 +223,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             except ImportError as e:
                 trace = "".join(traceback.format_exception(e))
                 qDebug(f"Ошибка импорта пакета {plugin_name}:\n {trace}")
-        
-        
+    
     def hasCreateObj(self, name, type_name):
         match type_name:
             case "Window":

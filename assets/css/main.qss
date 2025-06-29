@@ -18,11 +18,11 @@ QPushButton {
 }
 
 QPushButton:hover {
-    background-color: #9a1fb0;
+    background-color: #333033;
 }
 
 QPushButton:pressed {
-    background-color: #7a0d90;
+    background-color: #827d83;
 }
 
 /* Стиль для QLabel */
