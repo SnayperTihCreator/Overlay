@@ -24,4 +24,5 @@ dependencies = [
     "wcmatch>=10.1",
     "pyjoules>=0.5.1",
     "numba>=0.61.2",
+    "textual>=3.5.0",
 ]
