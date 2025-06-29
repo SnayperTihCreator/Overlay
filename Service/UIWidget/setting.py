@@ -35,7 +35,7 @@ class SettingWidget(QWidget, Ui_Setting):
         setting.beginGroup("setting_overlay")
         try:
             setting.beginGroup("webscokets")
-            webActive = bool(int(setting.value("active")))
+            webActive = bool(int(setting.value("active", "0", str)))
             self.pws_activateCheckBox.setChecked(webActive)
             setting.endGroup()
         finally:

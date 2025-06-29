@@ -8,6 +8,10 @@
     background-color: rgba(0, 0, 0, 0);
 }
 
+#widgetListPlugin {
+    background-color: rgba(0, 0, 0, 0);
+}
+
 QMainWindow > QStatusBar {
     border-radius: 0px;  /* Прямоугольный статус-бар */
     background-color: rgba(0, 0, 0, 0);
