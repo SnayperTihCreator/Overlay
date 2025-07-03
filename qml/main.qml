@@ -1,74 +1,111 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls
 
-Window {
+ApplicationWindow {
     id: mainWindow
-    width: 300
-    height: 300
     visible: true
+    
     color: "transparent"
+    //opacity: 0.5
+    width: Screen.width
+    height: Screen.height
     flags: Qt.Window | Qt.FramelessWindowHint
+    
 
+    FontLoader {
+        id: marckScript
+        source: "../MarckScript-Regular.ttf"
+    }
 
-
-    // Основной прямоугольник со скругленными углами
     Rectangle {
-        id: contentRect
+        id: win
+        color: "#452a2a2a"
         anchors.fill: parent
-        radius: 20
-        color: "#33445566"
 
-
-        // Для перемещения окна
-        MouseArea {
-            anchors.fill: parent
-            property point clickPos: "0,0"
-            onPressed:{
-                clickPos = Qt.point(mouse.x, mouse.y)
-            }
-            onPositionChanged: {
-                var delta = Qt.point(mouse.x - clickPos.x, mouse.y - clickPos.y)
-                mainWindow.x += delta.x
-                mainWindow.y += delta.y
-            }
-    }
-
-
-        // Кнопка закрытия (рабочий вариант)
         Rectangle {
-            id: closeButton
-            width: 30
-            height: 30
-            radius: 15
-            color: mouseArea.containsMouse ? "#ff0000" : "#880000"
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.margins: 10
+            id: containerListView
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            height: 600
+            width: 400
 
-            Text {
-                text: "X"
-                anchors.centerIn: parent
-                color: "white"
-                font.bold: true
-            }
-
-            MouseArea {
-                id: mouseArea
+            ListView {
+                id: pluginsList
                 anchors.fill: parent
-                hoverEnabled: true
-                onClicked: Qt.quit()
+
+                ScrollBar.vertical: ScrollBar {
+                    anchors.right: parent.right
+                    anchors.rightMargin: -20
+                }
+
+                model: pluginModel
+
+                delegate: Rectangle {
+                    height: 60
+                    width: ListView.view.width
+                    color: "#FF333333"
+                    border.color: "black"
+
+
+                    Text {
+                        font.family: marckScript.name
+                        font.pixelSize: 20
+                        font.bold: true
+                        anchors.centerIn: parent
+                        text: model.display || ""
+                        color: "#009b34"
+                    }
+
+                    Text {
+                        font.family: marckScript.name
+                        font.pixelSize: 20
+                        font.bold: true
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.margins: 3
+                        text: model.type_plugin || ""
+                        color: "#bf00e0"
+                    }
+
+                    Image {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: model.iconPath
+                        anchors.margins: 50
+                        width: 48
+                        height: 48
+                    }
+                    
+
+                    Switch {
+                        id: control
+                        indicator: Image {
+                            source: control.checked?"qrc:/main/c_checkbox.png":"qrc:/main/u_checkbox.png"
+                            width: 48
+                            height: 48
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+                }
             }
         }
 
 
-
-        // Ваш основной контент
-        Text {
-            text: "Мое приложение"
+        Button {
+            id: button1
+            text: "Нажми меня"
             anchors.centerIn: parent
-            font.pixelSize: 24
-            color: "white"
+            onPressed: plog.log()
         }
-    }
+
+        RoundButton {
+            id: root
+            text: "X"
+            onClicked: Qt.quit()
+        }
+
+        
+    }        
 }

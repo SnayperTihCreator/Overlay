@@ -3,6 +3,7 @@ import sys
 import zipfile
 from functools import cache
 from pathlib import Path
+import os
 
 
 @cache
@@ -10,7 +11,7 @@ def getAppPath():
     return (
         Path(sys.executable).parent
         if getattr(sys, "frozen", False)
-        else Path(sys.argv[0]).parent
+        else Path(os.getcwd())
     )
 
 
