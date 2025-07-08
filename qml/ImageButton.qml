@@ -3,12 +3,12 @@ import QtQuick
 Item {
 	id: root
 
-	property color fgcolor: "#bf00e0"
 	property color bgcolor: "#333333"
 	property color bcolor: "#8b13a0"
-	property alias text: caption.text
+	property alias source: caption.source
 	property int size: 100
-	property alias font: caption.font
+	property alias widthImage: caption.width
+	property alias heightImage: caption.height
 
 	signal pressed()
 
@@ -23,13 +23,12 @@ Item {
 		border.color: bcolor
 		border.width: 2
 
-		Text {
+		Image {
 			id: caption
-
-			color: fgcolor
 			anchors.centerIn: parent
-			font.pixelSize: 16
-			text: "Click"
+
+			width: parent.width>parent.height?parent.height:parent.width
+			height: parent.width>parent.height?parent.height:parent.width
 		}
 
 		MouseArea {

@@ -6,16 +6,16 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QSystemTrayIcon,
     QListWidgetItem,
-    QMenu
+    QMenu, QApplication
 )
-from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning
+from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
 from PySide6.QtGui import QIcon, QKeyEvent, QAction, QColor
 
 from uis.main_ui import Ui_MainWindow
 
 from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager, Config
 
-from APIService import getAppPath, ToolsIniter, modulateIcon, QtResourceDescriptor
+from APIService import getAppPath, ToolsIniter, modulateIcon
 
 from Service.webSocket import AppServerControl
 from Service.AnchorLayout import AnchorLayout
@@ -40,6 +40,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         if old_lay := self.centralwidget.layout():
             old_lay.deleteLater()
+            
+        self.setMaximumSize(self.screen().size())
         
         self.config = Config(getAppPath() / "main.py", "apps")
         self.webSocketIn = AppServerControl(self.config.websockets.IN, self)
@@ -52,6 +54,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.listPlugins.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.listPlugins.customContextMenuRequested.connect(self.contextMenuItem)
         self.listPlugins.setIconSize(QSize(1, 1) * 32)
+        self.btnListUpdate.pressed.connect(self.notificationNotImpl)
         
         self.settingWidget = SettingWidget(self)
         self.settingWidget.hide()
@@ -77,7 +80,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.settingWidget, [Qt.AnchorPoint.AnchorHorizontalCenter, Qt.AnchorPoint.AnchorVerticalCenter]
         )
         
-        icon = modulateIcon(QIcon(":/main/setting.png"), QColor("#6a0497"))
+        icon = modulateIcon(QIcon(":/root/icons/setting.png"), QColor("#6a0497"))
         
         self.btnSetting.setIconSize(QSize(50, 50))
         self.btnSetting.setIcon(icon)
@@ -89,7 +92,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, False)
-        with QtResourceDescriptor.open(":/main/overlay.css") as file:
+        with open("qt://root/css/overlay.css") as file:
             self.setStyleSheet(file.read())
         self.hide()
         
@@ -99,7 +102,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.registered_handler(self.config.shortkey.open, "toggle_show")
         self.input_bridge.start()
         
-        self.tray = QSystemTrayIcon(QIcon(":/main/overlay.png"))
+        self.tray = QSystemTrayIcon(QIcon(":/root/icons/overlay.png"))
         self.initSystemTray()
         
         if str(getAppPath()) not in sys.path:
@@ -128,6 +131,24 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def registered_shortcut(self, comb, name, window):
         self.registered_handler(comb, name)
         self.shortcuts[name] = window
+    
+    def notificationNotImpl(self):
+        self.tray.show()
+        self.safe_show_notification(
+            "Уведомление",
+            "Данный функционал не реализован",
+        )
+        self.tray.hide()
+    
+    def safe_show_notification(self, title, message, icon=QSystemTrayIcon.MessageIcon.Information):
+        """Безопасный показ уведомления с учётом полноэкранного режима"""
+        if self.isFullScreen():
+            # Временный выход из полноэкранного режима
+            self.showMaximized()
+            self.tray.showMessage(title, message, icon, 2000)
+            QTimer.singleShot(100, self.showFullScreen)
+        else:
+            self.tray.showMessage(title, message, icon, 2000)
     
     def active_web_sockets(self):
         self.settingWidget.setOptions({"websoc": {"btn": True}})

@@ -6,7 +6,7 @@ from APIService.path_controls import getAppPath
 
 
 class ToolsIniter:
-    def __init__(self, name):
+    def __init__(self, name="tools"):
         self.tools_name = name
 
     def load(self):

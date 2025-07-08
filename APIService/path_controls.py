@@ -35,7 +35,7 @@ class PluginPath:
         if not pluginName:
             raise ValueError("Plugin name not set!")
         relPath = virtualPath.replace("plugin_data:/", "").lstrip("/")
-        return getAppPath() / "plugins" / "pldata" / pluginName / relPath
+        return getAppPath() / "plugins" / "plugin_data" / pluginName / relPath
     
     @classmethod
     def _resolveProjectPath(cls, pluginName, virtualPath):

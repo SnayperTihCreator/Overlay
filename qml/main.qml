@@ -7,21 +7,40 @@ ApplicationWindow {
     visible: true
     
     color: "transparent"
-    //opacity: 0.5
     width: Screen.width
     height: Screen.height
-    flags: Qt.Window | Qt.FramelessWindowHint
+    flags: Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
+
+    Component.onCompleted: {
+        Application.style = "Fusion"
+        Qt.styleHints.style = "Material"
+    }
+
+    Connections {
+        target: OverlayController
+        function onVisibleChanged(){
+            mainWindow.visible = !mainWindow.visible
+        } 
+    }
     
 
     FontLoader {
         id: marckScript
-        source: "../MarckScript-Regular.ttf"
+        source: "qrc:/base/fonts/MarckScript.ttf"
     }
+
+    readonly property font mainFont: ({
+        family: marckScript.name,
+        pixelSize: 20,
+        bold: true
+    })
 
     Rectangle {
         id: win
+        objectName: "win"
         color: "#452a2a2a"
         anchors.fill: parent
+        opacity: 0.75
 
         Rectangle {
             id: containerListView
@@ -29,17 +48,21 @@ ApplicationWindow {
             anchors.verticalCenter: parent.verticalCenter
             height: 600
             width: 400
+            color: "#23000000"
+            border.color: "#000"
+
 
             ListView {
                 id: pluginsList
                 anchors.fill: parent
+
 
                 ScrollBar.vertical: ScrollBar {
                     anchors.right: parent.right
                     anchors.rightMargin: -20
                 }
 
-                model: pluginModel
+                model: OverlayController.pluginsModeData
 
                 delegate: Rectangle {
                     height: 60
@@ -49,18 +72,14 @@ ApplicationWindow {
 
 
                     Text {
-                        font.family: marckScript.name
-                        font.pixelSize: 20
-                        font.bold: true
+                        font: mainFont
                         anchors.centerIn: parent
                         text: model.display || ""
                         color: "#009b34"
                     }
 
                     Text {
-                        font.family: marckScript.name
-                        font.pixelSize: 20
-                        font.bold: true
+                        font: mainFont
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
                         anchors.margins: 3
@@ -73,39 +92,69 @@ ApplicationWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         source: model.iconPath
                         anchors.margins: 50
-                        width: 48
-                        height: 48
+                        width: 32
+                        height: 32
                     }
                     
 
                     Switch {
                         id: control
                         indicator: Image {
-                            source: control.checked?"qrc:/main/c_checkbox.png":"qrc:/main/u_checkbox.png"
+                            source: control.checked?"qrc:/base/icons/c_checkbox.png":"qrc:/base/icons/u_checkbox.png"
                             width: 48
                             height: 48
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
                         }
+                        onToggled: pluginsList.model.updateStateItem(index, checked)
                     }
                 }
             }
         }
 
+        SquircleButton {
+            size: 75
+            text: "ESC"
+            onPressed: Qt.quit()
 
-        Button {
-            id: button1
-            text: "Нажми меня"
-            anchors.centerIn: parent
-            onPressed: plog.log()
+            anchors.margins: 10
+            anchors.top: parent.top
+            anchors.left: parent.left
+
+            font: mainFont
         }
 
-        RoundButton {
-            id: root
+        SquircleButton {
+            size: 75
             text: "X"
-            onClicked: Qt.quit()
+            onPressed: mainWindow.visible = false
+
+            anchors.margins: 10
+            anchors.top: parent.top
+            anchors.right: parent.right
+
+            font: mainFont
         }
 
+        ImageButton {
+            size: 80
+            source: "image://modul/root/icons/setting.png?scheme=qt&modulate=%238b13a0"
+
+            anchors.margins: 10
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+
+            onPressed: settingWindow.visible = !settingWindow.visible
+        }
+
+        SettingWindow {
+            id: settingWindow
+            anchors.centerIn: parent
+
+            model: OverlayController.settingModel
+
+            font: mainFont
+        }
         
     }        
 }

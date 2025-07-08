@@ -1,7 +1,11 @@
 from box import Box
 
+from APIService.dumper import Dumper
+
 
 class APIBaseWidget:
+    dumper: Dumper
+    
     def reloadConfig(self):
         raise NotImplementedError
     

@@ -1,8 +1,12 @@
 from types import ModuleType
 from enum import IntEnum, auto
+from typing import Any, Union
 
-from PySide6.QtCore import QAbstractListModel, QByteArray, Qt, QModelIndex, QUrl
+from PySide6.QtCore import QAbstractListModel, QByteArray, Qt, QModelIndex, QUrl, Slot
+from PySide6.QtWidgets import QWidget
 from attrs import define, field
+
+from API.core import APIBaseWidget
 
 
 class PluginItemRole(IntEnum):
@@ -16,7 +20,26 @@ class PluginItem:
     module: ModuleType = field()
     iconPath: str = field()
     type_module: str = field()
+    parent: Any = field()
     active: bool = field(default=False)
+    
+    _widget: Union[APIBaseWidget, QWidget] = field(init=False, default=None)
+    
+    def updateStateItem(self, state):
+        if state and self._widget is None:
+            self.buildItem()
+        if self._widget is not None:
+            self._widget.dumper.activatedWidget(state, self._widget)
+        if self._widget and state:
+            self._widget.show()
+            
+        
+    def buildItem(self):
+        match self.type_module:
+            case "Window":
+                self._widget = self.module.createWindow(self.parent)
+            case "Widget":
+                self._widget = self.module.createWidget(self.parent)
 
 
 class PluginDataModel(QAbstractListModel):
@@ -60,3 +83,7 @@ class PluginDataModel(QAbstractListModel):
         names[PluginItemRole.ActiveRole] = QByteArray(b"active")
         names[PluginItemRole.IconPath] = QByteArray(b"iconPath")
         return names
+    
+    @Slot(int, bool)
+    def updateStateItem(self, index, state):
+        self._plugins[index].updateStateItem(state)

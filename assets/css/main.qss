@@ -1,6 +1,6 @@
 /* Основной стиль для виджетов */
 * {
-    font-family: Arial;
+    font-family: "Marck Script";
     font-size: 15px;
     font-weight: bold;
     background-color: rgba(42, 42, 42, 127);
@@ -69,11 +69,11 @@ QCheckBox::indicator, QRadioButton::indicator, QListView::indicator{
 }
 
 QCheckBox::indicator:unchecked, QCheckBox::indicator:unchecked, QListView::indicator:unchecked{
-    image: url(:/main/u_checkbox.png);
+    image: url(:/base/icons/u_checkbox.png);
 }
 
 QCheckBox::indicator:checked, QRadioButton::indicator:checked, QListView::indicator:checked{
-    image: url(:/main/c_checkbox.png);
+    image: url(:/base/icons/c_checkbox.png);
     color: #9a1fb0;
 
 }
