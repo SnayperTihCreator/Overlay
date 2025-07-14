@@ -36,7 +36,7 @@ class QmlDraggableWindow(DraggableWindow):
     def loadPresetData(self) -> QQmlEngine:
         engine = self.central_widget.engine()
         
-        engine.rootContext().setContextProperty("mainColor", QColor("#009b34"))
+        engine.rootContext().setContextProperty("mainTextColor", qApp.palette().color(QPalette.ColorRole.Text))
         
         return engine
     

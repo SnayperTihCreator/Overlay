@@ -3,7 +3,7 @@ import os
 import builtins
 
 from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtGui import QPixmap, QFontDatabase, QFont
+from PySide6.QtGui import QPixmap, QFontDatabase, QFont, QPalette, QColor
 
 import Service.globalContext
 from APIService.storageControls import OpenManager
@@ -27,6 +27,10 @@ if __name__ == "__main__":
             app.setStyleSheet(file.read())
             
             app.setFont(QFont("Marck Script", 14, 900))
+            
+            palette = app.palette()
+            palette.setColor(QPalette.ColorRole.Text, QColor("#009b34"))
+            app.setPalette(palette)
             
             pixmap = QPixmap(":/root/icons/loader.png")
             splash = QSplashScreen(pixmap)
