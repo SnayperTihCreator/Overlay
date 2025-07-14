@@ -1,8 +1,5 @@
 /* Основной стиль для виджетов */
 * {
-    font-family: "Marck Script";
-    font-size: 15px;
-    font-weight: bold;
     background-color: rgba(42, 42, 42, 127);
     color: #009b34; /* primaryTextColor */
     border-radius: 20px;

@@ -1,0 +1,53 @@
+from PySide6.QtCore import QUrl, Qt
+from PySide6.QtGui import QPalette, QColor
+from PySide6.QtQml import QQmlEngine
+from PySide6.QtQuickWidgets import QQuickWidget
+from PySide6.QtQuick import QQuickItem
+from PySide6.QtWidgets import QApplication
+
+from .base_window import DraggableWindow
+
+qApp: QApplication
+
+
+class QmlDraggableWindow(DraggableWindow):
+    central_widget: QQuickWidget
+    
+    def __init__(self, config, url, parent=None):
+        super().__init__(config, parent)
+        
+        self.central_widget = QQuickWidget(self)
+        self.central_widget.statusChanged.connect(self._onChangeStatus)
+        self.loadPresetData()
+        self.loadQmlContent(url)
+        self.central_widget.setResizeMode(QQuickWidget.ResizeMode.SizeRootObjectToView)
+        self.central_widget.setClearColor(Qt.GlobalColor.transparent)
+        self.setCentralWidget(self.central_widget)
+        
+        self.loadConfig()
+    
+    def loadQmlContent(self, url: str):
+        self.central_widget.setSource(QUrl(url))
+    
+    def _onChangeStatus(self, status):
+        if status == QQuickWidget.Status.Error:
+            print(*self.central_widget.errors(), sep="\n")
+    
+    def loadPresetData(self) -> QQmlEngine:
+        engine = self.central_widget.engine()
+        
+        engine.rootContext().setContextProperty("mainColor", QColor("#009b34"))
+        
+        return engine
+    
+    def getRootQml(self) -> QQuickItem:
+        return self.central_widget.rootObject()
+    
+    def setRootProperty(self, name, value):
+        if self.getRootQml():
+            self.getRootQml().setProperty(name, value)
+    
+    def reloadConfig(self):
+        self.loadPresetData()
+        super().reloadConfig()
+        

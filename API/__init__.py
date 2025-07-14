@@ -1,4 +1,4 @@
-from .DraggableWindow import DraggableWindow
+from .DraggableWindow import DraggableWindow, QmlDraggableWindow
 from .OverlayWidget import OverlayWidget
 from .BackgroundWorker import BackgroundWorkerManager, BackgroundWorker
 from .config import Config
@@ -9,6 +9,7 @@ __all__ = [
     "Config",
     "Backend",
     "DraggableWindow",
+    "QmlDraggableWindow",
     "OverlayWidget",
     "BackgroundWorker",
     "BackgroundWorkerManager",
