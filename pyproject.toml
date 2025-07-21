@@ -27,4 +27,5 @@ dependencies = [
     "textual>=3.5.0",
     "pulsectl>=24.12.0; sys_platform == 'linux'",
     "fs>=2.4.16",
+    "pillow>=11.3.0",
 ]

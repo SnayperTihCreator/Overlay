@@ -30,6 +30,8 @@ if __name__ == "__main__":
             
             palette = app.palette()
             palette.setColor(QPalette.ColorRole.Text, QColor("#009b34"))
+            palette.setColor(QPalette.ColorRole.ButtonText, QColor("#bf00e0"))
+            
             app.setPalette(palette)
             
             pixmap = QPixmap(":/root/icons/loader.png")

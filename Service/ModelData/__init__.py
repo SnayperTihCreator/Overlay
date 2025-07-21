@@ -1,1 +1,2 @@
-from .pluginModel import PluginItem, PluginDataModel
+from .pluginListView import PluginList
+from .pluginModel import PluginItem, ClonePluginItem
