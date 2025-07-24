@@ -1,24 +1,29 @@
 from types import ModuleType
 
-from PySide6.QtCore import QSettings, Qt
-from PySide6.QtWidgets import QListWidgetItem, QMenu
+from PySide6.QtCore import QSettings
+from PySide6.QtWidgets import QMenu
 
 from APIService.dumper import Dumper
 
-from Service.core import ItemRole
+from Service.pluginItems import PluginItem
 
 
 class OverlayWidgetDumper(Dumper):
+    
     @classmethod
-    def overCreateItem(cls, module: ModuleType, name: str, checked: Qt.CheckState = Qt.CheckState.Unchecked, **kwargs):
-        return super().overCreateItem(module, name, "Widget", checked)
+    def getTypePluginItem(cls):
+        return PluginItem
+    
+    @classmethod
+    def overCreateItem(cls, module: ModuleType, name: str, parent, checked: bool = False, **kwargs):
+        return super().overCreateItem(module, name, "Widget", parent, checked)
 
     @classmethod
     def overRunFunction(cls, module: ModuleType, parent):
         return module.createWidget(parent)
 
     @classmethod
-    def overSaved(cls, item: QListWidgetItem, setting: QSettings):
+    def overSaved(cls, item: PluginItem, setting: QSettings):
         return None
 
     @classmethod
@@ -31,16 +36,16 @@ class OverlayWidgetDumper(Dumper):
 
     @classmethod
     def activatedWidget(cls, state, target):
-        if state == Qt.CheckState.Checked:
+        if state:
             target.loader()
             target.show()
         else:
             target.hide()
 
     @classmethod
-    def duplicate(cls, item: QListWidgetItem):
+    def duplicate(cls, item: PluginItem):
         return NotImplemented
 
     @classmethod
-    def createActionMenu(cls, menu: QMenu, widget, item: QListWidgetItem):
+    def createActionMenu(cls, menu: QMenu, widget, item: PluginItem):
         return super().createActionMenu(menu, widget, item)

@@ -1,5 +1,5 @@
-from PySide6.QtCore import QUrl, Qt
-from PySide6.QtGui import QPalette, QColor
+from PySide6.QtCore import QUrl, Qt, qCritical
+from PySide6.QtGui import QPalette
 from PySide6.QtQml import QQmlEngine
 from PySide6.QtQuickWidgets import QQuickWidget
 from PySide6.QtQuick import QQuickItem
@@ -31,7 +31,8 @@ class QmlDraggableWindow(DraggableWindow):
     
     def _onChangeStatus(self, status):
         if status == QQuickWidget.Status.Error:
-            print(*self.central_widget.errors(), sep="\n")
+            for error in self.central_widget.errors():
+                qCritical(str(error))
     
     def loadPresetData(self) -> QQmlEngine:
         engine = self.central_widget.engine()
@@ -46,6 +47,9 @@ class QmlDraggableWindow(DraggableWindow):
     def setRootProperty(self, name, value):
         if self.getRootQml():
             self.getRootQml().setProperty(name, value)
+            
+    def setContextProperty(self, name, value):
+        self.central_widget.rootContext().setContextProperty(name, value)
     
     def reloadConfig(self):
         self.loadPresetData()

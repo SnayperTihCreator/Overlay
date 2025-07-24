@@ -4,72 +4,12 @@ from typing import Any, Union
 from functools import cache
 
 from PySide6.QtCore import QAbstractListModel, QByteArray, Qt, QModelIndex, QUrl, Slot
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget
 from attrs import define, field
 
+from Service.pluginItems import PluginItem, PluginItemRole
 from API.core import APIBaseWidget
-
-
-class PluginItemRole(IntEnum):
-    TypePluginRole = Qt.ItemDataRole.UserRole
-    ActiveRole = auto()
-    IconPath = auto()
-    Icon = auto()
-    Duplication = auto()
-
-
-@define
-class PluginItem:
-    namePlugin: str = field(default=None, init=False)
-    module: ModuleType = field()
-    iconPath: str = field()
-    typeModule: str = field()
-    parent: Any = field()
-    active: bool = field(default=False)
-    
-    _widget: Union[APIBaseWidget, QWidget] = field(init=False, default=None)
-    
-    def updateStateItem(self, state):
-        self.initialisation()
-        self._widget.dumper.activatedWidget(state, self._widget)
-        self.active = state
-            
-    def initialisation(self):
-        if self._widget is None:
-            self.buildItem()
-            
-    def __attrs_post_init__(self):
-        self.namePlugin = self.module.__name__
-    
-    def buildItem(self):
-        match self.typeModule:
-            case "Window":
-                self._widget = self.module.createWindow(self.parent)
-            case "Widget":
-                self._widget = self.module.createWidget(self.parent)
-    
-    @property
-    @cache
-    def save_name(self):
-        return f"{self.namePlugin}_{self.typeModule}"
-    
-    @property
-    def icon(self):
-        self.initialisation()
-        return self._widget.dumper.getIcon(self.namePlugin)
-            
-
-@define
-class ClonePluginItem(PluginItem):
-    countClone: int = field(default=0, init=False, repr=False)
-    isDuplication: bool = field(default=False, init=False, repr=False)
-    
-    def clone(self):
-        item = ClonePluginItem(self.module, self.iconPath, self.typeModule, self.parent)
-        item.isDuplication = True
-        item.namePlugin = f"{self.namePlugin}_{self.countClone:03d}"
-        self.countClone += 1
-        return item
 
 
 class PluginDataModel(QAbstractListModel):
@@ -91,6 +31,10 @@ class PluginDataModel(QAbstractListModel):
             return True
         return False
     
+    def findIndexItem(self, item):
+        idx = self._plugins.index(item)
+        return self.createIndex(idx, 0)
+    
     def clear(self):
         self.beginResetModel()
         self._plugins.clear()
@@ -102,18 +46,24 @@ class PluginDataModel(QAbstractListModel):
     def data(self, index, /, role=Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole:
             return self._plugins[index.row()].namePlugin
-        if role == PluginItemRole.IconPath:
-            return self._plugins[index.row()].iconPath
+        if role == Qt.ItemDataRole.DecorationRole:
+            icon = QPixmap()
+            data = self._plugins[index.row()].iconData
+            if data is not None:
+                icon.loadFromData(data)
+            return icon
         if role == PluginItemRole.TypePluginRole:
             return self._plugins[index.row()].typeModule
         if role == PluginItemRole.Duplication:
             item = self._plugins[index.row()]
-            return hasattr(item, "isDuplication")
+            return item.isDuplication
         if role == PluginItemRole.ActiveRole:
             return self._plugins[index.row()].active
         if role == PluginItemRole.Icon:
             return self._plugins[index.row()].icon
-        
+        if role == PluginItemRole.Self:
+            return self._plugins[index.row()]
+    
     def setData(self, index, value, role=Qt.ItemDataRole.DisplayRole):
         if role == PluginItemRole.ActiveRole:
             self._plugins[index.row()].updateStateItem(value)
@@ -130,5 +80,6 @@ class PluginDataModel(QAbstractListModel):
         self._plugins[index].updateStateItem(state)
         idx = self.createIndex(index, 0)
         self.dataChanged.emit(idx, idx, [PluginItemRole.ActiveRole])
-        
     
+    def items(self):
+        return self._plugins[:]

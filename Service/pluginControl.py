@@ -16,20 +16,18 @@ class PluginControl:
         obj = cls.getObjectWithType(objs, type_name, item.text())
         with cls.enterGroup(settings, f"{type_name.lower()}s"):
             dumper.saved(obj, item, settings)
-        
+    
     @classmethod
     @contextmanager
-    def enterGroup(cls, settings:QSettings, group):
+    def enterGroup(cls, settings: QSettings, group):
         settings.beginGroup(group)
         yield
         settings.endGroup()
-        
-        
+    
     @staticmethod
     def getObjectWithType(objs, type_name, name):
         name_group = f"{type_name.lower()}s"
         return objs[name_group].get(name, None)
-        
     
     @staticmethod
     def getDumper(type_name) -> Dumper:

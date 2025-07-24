@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QListWidget, QListWidgetItem, QMainWindow,
-    QMenuBar, QPushButton, QSizePolicy, QStatusBar,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QMainWindow, QMenuBar, QPushButton,
+    QSizePolicy, QStatusBar, QVBoxLayout, QWidget)
+
+from Service.ModelData import PluginList
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -40,17 +41,13 @@ class Ui_MainWindow(object):
         self.btnSetting.setGeometry(QRect(350, 490, 75, 23))
         self.widgetListPlugin = QWidget(self.centralwidget)
         self.widgetListPlugin.setObjectName(u"widgetListPlugin")
-        self.widgetListPlugin.setGeometry(QRect(190, 30, 350, 450))
-        self.widgetListPlugin.setMinimumSize(QSize(350, 450))
+        self.widgetListPlugin.setGeometry(QRect(190, 30, 450, 450))
+        self.widgetListPlugin.setMinimumSize(QSize(450, 450))
         self.verticalLayout = QVBoxLayout(self.widgetListPlugin)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.listPlugins = QListWidget(self.widgetListPlugin)
+        self.listPlugins = PluginList(self.widgetListPlugin)
         self.listPlugins.setObjectName(u"listPlugins")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.listPlugins.sizePolicy().hasHeightForWidth())
-        self.listPlugins.setSizePolicy(sizePolicy)
+        self.listPlugins.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.verticalLayout.addWidget(self.listPlugins)
 
@@ -62,7 +59,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QRect(0, 0, 800, 33))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")

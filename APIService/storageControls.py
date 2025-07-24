@@ -1,4 +1,4 @@
-import os
+import os, io
 from contextlib import contextmanager
 from contextvars import ContextVar
 from os import path as ospath, fsencode
@@ -13,7 +13,7 @@ from fs.opener.parse import ParseResult, parse_fs_url
 from fs.enums import ResourceType
 from fs.osfs import OSFS
 from fs.wrap import WrapReadOnly
-from fs import errors, open_fs
+from fs import errors, open_fs, path as fs_path
 
 _current_plugin = ContextVar("CurrentPlugin", default="App")
 
@@ -70,11 +70,11 @@ class PluginFS(OSFS):
         if not isActiveContextPlugin():
             return super()._to_sys_path(path)
         sys_path = fsencode(
-            os.path.join(self._root_path, _current_plugin.get()+".zip!", path.lstrip("/").replace("/", os.sep))
+            os.path.join(self._root_path, _current_plugin.get() + ".zip!", path.lstrip("/").replace("/", os.sep))
         )
         print(sys_path)
         return sys_path
-        
+    
     @staticmethod
     def _getRootPlugin(path: pathlib.Path):
         if isActiveContextPlugin():
@@ -100,7 +100,7 @@ class PluginFS(OSFS):
 class PluginDataFS(OSFS):
     def __init__(self):
         super().__init__(str(global_cxt.pluginDataPath))
-        
+    
     def _to_sys_path(self, path):
         if not isActiveContextPlugin():
             return super()._to_sys_path(path)
@@ -117,6 +117,7 @@ class ProjectFS(OSFS):
 
 class BasePathOpener(Opener):
     filePattern = re.compile(r"^.*\..+$", re.I)
+    
     def open_fs(self, fs_url: str, parse_result: ParseResult, writeable: bool, create: bool, cwd: str) -> FS:
         fs = self.getImplFS(fs_url, parse_result, writeable, create, cwd)
         path = pathlib.Path(parse_result.resource)
@@ -159,7 +160,7 @@ import builtins
 
 
 class OpenManager:
-    def __init__(self):
+    def __init__(self, extra=False):
         self.original_open = builtins.open
         self.SCHEME_HINTS = {
             "s3": "Установите плагин: pip install fs-s3fs",
@@ -167,6 +168,7 @@ class OpenManager:
             "http": "Для HTTP/HTTPS требуется fs-http",
             "ftp": "Для FTP требуется fs-ftp",
         }
+        self.extra = extra
     
     @lru_cache(maxsize=128)
     def _split_url(self, path):
@@ -206,7 +208,7 @@ class OpenManager:
             scheme = folder.split("://")[0]
             hint = self.SCHEME_HINTS.get(scheme, "")
             raise ImportError(
-                f"Не удалось открыть файловую систему {scheme}. {hint}"
+                f"Не удалось открыть файловую систему {scheme}. {hint}\n{e}"
             ) from e
     
     @staticmethod
@@ -219,14 +221,11 @@ class OpenManager:
                 pass  # Если метаданные не поддерживаются
     
     def _custom_open(self, file, mode='r', **kwargs):
-        folder, filename = self._split_url(file)
-        
-        if folder:
+        if "://" in file:
+            folder, filename = self._get_file(file)
             try:
                 fs = self._get_fs(folder)
                 self._check_writable(fs, mode)
-                if not filename:
-                    filename = folder.split("://")[1]
                 return fs.open(filename, mode=mode, **kwargs)
             except errors.ResourceError as e:
                 raise FileNotFoundError(
@@ -237,14 +236,34 @@ class OpenManager:
         else:
             return self.original_open(file, mode=mode, **kwargs)
     
+    def _extra_custom_open(self, file, mode="r", **kwargs):
+        if "://" in file:
+            protocol, path = self._get_file(file)
+            
+            return io.StringIO()
+        else:
+            return self.original_open(file, mode="r", **kwargs)
+    
+    @staticmethod
+    def _get_file(file: str):
+        protocol, path = file.split("://", 1)
+        basedir, basename = fs_path.dirname(path), fs_path.basename(path)
+        return f"{protocol}://{basedir}", basename
+    
     def enable(self):
         builtins.open = self._custom_open
+    
+    def enable_extra(self):
+        builtins.open = self._extra_custom_open
     
     def disable(self):
         builtins.open = self.original_open
     
     def __enter__(self):
-        self.enable()
+        if self.extra:
+            self.enable_extra()
+        else:
+            self.enable()
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):

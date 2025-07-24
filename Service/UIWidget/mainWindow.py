@@ -5,7 +5,6 @@ import traceback
 from PySide6.QtWidgets import (
     QMainWindow,
     QSystemTrayIcon,
-    QListWidgetItem,
     QMenu, QApplication
 )
 from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
@@ -22,12 +21,15 @@ from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
 from Service.pluginControl import PluginControl
 from Service.core import ItemRole, flags
+from Service.pluginItems import PluginItem
 
 from .setting import SettingWidget
 
 (getAppPath() / "configs").mkdir(exist_ok=True)
 import Service.Loggins
 import assets_rc
+
+qApp: QApplication
 
 
 class Overlay(QMainWindow, Ui_MainWindow):
@@ -50,9 +52,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.box = AnchorLayout()
         self.centralwidget.setLayout(self.box)
         
-        self.listPlugins.itemChanged.connect(self.updateStateItem)
-        self.listPlugins.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.listPlugins.customContextMenuRequested.connect(self.contextMenuItem)
+        self.listPlugins.itemChecked.connect(self.updateStateItem)
+        self.listPlugins.contextMenuRun.connect(self.contextMenuItem)
         self.listPlugins.setIconSize(QSize(1, 1) * 32)
         self.btnListUpdate.pressed.connect(self.notificationNotImpl)
         
@@ -159,6 +160,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.webSocketIn.quit()
     
     def loadConfigs(self):
+        return
         self.settings.beginGroup("windows")
         for win_name in self.settings.childGroups():
             items = self.listPlugins.findItems(win_name, Qt.MatchFlag.MatchContains)
@@ -189,6 +191,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.settingWidget.restore_setting(self.settings)
     
     def saveConfigs(self):
+        return
         self.settings.clear()
         for item in self.listPlugins.findItems("", Qt.MatchFlag.MatchContains):
             if item.data(ItemRole.TYPE_NAME) not in ["Window", "Widget"]: return
@@ -234,11 +237,12 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 pluginTypes = self.getModuleTypePlugin(module)
                 if pluginTypes:
                     for pluginType in pluginTypes:
+                        item = None
                         match pluginType:
                             case "Window":
-                                item = DraggableWindow.dumper.overCreateItem(module, plugin_name)
+                                item = DraggableWindow.dumper.overCreateItem(module, plugin_name, self)
                             case "Widget":
-                                item = OverlayWidget.dumper.overCreateItem(module, plugin_name)
+                                item = OverlayWidget.dumper.overCreateItem(module, plugin_name, self)
                         self.listPlugins.addItem(item)
                 else:
                     qDebug(f"Пакет без инициализации: {plugin_name}")
@@ -247,34 +251,23 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 trace = "".join(traceback.format_exception(e))
                 qDebug(f"Ошибка импорта пакета {plugin_name}:\n {trace}")
     
-    def hasCreateObj(self, name, type_name):
-        match type_name:
-            case "Window":
-                return not bool(self.windows.get(name, False))
-            case "Widget":
-                return not bool(self.widgets.get(name, False))
+    def hasCreateObj(self, item: PluginItem):
+        return item.widget is None
     
-    def getCreateObj(self, item):
-        match item.data(ItemRole.TYPE_NAME):
-            case "Window":
-                return self.windows.get(item.text())
-            case "Widget":
-                return self.widgets.get(item.text())
-    
-    def updateStateItem(self, item: QListWidgetItem):
-        stateVisible = item.checkState()
-        is_obj_create = self.hasCreateObj(item.text(), item.data(ItemRole.TYPE_NAME))
+    def updateStateItem(self, item: PluginItem):
+        
+        is_obj_create = self.hasCreateObj(item)
         if is_obj_create:
-            match item.data(ItemRole.TYPE_NAME):
+            item.build(self)
+            match item.typeModule:
                 case "Window":
-                    self.windows[item.text()] = DraggableWindow.dumper.overRunFunction(item.data(ItemRole.MODULE), self)
+                    self.windows[item.save_name] = item.widget
                 case "Widget":
-                    self.widgets[item.text()] = OverlayWidget.dumper.overRunFunction(item.data(ItemRole.MODULE), self)
-        obj = self.getCreateObj(item)
-        if stateVisible == Qt.CheckState.Checked:
-            obj.show()
-        elif stateVisible == Qt.CheckState.Unchecked:
-            obj.hide()
+                    self.widgets[item.save_name] = item.widget
+        if item.active:
+            item.widget.show()
+        else:
+            item.widget.hide()
     
     def contextMenuItem(self, pos):
         item = self.listPlugins.itemAt(pos)
@@ -282,13 +275,13 @@ class Overlay(QMainWindow, Ui_MainWindow):
             return
         
         menu = QMenu()
-        obj = self.getCreateObj(item)
+        obj = item.widget
         if obj is None:
             return
         
         actions: dict[str, QAction] = {}
         
-        match item.data(ItemRole.TYPE_NAME):
+        match item.typeModule:
             case "Window":
                 actions = DraggableWindow.dumper.createActionMenu(menu, obj, item)
             case "Widget":
@@ -305,14 +298,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
             act_delete_duplicate = actions["delete_duplicate"]
             act_delete_duplicate.triggered.connect(lambda: self.deleteDuplicateWindowPlugin(item, obj))
         
-        menu.exec(self.listPlugins.mapToGlobal(pos))
+        menu.exec(self.listPlugins.viewport().mapToGlobal(pos))
     
-    def onCreateSetting(self, item: QListWidgetItem, win: DraggableWindow | OverlayWidget):
+    def onCreateSetting(self, item: PluginItem, win: DraggableWindow | OverlayWidget):
         if self.dialogSettings is not None:
             self.box.removeWidget(self.dialogSettings)
             self.dialogSettings.deleteLater()
         
-        self.dialogSettings = win.createSettingWidget(win, item.text(), self)
+        self.dialogSettings = win.createSettingWidget(win, item.save_name, self)
         if self.dialogSettings:
             self.box.addWidget(
                 self.dialogSettings,
@@ -321,7 +314,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.dialogSettings.loader()
             self.dialogSettings.show()
     
-    def duplicateWindowPlugin(self, item):
+    def duplicateWindowPlugin(self, item: PluginItem):
         d_item = DraggableWindow.dumper.duplicate(item)
         self.listPlugins.addItem(d_item)
     
@@ -329,7 +322,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         win.close()
         self.windows[item.text()].destroy()
         del self.windows[item.text()]
-        self.listPlugins.takeItem(self.listPlugins.row(item))
+        self.listPlugins.remove(item)
     
     def handled_shortcut(self, name):
         match name:

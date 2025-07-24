@@ -1,26 +1,30 @@
 from types import ModuleType
+from typing import Type
 
 from PySide6.QtCore import QSettings, Qt
-from PySide6.QtWidgets import QListWidgetItem, QMenu, QWidget
+from PySide6.QtWidgets import QListWidgetItem, QMenu
 
 from APIService.dumper import Dumper
 
 from Service.core import ItemRole
+from Service.pluginItems import PluginItem
 
 
 class DraggableWindowDumper(Dumper):
+    
     @classmethod
     def overCreateItem(
         cls,
         module: ModuleType,
         name: str,
-        checked: Qt.CheckState = Qt.CheckState.Unchecked,
+        parent,
+        checked: bool = False,
         count_dup: int = 0,
         is_dup: bool = False,
     ):
-        item = super().overCreateItem(module, name, "Window", checked)
-        item.setData(ItemRole.IS_DUPLICATE, is_dup)
-        item.setData(ItemRole.COUNT_DUPLICATE, count_dup)
+        item: PluginItem = super().overCreateItem(module, name, "Window", parent, checked)
+        item.countClone = count_dup
+        item.isDuplication = is_dup
         return item
 
     @classmethod
@@ -48,21 +52,19 @@ class DraggableWindowDumper(Dumper):
             target.hide()
 
     @classmethod
-    def duplicate(cls, item: QListWidgetItem):
-        d_item = super().duplicate(item)
-        d_item.setData(ItemRole.COUNT_DUPLICATE, 0)
-        d_item.setData(ItemRole.IS_DUPLICATE, True)
-        return d_item
+    def duplicate(cls, item: PluginItem):
+        return item.clone()
 
     @classmethod
-    def createActionMenu(cls, menu: QMenu, widget, item: QListWidgetItem):
+    def createActionMenu(cls, menu: QMenu, widget, item: PluginItem):
         actions = super().createActionMenu(menu, widget, item)
         act_highlight_b = menu.addAction("Highlight Border")
         act_highlight_b.triggered.connect(widget.highlightBorder)
         
         act_duplicate = menu.addAction("Duplicate")
         actions |= {"duplicate": act_duplicate}
-        if item.data(ItemRole.IS_DUPLICATE):
+        
+        if item.isDuplication:
             act_delete_d = menu.addAction("Delete duplicate")
             actions |= {"delete_duplicate": act_delete_d}
 
