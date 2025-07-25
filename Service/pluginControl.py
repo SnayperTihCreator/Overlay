@@ -1,21 +1,18 @@
 from contextlib import contextmanager
 
-from PySide6.QtWidgets import QListWidgetItem
 from PySide6.QtCore import QSettings
 
-from Service.core import ItemRole
+from Service.pluginItems import PluginItem
 from API import DraggableWindow, OverlayWidget
 from APIService.dumper import Dumper
 
 
 class PluginControl:
     @classmethod
-    def saveConfig(cls, item: QListWidgetItem, settings: QSettings, objs):
-        type_name = item.data(ItemRole.TYPE_NAME)
-        dumper = cls.getDumper(type_name)
-        obj = cls.getObjectWithType(objs, type_name, item.text())
-        with cls.enterGroup(settings, f"{type_name.lower()}s"):
-            dumper.saved(obj, item, settings)
+    def saveConfig(cls, item: PluginItem, settings: QSettings):
+        dumper = cls.getDumper(item.typeModule)
+        with cls.enterGroup(settings, f"{item.typeModule.lower()}s"):
+            dumper.saved(item.widget, item, settings)
     
     @classmethod
     @contextmanager

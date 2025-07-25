@@ -1,11 +1,9 @@
 from types import ModuleType
 
-from PySide6.QtCore import QSettings, Qt
+from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QListWidgetItem, QMenu
 
-from utils import Dumper
-
-from Service.core import ItemRole
+from APIService.dumper import Dumper
 
 
 class WorkerDumper(Dumper):
@@ -14,7 +12,7 @@ class WorkerDumper(Dumper):
         cls,
         module: ModuleType,
         name: str,
-        checked: Qt.CheckState = Qt.CheckState.Unchecked,
+        checked: bool = False,
     ):
         return super().overCreateItem(module, name, checked)
 
@@ -36,7 +34,7 @@ class WorkerDumper(Dumper):
 
     @classmethod
     def activatedWidget(cls, state, target):
-        if state == Qt.CheckState.Checked:
+        if state:
             target.show()
         else:
             target.hide()

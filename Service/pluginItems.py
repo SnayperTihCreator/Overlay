@@ -1,5 +1,5 @@
 from enum import IntEnum, auto
-from functools import cache
+from functools import cached_property
 from types import ModuleType
 
 from PySide6.QtCore import Qt, qWarning
@@ -34,7 +34,7 @@ class PluginItem:
     def __attrs_post_init__(self):
         self.namePlugin = self.module.__name__
     
-    @property
+    @cached_property
     def save_name(self):
         return f"{self.namePlugin}_{self.typeModule}"
     
@@ -61,9 +61,10 @@ class PluginItem:
             return None
         
     def build(self, parent):
-        match self.typeModule:
-            case "Window":
-                self.widget = self.module.createWindow(parent)
-            case "Widget":
-                self.widget = self.module.createWidget(parent)
+        if self.widget is None:
+            match self.typeModule:
+                case "Window":
+                    self.widget = self.module.createWindow(parent)
+                case "Widget":
+                    self.widget = self.module.createWidget(parent)
         return self.widget

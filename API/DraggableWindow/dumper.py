@@ -1,12 +1,10 @@
 from types import ModuleType
-from typing import Type
 
-from PySide6.QtCore import QSettings, Qt
-from PySide6.QtWidgets import QListWidgetItem, QMenu
+from PySide6.QtCore import QSettings
+from PySide6.QtWidgets import QMenu
 
 from APIService.dumper import Dumper
 
-from Service.core import ItemRole
 from Service.pluginItems import PluginItem
 
 
@@ -16,15 +14,14 @@ class DraggableWindowDumper(Dumper):
     def overCreateItem(
         cls,
         module: ModuleType,
-        name: str,
-        parent,
         checked: bool = False,
         count_dup: int = 0,
         is_dup: bool = False,
     ):
-        item: PluginItem = super().overCreateItem(module, name, "Window", parent, checked)
+        item: PluginItem = super().overCreateItem(module, "Window", checked)
         item.countClone = count_dup
         item.isDuplication = is_dup
+        
         return item
 
     @classmethod
@@ -32,9 +29,9 @@ class DraggableWindowDumper(Dumper):
         return module.createWindow(parent)
 
     @classmethod
-    def overSaved(cls, item: QListWidgetItem, setting: QSettings):
-        setting.setValue("count_dub", item.data(ItemRole.COUNT_DUPLICATE))
-        setting.setValue("is_dub", int(item.data(ItemRole.IS_DUPLICATE)))
+    def overSaved(cls, item: PluginItem, setting: QSettings):
+        setting.setValue("count_dub", int(item.countClone))
+        setting.setValue("is_dub", int(item.isDuplication))
 
     @classmethod
     def overLoaded(cls, setting: QSettings, name: str, parent):
@@ -46,7 +43,7 @@ class DraggableWindowDumper(Dumper):
 
     @classmethod
     def activatedWidget(cls, state, target):
-        if state == Qt.CheckState.Checked:
+        if state:
             target.show()
         else:
             target.hide()

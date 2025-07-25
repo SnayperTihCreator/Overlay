@@ -9,14 +9,9 @@ from Service.pluginItems import PluginItem
 
 
 class OverlayWidgetDumper(Dumper):
-    
     @classmethod
-    def getTypePluginItem(cls):
-        return PluginItem
-    
-    @classmethod
-    def overCreateItem(cls, module: ModuleType, name: str, parent, checked: bool = False, **kwargs):
-        return super().overCreateItem(module, name, "Widget", parent, checked)
+    def overCreateItem(cls, module: ModuleType, checked: bool = False, **kwargs):
+        return super().overCreateItem(module, "Widget", checked)
 
     @classmethod
     def overRunFunction(cls, module: ModuleType, parent):

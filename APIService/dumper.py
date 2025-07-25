@@ -3,13 +3,11 @@ from types import ModuleType
 from abc import ABC, abstractmethod
 
 from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import QMenu, QWidget
-from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QMenu
 import json5
 from box import Box
 
 from Service.pluginItems import PluginItem
-from APIService.path_controls import PluginPath
 
 
 class Dumper(ABC):
@@ -25,6 +23,7 @@ class Dumper(ABC):
         setting.setValue("has_init", int(target is not None))
         setting.setValue("module", item.module.__name__)
         setting.setValue("active", int(item.active))
+        setting.setValue("orig_name", item.namePlugin)
         cls.overSaved(item, setting)
         setting.endGroup()
     
@@ -35,13 +34,14 @@ class Dumper(ABC):
         active = bool(int(setting.value("active")))
         has_init = int(setting.value("has_init"))
         module = importlib.import_module(setting.value("module"))
+        origname = setting.value("orig_name", name.rsplit("_", 1)[0])
         parameters = [
             module,
-            name,
             active,
             *cls.getParameterCreateItem(setting, name, parent),
         ]
         item = cls.overCreateItem(*parameters)
+        item.namePlugin = origname
         
         target = cls.overLoaded(setting, name, parent)
         
@@ -53,24 +53,11 @@ class Dumper(ABC):
         return target, item
     
     @classmethod
-    def getIcon(cls, name):
-        path = PluginPath(name)
-        result = QPixmap()
-        try:
-            image_data = path.open("plugin:/icon.png", "rb").read()
-            result.loadFromData(image_data)
-        except FileNotFoundError as e:
-            print(e, name, path)
-        return result
-    
-    @classmethod
     @abstractmethod
     def overCreateItem(
             cls,
             module: ModuleType,
-            name: str,
             name_type: str,
-            parent: QWidget,
             checked: bool = False,
     ) -> PluginItem:
         item = PluginItem(module, name_type, checked)

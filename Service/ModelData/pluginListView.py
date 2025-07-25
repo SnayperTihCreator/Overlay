@@ -21,19 +21,24 @@ class PluginList(QListView):
     
     def clear(self):
         self.model_data.clear()
-        
+    
     def addItem(self, item: PluginItem):
         if item:
             self.model_data.addItem(item)
-        
-    def itemAt(self, pos: QPoint)->PluginItem:
+    
+    def itemAt(self, pos: QPoint) -> PluginItem:
         idx = self.indexAt(pos)
         return self.model().data(idx, PluginItemRole.Self)
     
     def remove(self, item: PluginItem):
         idx = self.model_data.findIndexItem(item)
         self.model_data.removeItem(idx)
-        
-    def items(self):
+    
+    def items(self) -> list[PluginItem]:
         return self.model_data.items()
     
+    def findItemBySaveName(self, saveName):
+        objs = [item for item in self.model_data.items() if item.save_name == saveName]
+        if objs:
+            return objs[0]
+        return None

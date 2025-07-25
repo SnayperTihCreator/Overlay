@@ -20,7 +20,7 @@ from Service.webSocket import AppServerControl
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
 from Service.pluginControl import PluginControl
-from Service.core import ItemRole, flags
+from Service.core import flags
 from Service.pluginItems import PluginItem
 
 from .setting import SettingWidget
@@ -114,9 +114,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.settings = QSettings("./configs/config.ini", QSettings.Format.IniFormat)
         
-        self.windows: dict[str, DraggableWindow] = {}
-        self.widgets: dict[str, OverlayWidget] = {}
-        self.workers: dict[str, BackgroundWorkerManager] = {}
+        self.widgets: dict[str, OverlayWidget|DraggableWindow|BackgroundWorkerManager] = {}
         
         self.shortcuts = {}
         
@@ -160,15 +158,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.webSocketIn.quit()
     
     def loadConfigs(self):
-        return
         self.settings.beginGroup("windows")
         for win_name in self.settings.childGroups():
-            items = self.listPlugins.findItems(win_name, Qt.MatchFlag.MatchContains)
-            if items:
-                self.listPlugins.takeItem(self.listPlugins.row(items[0]))
+            item = self.listPlugins.findItemBySaveName(win_name)
+            if item is not None:
+                self.listPlugins.remove(item)
             try:
                 win, item = DraggableWindow.dumper.loaded(self.settings, win_name, self)
-                self.windows[item.text()] = win
+                self.widgets[item.save_name] = win
                 self.listPlugins.addItem(item)
             except ModuleNotFoundError:
                 self.settings.endGroup()
@@ -176,12 +173,12 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.settings.endGroup()
         self.settings.beginGroup("widgets")
         for wid_name in self.settings.childGroups():
-            items = self.listPlugins.findItems(wid_name, Qt.MatchFlag.MatchContains)
-            if items:
-                self.listPlugins.takeItem(self.listPlugins.row(items[0]))
+            item = self.listPlugins.findItemBySaveName(wid_name)
+            if item:
+                self.listPlugins.remove(item)
             try:
                 wid, item = OverlayWidget.dumper.loaded(self.settings, wid_name, self)
-                self.widgets[item.text()] = wid
+                self.widgets[item.save_name] = wid
                 self.listPlugins.addItem(item)
             except ModuleNotFoundError:
                 self.settings.endGroup()
@@ -191,11 +188,10 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.settingWidget.restore_setting(self.settings)
     
     def saveConfigs(self):
-        return
         self.settings.clear()
-        for item in self.listPlugins.findItems("", Qt.MatchFlag.MatchContains):
-            if item.data(ItemRole.TYPE_NAME) not in ["Window", "Widget"]: return
-            PluginControl.saveConfig(item, self.settings, {"windows": self.windows, "widgets": self.widgets})
+        for item in self.listPlugins.items():
+            if item.typeModule not in ["Window", "Widget"]: return
+            PluginControl.saveConfig(item, self.settings)
         self.settingWidget.save_setting(self.settings)
         self.settings.sync()
         qDebug("Сохранение приложения")
@@ -240,9 +236,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
                         item = None
                         match pluginType:
                             case "Window":
-                                item = DraggableWindow.dumper.overCreateItem(module, plugin_name, self)
+                                item = DraggableWindow.dumper.overCreateItem(module)
                             case "Widget":
-                                item = OverlayWidget.dumper.overCreateItem(module, plugin_name, self)
+                                item = OverlayWidget.dumper.overCreateItem(module)
                         self.listPlugins.addItem(item)
                 else:
                     qDebug(f"Пакет без инициализации: {plugin_name}")
@@ -259,11 +255,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         is_obj_create = self.hasCreateObj(item)
         if is_obj_create:
             item.build(self)
-            match item.typeModule:
-                case "Window":
-                    self.windows[item.save_name] = item.widget
-                case "Widget":
-                    self.widgets[item.save_name] = item.widget
+            self.widgets[item.save_name] = item.widget
         if item.active:
             item.widget.show()
         else:
@@ -320,8 +312,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def deleteDuplicateWindowPlugin(self, item, win):
         win.close()
-        self.windows[item.text()].destroy()
-        del self.windows[item.text()]
+        self.widgets[item.save_name].destroy()
+        del self.widgets[item.save_name]
         self.listPlugins.remove(item)
     
     def handled_shortcut(self, name):

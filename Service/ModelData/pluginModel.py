@@ -55,8 +55,7 @@ class PluginDataModel(QAbstractListModel):
         if role == PluginItemRole.TypePluginRole:
             return self._plugins[index.row()].typeModule
         if role == PluginItemRole.Duplication:
-            item = self._plugins[index.row()]
-            return item.isDuplication
+            return self._plugins[index.row()].isDuplication
         if role == PluginItemRole.ActiveRole:
             return self._plugins[index.row()].active
         if role == PluginItemRole.Icon:

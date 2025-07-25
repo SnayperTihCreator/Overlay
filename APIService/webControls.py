@@ -20,6 +20,7 @@ def find_free_port(start_port=8000, end_port=9000):
                 continue
     raise ValueError(f"No free ports in range {start_port}-{end_port}")
 
+
 class ServerWebSockets(Thread):
     def __init__(self, ports, callback=None, nameServer=None):
         super().__init__(name=nameServer, daemon=True)
@@ -27,34 +28,29 @@ class ServerWebSockets(Thread):
         self.free_port = find_free_port(*ports)
         self._is_running = False
         self._event_loop = asyncio.get_event_loop_policy().new_event_loop()
-
+    
     def run(self):
         self._is_running = True
         self._event_loop.run_until_complete(self.runner())
-
+    
     def is_run(self):
         return self._is_running
-
+    
     def quit(self):
         self._is_running = False
         self._event_loop.close()
-
-
+    
     async def runner(self):
         async with serve(self.handlerConnection, "localhost", self.free_port) as server:
             while self._is_running:
                 await asyncio.sleep(0.1)
-
-
-    async def handlerConnection(self, wsock:websockets.ServerConnection):
-        try: 
+    
+    async def handlerConnection(self, wsock: websockets.ServerConnection):
+        try:
             async for msg in wsock:
                 self._event_loop.call_soon(self._callback, msg)
         except exc.ConnectionClosed:
             print("Клиент завершил")
-                
-        
-        
 
 
 class ClientWebSockets:

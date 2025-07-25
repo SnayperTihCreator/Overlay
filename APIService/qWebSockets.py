@@ -20,7 +20,7 @@ class ServerWebSockets(QObject):
     def start(self):
         self._server = QWebSocketServer("Overlay WebSockets", QWebSocketServer.SslMode.NonSecureMode)
         if not self._server.listen(QHostAddress("127.0.0.1"), self.free_port):
-            qWarning("Сервер не запущен\nОшибка: {self._server.error()}: {self._server.errorString()}")
+            qWarning(f"Сервер не запущен\nОшибка: {self._server.error()}: {self._server.errorString()}")
             return False
         qDebug(f"Сервер запущен на: {self._server.serverUrl().toString()}")
         

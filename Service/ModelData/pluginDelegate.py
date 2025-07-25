@@ -20,10 +20,11 @@ class PluginDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         self.initStyleOption(option, index)
         
-        pluginName = index.data(Qt.ItemDataRole.DisplayRole)
+        pluginName: str = index.data(Qt.ItemDataRole.DisplayRole)
         icon: QPixmap = index.data(Qt.ItemDataRole.DecorationRole)
-        typePlugin = index.data(PluginItemRole.TypePluginRole)
-        active = index.data(PluginItemRole.ActiveRole)
+        typePlugin: str = index.data(PluginItemRole.TypePluginRole)
+        active: bool = index.data(PluginItemRole.ActiveRole)
+        isClone: bool = index.data(PluginItemRole.Duplication)
         if icon and not icon.isNull():
             icon = modulatePixmap(icon, qApp.palette().color(QPalette.ColorRole.WindowText))
         else:
@@ -31,11 +32,21 @@ class PluginDelegate(QStyledItemDelegate):
         
         icon_rect = option.rect.adjusted(48, 14, -option.rect.width()+90, -14)
         painter.drawPixmap(icon_rect, icon)
+        
+        if isClone:
+            pluginName, idClone = pluginName.rsplit("_", 1)
+            pluginName+="(Clone)"
+        else:
+            idClone = ""
             
         # Рисуем основной текст (зеленый)
         text_rect = option.rect.adjusted(100, 0, -100, 0)
         painter.setPen(option.palette.color(QPalette.ColorRole.Text))  # Зеленый цвет текста
         painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, pluginName)
+        
+        if isClone:
+            textClone_rect = option.rect.adjusted(100, 0, -option.rect.width()+200, 0)
+            painter.drawText(textClone_rect, Qt.AlignBottom | Qt.AlignLeft, idClone)
         
         # Рисуем тип плагина (фиолетовый)
         type_rect = option.rect.adjusted(0, 0, -20, -3)
