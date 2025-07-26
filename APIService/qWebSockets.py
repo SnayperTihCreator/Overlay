@@ -1,21 +1,22 @@
 from typing import Optional
+import uuid
 
 from PySide6.QtNetwork import QHostAddress
-from PySide6.QtWebSockets import QWebSocketServer
+from PySide6.QtWebSockets import QWebSocketServer, QWebSocket
 from PySide6.QtCore import QObject, Signal, Slot, qDebug, QUrl, qWarning
 
 from .webControls import find_free_port
 
 
 class ServerWebSockets(QObject):
-    message_received = Signal(str)
+    message_received = Signal(str, str)
     
     def __init__(self, ports, parent=None):
         super().__init__(parent)
         self.free_port = find_free_port(*ports)
         
         self._server: Optional[QWebSocketServer] = None
-        self.clients = []
+        self.clients: dict[str, QWebSocket] = {}
     
     def start(self):
         self._server = QWebSocketServer("Overlay WebSockets", QWebSocketServer.SslMode.NonSecureMode)
@@ -55,19 +56,30 @@ class ServerWebSockets(QObject):
         client = self._server.nextPendingConnection()
         if client:
             qDebug(f"Клиент подключился:")
-            self.clients.append(client)
-            client.textMessageReceived.connect(self.actSendMessage)
-            client.disconnected.connect(self.actDisconnectClient)
+            uid = uuid.uuid4().hex
+            self.clients[uid] = client
+            client.textMessageReceived.connect(lambda msg: self.actSendMessage(msg, uid))
+            client.disconnected.connect(lambda: self.actDisconnectClient(uid))
             
-    @Slot(str)
-    def actSendMessage(self, msg):
+    @Slot(str, str)
+    def actSendMessage(self, msg, uid):
         qDebug(f"Клиент прислал сообщение: {msg}")
-        self.message_received.emit(msg)
+        self.message_received.emit(msg, uid)
     
-    @Slot()
-    def actDisconnectClient(self):
-        client = self.sender()
-        if client in self.clients:
-            self.clients.remove(client)
+    @Slot(str)
+    def actDisconnectClient(self, uid):
+        client = self.clients[uid]
+        if uid in self.clients:
+            del self.clients[uid]
         client.deleteLater()
         qDebug("Клиент отключился")
+        
+    def sendConfirmState(self, uid):
+        self.sendMassage(uid, "[Confirm]")
+        
+    def sendErrorState(self, uid, e):
+        self.sendMassage(uid, f"[Error]{e}")
+        
+    def sendMassage(self, uid, msg):
+        self.clients[uid].sendTextMessage(msg)
+        

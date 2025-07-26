@@ -47,7 +47,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.config = Config(getAppPath() / "main.py", "apps")
         self.webSocketIn = AppServerControl(self.config.websockets.IN, self)
-        self.webSocketIn.action_triggered.connect(self.handled_shortcut)
+        self.webSocketIn.action_triggered.connect(self.handler_websockets_shortcut)
         
         self.box = AnchorLayout()
         self.centralwidget.setLayout(self.box)
@@ -271,13 +271,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if obj is None:
             return
         
-        actions: dict[str, QAction] = {}
-        
-        match item.typeModule:
-            case "Window":
-                actions = DraggableWindow.dumper.createActionMenu(menu, obj, item)
-            case "Widget":
-                actions = OverlayWidget.dumper.createActionMenu(menu, obj, item)
+        actions: dict[str, QAction] = PluginControl.getDumper(item.typeModule).createActionMenu(menu, obj, item)
         
         act_settings = actions["settings"]
         act_settings.triggered.connect(lambda: self.onCreateSetting(item, obj))
@@ -324,6 +318,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 if name in self.shortcuts:
                     self.shortcuts[name].shortcut_run(name)
         return True
+    
+    def handler_websockets_shortcut(self, name, uid):
+        try:
+            self.handled_shortcut(name)
+            self.webSocketIn.sendConfirmState(uid)
+        except Exception as e:
+            self.webSocketIn.sendErrorState(uid, e)
+        
     
     @staticmethod
     def getModuleTypePlugin(module):

@@ -8,7 +8,11 @@ app = typer.Typer(rich_markup_mode="rich")
 def action(port: int, uname: str):
     try:
         socket = ClientWebSockets(port)
-        socket.send_message(f"action {uname}")
+        result = socket.send_message(f"action {uname}")
+        if result == "[Confirm]":
+            typer.secho(True, fg=typer.colors.GREEN)
+        else:
+            typer.secho(result)
     except ConnectionRefusedError:
         typer.secho("У Overlay не запущен websocket", fg=typer.colors.RED)
         raise typer.Exit(code=1225)
@@ -18,7 +22,13 @@ def action(port: int, uname: str):
 def action2(port: int, msg: str):
     try:
         socket = ClientWebSockets(port)
-        socket.send_message(f"print {msg}")
+        result = socket.send_message(f"print {msg}")
+        if result == "[Confirm]":
+            typer.secho(True, fg=typer.colors.GREEN)
+        elif "[Error]" in result:
+            typer.secho("Error: "+result.lstrip("[Error]"), fg=typer.colors.RED)
+        else:
+            typer.secho(result)
     except ConnectionRefusedError:
         typer.secho("У Overlay не запущен websocket", fg=typer.colors.RED)
         raise typer.Exit(code=1225)

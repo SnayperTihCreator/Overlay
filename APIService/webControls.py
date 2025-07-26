@@ -58,11 +58,12 @@ class ClientWebSockets:
         self.free_port = port
     
     def send_message(self, message):
-        asyncio.run(self.run_connect(message))
+        return asyncio.run(self.run_connect(message))
     
     async def run_connect(self, message):
-        await self.asend_message(message)
+        return await self.asend_message(message)
     
     async def asend_message(self, message):
         async with websockets.connect(f"ws://127.0.0.1:{self.free_port}") as client:
             await client.send(message)
+            return await client.recv()
