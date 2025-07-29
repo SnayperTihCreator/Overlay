@@ -60,7 +60,7 @@ class PluginFS(OSFS):
         self.check()
         _path = pathlib.Path(self.validatepath(path).lstrip("\\").lstrip("/"))
         folder, parts = self._getRootPlugin(_path)
-        _zipfs = MyWrapReadOnly(open_fs(f"zip://{self.root_path}/{folder}.zip", False))
+        _zipfs = MyWrapReadOnly(open_fs(f"zip://{self.root_path}/{folder}.plugin", False))
         if not len(parts):
             return _zipfs
         else:
@@ -70,7 +70,7 @@ class PluginFS(OSFS):
         if not isActiveContextPlugin():
             return super()._to_sys_path(path)
         sys_path = fsencode(
-            os.path.join(self._root_path, _current_plugin.get() + ".zip!", path.lstrip("/").replace("/", os.sep))
+            os.path.join(self._root_path, _current_plugin.get() + ".plugin!", path.lstrip("/").replace("/", os.sep))
         )
         print(sys_path)
         return sys_path
@@ -85,7 +85,7 @@ class PluginFS(OSFS):
     def getinfo(self, path, namespaces=None):
         lastInfo = super().getinfo(f"{path}.zip", namespaces)
         lastInfo.raw["basic"]["is_dir"] = True
-        lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(".zip")
+        lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(".plugin")
         if "details" in lastInfo.raw:
             lastInfo.raw["details"]["type"] = ResourceType.directory
         return lastInfo
@@ -94,7 +94,7 @@ class PluginFS(OSFS):
         self.check()
         _path = self.validatepath(path)
         sys_path = pathlib.Path(self._to_sys_path(_path).decode("utf-8"))
-        return [file.stem for file in sys_path.iterdir() if file.suffix == ".zip"]
+        return [file.stem for file in sys_path.iterdir() if file.suffix == ".plugin"]
 
 
 class PluginDataFS(OSFS):

@@ -27,7 +27,7 @@ class PluginPath:
         if not pluginName:
             raise ValueError("Plugin name not set!")
         relPath = virtualPath.replace("plugin:/", "").lstrip("/")
-        return f"plugins/{pluginName}.zip/{relPath}"
+        return f"plugins/{pluginName}.plugin/{relPath}"
     
     @classmethod
     def _resolvePluginDataPath(cls, pluginName, virtualPath):
@@ -78,7 +78,7 @@ class PluginPath:
         
         # Вызов как метода экземпляра
         resolved = self.resolve(path)
-        return str(resolved).replace(".zip/", ".zip!/") if isinstance(resolved, str) else resolved
+        return str(resolved).replace(".plugin/", ".plugin!/") if isinstance(resolved, str) else resolved
 
 
 class FileProject:
@@ -100,9 +100,9 @@ class FileProject:
             return path.open(mode)
         
         # Чтение из ZIP
-        if isinstance(path, str) and ".zip/" in path:
-            zipPath, fileInZip = path.split(".zip/", 1)
-            zipPath += ".zip"
+        if isinstance(path, str) and ".plugin/" in path:
+            zipPath, fileInZip = path.split(".plugin/", 1)
+            zipPath += ".plugin"
             
             try:
                 z = zipfile.ZipFile(zipPath, 'r')
@@ -134,7 +134,7 @@ class FileProject:
         """Возвращает реальный путь (включая путь до ZIP, если файл внутри архива)."""
         path = self.pathResolver.resolve(virtualPath)
         if isinstance(path, str):
-            return str(Path(path.replace(".zip/", ".zip!/")))  # Путь в стиле ZIP: file.zip!/inner.txt
+            return str(Path(path.replace(".plugin/", ".plugin!/")))  # Путь в стиле ZIP: file.zip!/inner.txt
         return path
 
 

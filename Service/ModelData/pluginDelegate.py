@@ -46,7 +46,7 @@ class PluginDelegate(QStyledItemDelegate):
         
         if isClone:
             textClone_rect = option.rect.adjusted(100, 0, -option.rect.width()+200, 0)
-            painter.drawText(textClone_rect, Qt.AlignBottom | Qt.AlignLeft, idClone)
+            painter.drawText(textClone_rect, Qt.AlignBottom | Qt.AlignLeft, f"id: {idClone}")
         
         # Рисуем тип плагина (фиолетовый)
         type_rect = option.rect.adjusted(0, 0, -20, -3)

@@ -26,7 +26,7 @@ class Config:
         self._create_is_not = create_is_not
         self._default_config = getattr(Defaults, plugin_type)
         self._plugin_type = plugin_type
-        plugin_name = Path(path).parent.name if ".zip" else Path(path).name
+        plugin_name = Path(path).parent.name if ".plugin" else Path(path).name
         self._load_path = PluginPath(plugin_name)
         self._config: Box = self._load_config()
     

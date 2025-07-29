@@ -224,7 +224,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             PACKAGES_DIR.mkdir(exist_ok=True)
             (PACKAGES_DIR / "__init__.py").touch(exist_ok=True)
         
-        for zip_pack in PACKAGES_DIR.glob("*.zip"):
+        for zip_pack in PACKAGES_DIR.glob("*.plugin"):
             plugin_name = zip_pack.stem
             importer = zipimport.zipimporter(str(zip_pack))
             
