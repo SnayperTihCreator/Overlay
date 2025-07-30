@@ -28,4 +28,6 @@ dependencies = [
     "pulsectl>=24.12.0; sys_platform == 'linux'",
     "fs>=2.4.16",
     "pillow>=11.3.0",
+    "opencv-python>=4.12.0.88",
+    "pycv3>=1.2.0",
 ]
