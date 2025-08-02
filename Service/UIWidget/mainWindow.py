@@ -5,14 +5,14 @@ import traceback
 from PySide6.QtWidgets import (
     QMainWindow,
     QSystemTrayIcon,
-    QMenu, QApplication
+    QMenu, QApplication, QWidget
 )
 from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
 from PySide6.QtGui import QIcon, QKeyEvent, QAction, QColor
 
 from uis.main_ui import Ui_MainWindow
 
-from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager, Config
+from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager, Config, CLInterface
 
 from APIService import getAppPath, ToolsIniter, modulateIcon
 
@@ -42,12 +42,13 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         if old_lay := self.centralwidget.layout():
             old_lay.deleteLater()
-            
+        
         self.setMaximumSize(self.screen().size())
         
         self.config = Config(getAppPath() / "main.py", "apps")
         self.webSocketIn = AppServerControl(self.config.websockets.IN, self)
         self.webSocketIn.action_triggered.connect(self.handler_websockets_shortcut)
+        self.webSocketIn.call_cli.connect(self.cliRunner)
         
         self.box = AnchorLayout()
         self.centralwidget.setLayout(self.box)
@@ -114,7 +115,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.settings = QSettings("./configs/config.ini", QSettings.Format.IniFormat)
         
-        self.widgets: dict[str, OverlayWidget|DraggableWindow|BackgroundWorkerManager] = {}
+        self.widgets: dict[str, OverlayWidget | DraggableWindow | BackgroundWorkerManager] = {}
+        self.interface: dict[str, CLInterface] = {}
         
         self.shortcuts = {}
         
@@ -130,6 +132,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def registered_shortcut(self, comb, name, window):
         self.registered_handler(comb, name)
         self.shortcuts[name] = window
+        
+    def cliRunner(self, uid, name_int, args):
+        if name_int not in self.interface:
+            self.webSocketIn.sendErrorState(uid, NameError(f"Not find interface {name_int}"))
+            return
+        interface: CLInterface = self.interface.get(name_int)
+        result = interface.runner(args)
+        self.webSocketIn.sendMassage(uid, result)
     
     def notificationNotImpl(self):
         self.tray.show()
@@ -165,7 +175,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 self.listPlugins.remove(item)
             try:
                 win, item = DraggableWindow.dumper.loaded(self.settings, win_name, self)
-                self.widgets[item.save_name] = win
+                self.setWidgetMemory(item.save_name, win)
                 self.listPlugins.addItem(item)
             except ModuleNotFoundError:
                 self.settings.endGroup()
@@ -178,7 +188,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
                 self.listPlugins.remove(item)
             try:
                 wid, item = OverlayWidget.dumper.loaded(self.settings, wid_name, self)
-                self.widgets[item.save_name] = wid
+                self.setWidgetMemory(item.save_name, wid)
                 self.listPlugins.addItem(item)
             except ModuleNotFoundError:
                 self.settings.endGroup()
@@ -255,11 +265,16 @@ class Overlay(QMainWindow, Ui_MainWindow):
         is_obj_create = self.hasCreateObj(item)
         if is_obj_create:
             item.build(self)
-            self.widgets[item.save_name] = item.widget
+            self.setWidgetMemory(item.save_name, item.widget)
         if item.active:
             item.widget.show()
         else:
             item.widget.hide()
+    
+    def setWidgetMemory(self, name: str, widget: QWidget):
+        self.widgets[name] = widget
+        if isinstance(widget, CLInterface):
+            self.interface[name] = widget
     
     def contextMenuItem(self, pos):
         item = self.listPlugins.itemAt(pos)
@@ -325,7 +340,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.webSocketIn.sendConfirmState(uid)
         except Exception as e:
             self.webSocketIn.sendErrorState(uid, e)
-        
     
     @staticmethod
     def getModuleTypePlugin(module):
