@@ -132,7 +132,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def registered_shortcut(self, comb, name, window):
         self.registered_handler(comb, name)
         self.shortcuts[name] = window
-        
+    
     def cliRunner(self, uid, name_int, args):
         if name_int not in self.interface:
             self.webSocketIn.sendErrorState(uid, NameError(f"Not find interface {name_int}"))
