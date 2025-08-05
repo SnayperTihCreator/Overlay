@@ -1,7 +1,8 @@
 from box import Box
+from PySide6.QtWidgets import QWidget
 
 
-class APIBaseWidget:
+class APIBaseWidget():
     dumper: "Dumper"
     
     def reloadConfig(self):
@@ -16,3 +17,4 @@ class APIBaseWidget:
     @classmethod
     def createSettingWidget(cls, obj: "APIBaseWidget", name_plugin, parent: "Overlay"):
         raise NotImplementedError
+    

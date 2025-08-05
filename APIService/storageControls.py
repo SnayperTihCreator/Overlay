@@ -37,6 +37,23 @@ def innerPlugin(pluginName):
     return wrapper
 
 
+
+def decoPlugin(pluginName):
+    def wrapper(cls):
+        for name, attr in cls.__dict__.items():  # Используем __dict__ вместо vars
+            if callable(attr) and not name.startswith('__'):
+                setattr(cls, name, innerPlugin(pluginName)(attr))
+            
+            # Обрабатываем наследование
+        for base in cls.__bases__:
+            for name, attr in base.__dict__.items():
+                if callable(attr) and name not in cls.__dict__:
+                    setattr(cls, name, innerPlugin(pluginName)(attr))
+        return cls
+    
+    return wrapper
+
+
 @contextmanager
 def contextPlugin(pluginName):
     lastContext = _current_plugin.get()
@@ -66,19 +83,8 @@ class PluginFS(OSFS):
         else:
             return _zipfs.opendir("/".join(parts))
     
-    def _to_sys_path(self, path):
-        if not isActiveContextPlugin():
-            return super()._to_sys_path(path)
-        sys_path = fsencode(
-            os.path.join(self._root_path, _current_plugin.get() + ".plugin!", path.lstrip("/").replace("/", os.sep))
-        )
-        print(sys_path)
-        return sys_path
-    
     @staticmethod
     def _getRootPlugin(path: pathlib.Path):
-        if isActiveContextPlugin():
-            return _current_plugin.get(), path.parts[:]
         _parts = path.parts
         return _parts[0], _parts[1:]
     
@@ -100,14 +106,6 @@ class PluginFS(OSFS):
 class PluginDataFS(OSFS):
     def __init__(self):
         super().__init__(str(global_cxt.pluginDataPath))
-    
-    def _to_sys_path(self, path):
-        if not isActiveContextPlugin():
-            return super()._to_sys_path(path)
-        sys_path = fsencode(
-            os.path.join(self._root_path, _current_plugin.get(), path.lstrip("/").replace("/", os.sep))
-        )
-        return sys_path
 
 
 class ProjectFS(OSFS):
@@ -119,6 +117,7 @@ class BasePathOpener(Opener):
     filePattern = re.compile(r"^.*\..+$", re.I)
     
     def open_fs(self, fs_url: str, parse_result: ParseResult, writeable: bool, create: bool, cwd: str) -> FS:
+        
         fs = self.getImplFS(fs_url, parse_result, writeable, create, cwd)
         path = pathlib.Path(parse_result.resource)
         if (self.filePattern.fullmatch(str(path)) is None) and parse_result.resource:
@@ -169,33 +168,6 @@ class OpenManager:
             "ftp": "Для FTP требуется fs-ftp",
         }
         self.extra = extra
-    
-    @lru_cache(maxsize=128)
-    def _split_url(self, path):
-        """Разбивает путь на (папку, имя файла) с помощью fs.opener.parse."""
-        if "://" not in path:
-            return None, path  # Локальный путь
-        
-        try:
-            # Парсим URL стандартным для fs методом
-            parse_result = parse_fs_url(path)
-            scheme = parse_result.protocol
-            
-            # Формируем папку и имя файла
-            folder_path = parse_result.resource
-            if not folder_path:
-                return f"{scheme}://", ""
-            
-            path_parts = folder_path.split("/")
-            if len(path_parts) == 1:
-                return f"{scheme}://{path_parts[0]}", ""
-            
-            folder = f"{scheme}://{'/'.join(path_parts[:-1])}"
-            filename = path_parts[-1]
-            return (folder.rstrip("/"), filename) if filename else (folder, "")
-        
-        except Exception as e:
-            raise ValueError(f"Ошибка парсинга пути: {path}") from e
     
     @lru_cache(maxsize=10)
     def _get_fs(self, folder):
@@ -248,6 +220,8 @@ class OpenManager:
     def _get_file(file: str):
         protocol, path = file.split("://", 1)
         basedir, basename = fs_path.dirname(path), fs_path.basename(path)
+        if protocol in ["plugin", "pldata"] and isActiveContextPlugin():
+            basedir = f"{_current_plugin.get()}{basedir}"
         return f"{protocol}://{basedir}", basename
     
     def enable(self):

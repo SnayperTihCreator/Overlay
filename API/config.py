@@ -29,6 +29,7 @@ class Config:
         plugin_name = Path(path).parent.name if ".plugin" else Path(path).name
         self._load_path = PluginPath(plugin_name)
         self._config: Box = self._load_config()
+        self.plugin_name = plugin_name
     
     def _load_config(self) -> Box[str, Any]:
         try:

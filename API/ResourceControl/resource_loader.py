@@ -4,10 +4,10 @@ from API.config import Config
 
 
 def load(path, config: Config):
-    with config.loadFile(path, data_storage="plugin_data") as file:
-        return yaml.load(file, yaml.SafeLoader)
+    with open(f"pldata://{config.plugin_name}/{path}", encoding="utf-8") as file:
+        return yaml.load(file, yaml.SafeDumper)
 
 
 def save(path, config: Config, data):
-    with config.loadFile(path, "w", "plugin_data") as file:
+    with open(f"pldata://{config.plugin_name}/{path}", "w", encoding="utf-8") as file:
         return yaml.dump(data, file, yaml.SafeDumper)
