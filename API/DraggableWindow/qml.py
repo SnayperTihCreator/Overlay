@@ -47,6 +47,7 @@ class QmlDraggableWindow(DraggableWindow):
     def event(self, event: QEvent):
         if event.type() == QEvent.Type.ApplicationPaletteChange:
             self._loadPrivatePresetData()
+        return super().event(event)
     
     def getRootQml(self) -> QQuickItem:
         return self.central_widget.rootObject()

@@ -14,5 +14,7 @@
     </qresource>
     <qresource prefix="base/fonts">
         <file alias="MarckScript.ttf">assets/fonts/MarckScript-Regular.ttf</file>
+        <file alias="MontserratI.ttf">assets/fonts/Montserrat-Italic-VariableFont_wght.ttf</file>
+        <file alias="Montserrat.ttf">assets/fonts/Montserrat-VariableFont_wght.ttf</file>
     </qresource>
 </RCC>

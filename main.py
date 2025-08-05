@@ -20,13 +20,14 @@ if __name__ == "__main__":
         pm.show_caller_info(True)
         
         from Service.UIWidget.mainWindow import Overlay
-        idx = QFontDatabase.addApplicationFont(":/base/fonts/MarckScript.ttf")
-        # print(QFontDatabase.applicationFontFamilies(idx))
+        idx = QFontDatabase.addApplicationFont(":/base/fonts/Montserrat.ttf")
+        QFontDatabase.addApplicationFont(":/base/fonts/MontserratI.ttf")
+        print(QFontDatabase.applicationFontFamilies(idx))
         
         with open("qt://root/css/main.css") as file:
             app.setStyleSheet(file.read())
             
-            app.setFont(QFont("Marck Script", 14, 900))
+            app.setFont(QFont("Montserrat", 12, 700))
             
             palette = app.palette()
             palette.setColor(QPalette.ColorRole.Text, QColor("#009b34"))
