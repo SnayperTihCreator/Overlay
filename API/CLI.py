@@ -13,8 +13,8 @@ class MetaCliInterface(type(QWidget)):
         new_class.cliFunction = {}
         
         for attr_name, attr_value in namespace.items():
-            if hasattr(attr_value, "_cli_fucn"):
-                name = attr_value._cli_fucn or attr_name
+            if hasattr(attr_value, "_cli_func"):
+                name = attr_value._cli_func or attr_name
                 new_class.cliFunction[name] = attr_value
         
         return new_class
@@ -26,7 +26,7 @@ class CLInterface(metaclass=MetaCliInterface):
     @staticmethod
     def register(name=None):
         def wrapper(func):
-            func._cli_fucn = name
+            func._cli_func = name
             return func
         
         return wrapper
