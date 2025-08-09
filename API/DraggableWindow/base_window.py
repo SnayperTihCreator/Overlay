@@ -8,6 +8,7 @@ from API.PluginSetting import PluginSettingWindow
 
 from .dumper import DraggableWindowDumper
 from APIService.clamps import clampAllDesktop, clampAllDesktopP
+from APIService.themeController import ThemeController
 
 
 class DraggableWindow(QMainWindow, APIBaseWidget):
@@ -56,6 +57,7 @@ class DraggableWindow(QMainWindow, APIBaseWidget):
     def loadConfig(self):
         width, height = self.config.window.width, self.config.window.height
         self.setFixedSize(width, height)
+        
         with self.config.loadFile(self.config.window.styleFile) as file:
             self.setStyleSheet(file.read())
         self.setWindowOpacity(self.config.window.opacity)

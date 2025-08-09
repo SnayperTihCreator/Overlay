@@ -3,12 +3,14 @@ import os
 import builtins
 
 from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtGui import QPixmap, QFontDatabase, QFont, QPalette, QColor
+from PySide6.QtGui import QPixmap, QPalette, QColor
 
 import Service.globalContext
 from APIService.storageControls import OpenManager
 import APIService.qtStorageControls
 from Service.PrintManager import PrintManager
+from APIService.themeController import ThemeController
+from Service.defaultTheme import DefaultTheme
 
 if __name__ == "__main__":
     if sys.platform == "linux":
@@ -20,27 +22,17 @@ if __name__ == "__main__":
         pm.show_caller_info(True)
         
         from Service.UIWidget.mainWindow import Overlay
-        idx = QFontDatabase.addApplicationFont(":/base/fonts/Montserrat.ttf")
-        QFontDatabase.addApplicationFont(":/base/fonts/MontserratI.ttf")
-        print(QFontDatabase.applicationFontFamilies(idx))
         
-        with open("qt://root/css/main.css") as file:
-            app.setStyleSheet(file.read())
-            
-            app.setFont(QFont("Montserrat", 12, 700))
-            
-            palette = app.palette()
-            palette.setColor(QPalette.ColorRole.Text, QColor("#009b34"))
-            palette.setColor(QPalette.ColorRole.WindowText, QColor("#bf00e0"))
-            
-            app.setPalette(palette)
-            
-            pixmap = QPixmap(":/root/icons/loader.png")
-            splash = QSplashScreen(pixmap)
-            splash.show()
-            
-            app.setQuitOnLastWindowClosed(False)
-            window = Overlay()
-            builtins.windowOverlay = window
-            splash.finish(window)
-            app.exec()
+        ThemeController().currentTheme = DefaultTheme()
+        ThemeController().registerApp(app)
+        ThemeController().updateApp()
+        
+        pixmap = QPixmap(":/root/icons/loader.png")
+        splash = QSplashScreen(pixmap)
+        splash.show()
+        
+        app.setQuitOnLastWindowClosed(False)
+        window = Overlay()
+        builtins.windowOverlay = window
+        splash.finish(window)
+        app.exec()

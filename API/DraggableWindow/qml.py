@@ -6,6 +6,7 @@ from PySide6.QtQuick import QQuickItem
 from PySide6.QtWidgets import QApplication
 
 from .base_window import DraggableWindow
+from APIService.themeController import ThemeController
 
 qApp: QApplication
 
@@ -35,7 +36,12 @@ class QmlDraggableWindow(DraggableWindow):
                 qCritical(str(error))
                 
     def _loadPrivatePresetData(self):
-        self.setContextProperty("mainTextColor", qApp.palette().color(QPalette.ColorRole.Text))
+        self.setContextProperty("mainTextColor", ThemeController().color("mainText"))
+        self.setContextProperty("altTextColor", ThemeController().color("altText"))
+        self.setContextProperty("baseColor", ThemeController().color("base"))
+        alphaBaseColor = ThemeController().color("base")
+        alphaBaseColor.setAlpha(128)
+        self.setContextProperty("alphaBaseColor", alphaBaseColor)
     
     def loadPresetData(self) -> QQmlEngine:
         engine = self.central_widget.engine()

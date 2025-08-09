@@ -37,7 +37,6 @@ def innerPlugin(pluginName):
     return wrapper
 
 
-
 def decoPlugin(pluginName):
     def wrapper(cls):
         for name, attr in cls.__dict__.items():  # Используем __dict__ вместо vars
@@ -89,7 +88,7 @@ class PluginFS(OSFS):
         return _parts[0], _parts[1:]
     
     def getinfo(self, path, namespaces=None):
-        lastInfo = super().getinfo(f"{path}.zip", namespaces)
+        lastInfo = super().getinfo(f"{path}.plugin", namespaces)
         lastInfo.raw["basic"]["is_dir"] = True
         lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(".plugin")
         if "details" in lastInfo.raw:
@@ -111,6 +110,40 @@ class PluginDataFS(OSFS):
 class ProjectFS(OSFS):
     def __init__(self):
         super().__init__(str(global_cxt.appPath))
+        
+        
+class ResourceFS(OSFS):
+    def __init__(self):
+        super().__init__(str(global_cxt.resourcePath))
+    
+    def opendir(self, path, factory=None):
+        self.check()
+        _path = pathlib.Path(self.validatepath(path).lstrip("\\").lstrip("/"))
+        folder, parts = self._getRootPlugin(_path)
+        _zipfs = MyWrapReadOnly(open_fs(f"zip://{self.root_path}/{folder}.plugin", False))
+        if not len(parts):
+            return _zipfs
+        else:
+            return _zipfs.opendir("/".join(parts))
+    
+    @staticmethod
+    def _getRootPlugin(path: pathlib.Path):
+        _parts = path.parts
+        return _parts[0], _parts[1:]
+    
+    def getinfo(self, path, namespaces=None):
+        lastInfo = super().getinfo(f"{path}.plugin", namespaces)
+        lastInfo.raw["basic"]["is_dir"] = True
+        lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(".plugin")
+        if "details" in lastInfo.raw:
+            lastInfo.raw["details"]["type"] = ResourceType.directory
+        return lastInfo
+    
+    def listdir(self, path):
+        self.check()
+        _path = self.validatepath(path)
+        sys_path = pathlib.Path(self._to_sys_path(_path).decode("utf-8"))
+        return [file.stem for file in sys_path.iterdir() if file.suffix == ".plugin"]
 
 
 class BasePathOpener(Opener):

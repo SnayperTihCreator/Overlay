@@ -47,11 +47,7 @@ class PluginDataModel(QAbstractListModel):
         if role == Qt.ItemDataRole.DisplayRole:
             return self._plugins[index.row()].namePlugin
         if role == Qt.ItemDataRole.DecorationRole:
-            icon = QPixmap()
-            data = self._plugins[index.row()].iconData
-            if data is not None:
-                icon.loadFromData(data)
-            return icon
+            return self._plugins[index.row()].icon
         if role == PluginItemRole.TypePluginRole:
             return self._plugins[index.row()].typeModule
         if role == PluginItemRole.Duplication:

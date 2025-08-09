@@ -8,13 +8,13 @@ from PySide6.QtWidgets import (
     QMenu, QApplication, QWidget
 )
 from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
-from PySide6.QtGui import QIcon, QKeyEvent, QAction, QColor
+from PySide6.QtGui import QKeyEvent, QAction
 
 from uis.main_ui import Ui_MainWindow
 
 from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager, Config, CLInterface
 
-from APIService import getAppPath, ToolsIniter, modulateIcon
+from APIService import getAppPath, ToolsIniter, ThemeController
 
 from Service.webSocket import AppServerControl
 from Service.AnchorLayout import AnchorLayout
@@ -82,10 +82,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.settingWidget, [Qt.AnchorPoint.AnchorHorizontalCenter, Qt.AnchorPoint.AnchorVerticalCenter]
         )
         
-        icon = modulateIcon(QIcon(":/root/icons/setting.png"), QColor("#6a0497"))
-        
         self.btnSetting.setIconSize(QSize(50, 50))
-        self.btnSetting.setIcon(icon)
+        
         self.btnSetting.setFixedSize(60, 60)
         
         self.btnStopOverlay.pressed.connect(self.stopOverlay)
@@ -94,8 +92,13 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, False)
-        with open("qt://root/css/overlay.css") as file:
-            self.setStyleSheet(file.read())
+        
+        folder_resource = getAppPath() / "resource"
+        folder_resource.mkdir(exist_ok=True)
+        
+        ThemeController().register(self, "overlay/main.css")
+        ThemeController().update()
+        
         self.hide()
         
         self.handled_global_shortkey.connect(self.handled_shortcut)
@@ -104,7 +107,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.registered_handler(self.config.shortkey.open, "toggle_show")
         self.input_bridge.start()
         
-        self.tray = QSystemTrayIcon(QIcon(":/root/icons/overlay.png"))
+        self.tray = QSystemTrayIcon()
         self.initSystemTray()
         
         if str(getAppPath()) not in sys.path:
@@ -113,7 +116,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.tools_folder = ToolsIniter("tools")
         self.tools_folder.load()
         
-        self.settings = QSettings("./configs/config.ini", QSettings.Format.IniFormat)
+        self.settings = QSettings("./configs/settings.ini", QSettings.Format.IniFormat)
         
         self.widgets: dict[str, OverlayWidget | DraggableWindow | BackgroundWorkerManager] = {}
         self.interface: dict[str, CLInterface] = {}
@@ -122,12 +125,20 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.dialogSettings = None
         
+        self.updateIcon()
+        
         self.updateDataPlugins()
         
         self.loadConfigs()
     
     def registered_handler(self, comb, name):
         self.input_bridge.add_hotkey(comb, self.handled_global_shortkey.emit, name)
+        
+    def updateIcon(self):
+        iconSetting = ThemeController().getImage(":/root/icons/setting.png", "icon", True)
+        self.btnSetting.setIcon(iconSetting)
+        iconTray = ThemeController().getImage(":/root/icons/overlay.png", "icon", True)
+        self.tray.setIcon(iconTray)
     
     def registered_shortcut(self, comb, name, window):
         self.registered_handler(comb, name)

@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QWidget
 from attrs import define, field
 
 from API.core import APIBaseWidget
+from APIService.themeController import ThemeController
 
 __all__ = ["PluginItemRole", "PluginItem"]
 
@@ -40,7 +41,7 @@ class PluginItem:
     
     @property
     def icon(self):
-        return QPixmap()
+        return ThemeController().getImage(f"plugin://{self.module.__name__}/icon.png")
     
     def clone(self):
         item = PluginItem(self.module, self.typeModule)
@@ -51,14 +52,6 @@ class PluginItem:
     
     def updateStateItem(self, state):
         self.active = state
-    
-    @property
-    def iconData(self):
-        try:
-            return open(f"plugin://{self.module.__name__}/icon.png", "rb").read()
-        except Exception as e:
-            qWarning(f"{type(e)}: {e}")
-            return None
         
     def build(self, parent):
         if self.widget is None:
