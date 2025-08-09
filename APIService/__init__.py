@@ -11,5 +11,8 @@ try:
     from .clamps import *
     from .colorize import *
     from .dumper import Dumper
+    
 except ImportError:
     pass
+
+from .themeController import ThemeController
