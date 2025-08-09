@@ -1,3 +1,4 @@
+import datetime
 import io
 from typing import Optional, Union
 
@@ -161,7 +162,8 @@ class QrcFS(FS):
         if namespaces and ("details" in namespaces):
             details = dict(
                 size=_info.size(),
-                type=ResourceType.file if _info.isFile() else ResourceType.directory
+                type=ResourceType.file if _info.isFile() else ResourceType.directory,
+                modified=datetime.datetime.now()
             )
             raw_info["details"] = details
         return Info(raw_info)
