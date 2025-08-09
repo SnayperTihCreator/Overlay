@@ -1,0 +1,37 @@
+QSlider::groove:horizontal {
+    height: 5px;
+    background: #{{ theme.baseInput() }};
+    border-radius: 10px;
+}
+
+QSlider::handle:horizontal {
+    background: #{{ theme.mainText }};
+    width: 16px;
+    height: 16px;
+    border-radius: 10px;
+}
+
+QProgressBar {
+    border: 1px solid #{{ theme.mainText }};
+    border-radius: 4px;
+    text-aling: center;
+    color: #{{ theme.altText }};
+}
+
+QProgressBar::chunk {
+    background-color: #{{ theme.mainText }};
+}
+
+QScrollBar:vertical {
+    background: #{{ theme.baseInput() }};
+    width: 12px;
+}
+
+QScrollBar::handle:vertical {
+    background: #{{ theme.mainText }};
+    min-height: 20px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    background: none;
+}

@@ -1,0 +1,47 @@
+QPushButton {
+    color: #{{ theme.mainText }};
+    border: 1px solid #{{ theme.mainText }};
+    border-radius: 4px;
+    padding: 10px;
+    margin: 5px;
+}
+
+QPushButton:hover {
+    background-color: #{{ theme.hovered() }};
+}
+
+QPushButton:pressed {
+    background-color: #{{ theme.pressed() }};
+}
+
+QComboBox {
+    background-color: #{{ theme.baseInput() }};
+    color: #{{ theme.altText }};
+    border: 1px solid #{{ theme.mainText }};
+    border-radius: 4px;
+    padding: 3px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #{{ theme.baseInput() }};
+    color: #{{ theme.mainText }};
+    selection-background-color: #{{ theme.altText }};
+}
+
+QCheckBox, QRadioButton {
+    color: #{{ theme.altText }};
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 32px;
+    height: 32px;
+}
+
+QCheckBox::indicator:unchecked, QCheckBox::indicator:unchecked {
+    image: url("{{ theme.getImage("UCheckbox") }}");
+}
+
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    image: url("{{ theme.getImage("CCheckbox") }}");
+    color: #{{ theme.mainText }};
+}

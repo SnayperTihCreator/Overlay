@@ -1,0 +1,6 @@
+{% include "app/common.css" %}
+{% include "app/labels.css" %}
+{% include "app/buttons.css" %}
+{% include "app/ranges.css" %}
+{% include "app/actions.css" %}
+{% include "app/views.css" %}

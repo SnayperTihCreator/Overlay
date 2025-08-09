@@ -1,0 +1,5 @@
+* {
+    background-color: #7f{{ theme.base }};
+    color: #{{ theme.mainText }};
+    border-radius: 20px;
+}

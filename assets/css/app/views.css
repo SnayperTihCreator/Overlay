@@ -1,0 +1,17 @@
+QListView::indicator {
+    width: 32px;
+    height: 32px;
+}
+
+QListView::indicator:unchecked {
+    image: url("{{ theme.getImage("UCheckbox") }}");
+}
+
+QListView::indicator:checked {
+    image: url("{{ theme.getImage("CCheckbox") }}");
+    color: #{{ theme.mainText }};
+}
+
+QListView::item {
+    padding: 10px 5px;
+}

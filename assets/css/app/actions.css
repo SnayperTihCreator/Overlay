@@ -1,0 +1,19 @@
+QMenuBar {
+    background-color: #{{ theme.baseInput() }};
+    color: #{{ theme.altText }};
+}
+
+QMenuBar::item:selected {
+    background-color: #{{ theme.hovered() }};
+    color: #{{ theme.mainSelectText() }}
+}
+
+QMenu {
+    background-color: #ff{{ theme.base }};
+    color: #{{ theme.altText }};
+    border: 1px solid #{{ theme.mainText }};
+}
+
+QMenu::item:selected {
+    color: #{{ theme.mainSelectText() }};
+}

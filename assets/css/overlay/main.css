@@ -1,0 +1,31 @@
+/* Стиль только для QMainWindow и его стандартных элементов */
+#OverlayMain {
+    border-radius: 0px;  /* Прямоугольные углы */
+    background-color: rgba(0, 0, 0, 50);
+}
+
+#centralwidget {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#widgetListPlugin {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+QMainWindow > QStatusBar {
+    border-radius: 0px;  /* Прямоугольный статус-бар */
+    background-color: rgba(0, 0, 0, 0);
+}
+
+QMainWindow > QMenuBar {
+    border-radius: 0px;  /* Прямоугольное меню */
+}
+
+QMainWindow > QDockWidget {
+    border-radius: 0px;  /* Прямоугольные док-виджеты */
+}
+
+/* Дополнительно: убираем скругление у заголовков доков */
+QDockWidget::title {
+    border-radius: 0px;
+}
