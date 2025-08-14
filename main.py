@@ -3,14 +3,21 @@ import os
 import builtins
 
 from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtGui import QPixmap, QPalette, QColor
+from PySide6.QtGui import QPixmap
 
-import Service.globalContext
-from APIService.storageControls import OpenManager
-import APIService.qtStorageControls
+import warnings
+warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
+
+from PathControl.storageControls import OpenManager
 from Service.PrintManager import PrintManager
-from APIService.themeController import ThemeController
-from Service.defaultTheme import DefaultTheme
+from ColorControl.themeController import ThemeController
+from ColorControl.defaultTheme import DefaultTheme
+# noinspection PyUnresolvedReferences
+import Service.globalContext
+# noinspection PyUnresolvedReferences
+import PathControl.qtStorageControls
+# noinspection PyUnresolvedReferences
+import assets_rc
 
 if __name__ == "__main__":
     if sys.platform == "linux":
