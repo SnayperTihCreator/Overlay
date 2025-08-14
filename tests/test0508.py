@@ -1,5 +1,4 @@
-import Service.globalContext
-from APIService.storageControls import OpenManager, contextPlugin, innerPlugin, decoPlugin
+from PathControl.storageControls import OpenManager, decoPlugin
 
 @decoPlugin("ManagerTask")
 class A:

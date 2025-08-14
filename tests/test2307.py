@@ -1,4 +1,4 @@
-from APIService.storageControls import OpenManager
+from PathControl.storageControls import OpenManager
 
 with OpenManager(True) as om:
     with open("project://config.toml") as file:
