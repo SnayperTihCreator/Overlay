@@ -1,11 +1,10 @@
 from PySide6.QtCore import Qt, QSize, QRect, QEvent, Signal, QPoint
 from PySide6.QtWidgets import QStyledItemDelegate, QApplication, QListView
-from PySide6.QtGui import QPixmap, QPalette, QMouseEvent, QColor
+from PySide6.QtGui import QPixmap, QMouseEvent
 
-from APIService.colorize import modulatePixmap
-from APIService.themeController import ThemeController
+from ColorControl.themeController import ThemeController
 
-from Service.pluginItems import PluginItemRole, PluginItem
+from ApiPlugins.pluginItems import PluginItemRole, PluginItem
 
 qApp: QApplication
 

@@ -2,9 +2,9 @@ from contextlib import contextmanager
 
 from PySide6.QtCore import QSettings
 
-from Service.pluginItems import PluginItem
+from ApiPlugins.pluginItems import PluginItem
 from API import DraggableWindow, OverlayWidget
-from APIService.dumper import Dumper
+from ApiPlugins.preloader import PreLoader
 
 
 class PluginControl:
@@ -27,7 +27,7 @@ class PluginControl:
         return objs[name_group].get(name, None)
     
     @staticmethod
-    def getDumper(type_name) -> Dumper:
+    def getDumper(type_name) -> PreLoader:
         match type_name:
             case "Window":
                 return DraggableWindow.dumper

@@ -9,7 +9,7 @@ from fs.info import Info
 from fs.mode import Mode
 from fs.opener import registry
 
-from APIService.storageControls import BasePathOpener
+from PathControl.storageControls import BasePathOpener
 
 
 class BinaryFileDescriptor:
@@ -158,6 +158,8 @@ class QrcFS(FS):
         raw_info = {}
         basic = dict(name=_info.fileName(), is_dir=_info.isDir())
         raw_info["basic"] = basic
+        
+        
         
         if namespaces and ("details" in namespaces):
             details = dict(

@@ -68,15 +68,14 @@ class MyWrapReadOnly(WrapReadOnly):
         return self._wrap_fs.opendir(path, factory)
 
 
-class PluginFS(OSFS):
-    def __init__(self):
-        super().__init__(str(global_cxt.pluginPath))
+class ZipFormatFile(OSFS):
+    suffix_file = ""
     
     def opendir(self, path, factory=None):
         self.check()
         _path = pathlib.Path(self.validatepath(path).lstrip("\\").lstrip("/"))
         folder, parts = self._getRootPlugin(_path)
-        _zipfs = MyWrapReadOnly(open_fs(f"zip://{self.root_path}/{folder}.plugin", False))
+        _zipfs = MyWrapReadOnly(open_fs(f"zip://{self.root_path}/{folder}.{self.suffix_file}", False))
         if not len(parts):
             return _zipfs
         else:
@@ -88,9 +87,9 @@ class PluginFS(OSFS):
         return _parts[0], _parts[1:]
     
     def getinfo(self, path, namespaces=None):
-        lastInfo = super().getinfo(f"{path}.plugin", namespaces)
+        lastInfo = super().getinfo(f"{path}.{self.suffix_file}", namespaces)
         lastInfo.raw["basic"]["is_dir"] = True
-        lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(".plugin")
+        lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(f".{self.suffix_file}")
         if "details" in lastInfo.raw:
             lastInfo.raw["details"]["type"] = ResourceType.directory
         return lastInfo
@@ -99,7 +98,14 @@ class PluginFS(OSFS):
         self.check()
         _path = self.validatepath(path)
         sys_path = pathlib.Path(self._to_sys_path(_path).decode("utf-8"))
-        return [file.stem for file in sys_path.iterdir() if file.suffix == ".plugin"]
+        return [file.stem for file in sys_path.iterdir() if file.suffix == f".{self.suffix_file}"]
+
+
+class PluginFS(ZipFormatFile):
+    suffix_file = "plugin"
+    
+    def __init__(self):
+        super().__init__(str(global_cxt.pluginPath))
 
 
 class PluginDataFS(OSFS):
@@ -110,40 +116,20 @@ class PluginDataFS(OSFS):
 class ProjectFS(OSFS):
     def __init__(self):
         super().__init__(str(global_cxt.appPath))
-        
-        
-class ResourceFS(OSFS):
+
+
+class ThemeFS(ZipFormatFile):
+    suffix_file = "theme"
+    
     def __init__(self):
         super().__init__(str(global_cxt.resourcePath))
+
+
+class ResourceFS(ZipFormatFile):
+    suffix_file = "resource"
     
-    def opendir(self, path, factory=None):
-        self.check()
-        _path = pathlib.Path(self.validatepath(path).lstrip("\\").lstrip("/"))
-        folder, parts = self._getRootPlugin(_path)
-        _zipfs = MyWrapReadOnly(open_fs(f"zip://{self.root_path}/{folder}.plugin", False))
-        if not len(parts):
-            return _zipfs
-        else:
-            return _zipfs.opendir("/".join(parts))
-    
-    @staticmethod
-    def _getRootPlugin(path: pathlib.Path):
-        _parts = path.parts
-        return _parts[0], _parts[1:]
-    
-    def getinfo(self, path, namespaces=None):
-        lastInfo = super().getinfo(f"{path}.plugin", namespaces)
-        lastInfo.raw["basic"]["is_dir"] = True
-        lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(".plugin")
-        if "details" in lastInfo.raw:
-            lastInfo.raw["details"]["type"] = ResourceType.directory
-        return lastInfo
-    
-    def listdir(self, path):
-        self.check()
-        _path = self.validatepath(path)
-        sys_path = pathlib.Path(self._to_sys_path(_path).decode("utf-8"))
-        return [file.stem for file in sys_path.iterdir() if file.suffix == ".plugin"]
+    def __init__(self):
+        super().__init__(str(global_cxt.resourcePath))
 
 
 class BasePathOpener(Opener):
@@ -186,6 +172,33 @@ class ProjectPathOpener(BasePathOpener):
     
     def getImplFS(self, url, parse_result, writable, create, cwd) -> FS:
         return ProjectFS()
+
+
+@registry.install
+class ResourcePathOpener(BasePathOpener):
+    protocols = ["resource"]
+    
+    def __init__(self):
+        self.typeResource = ""
+    
+    def open_fs(self, fs_url: str, parse_result: ParseResult, writeable: bool, create: bool, cwd: str) -> FS:
+        path: str = parse_result.resource
+        parts = fs_path.parts(path)
+        if parts[1] not in ["theme"]: raise errors.ResourceNotFound
+        parts.pop(1)
+        path = fs_path.join(*parts)
+        result = ParseResult(
+            parse_result.protocol,
+            parse_result.username,
+            parse_result.password,
+            path,
+            parse_result.params,
+            parse_result.path
+        )
+        return super().open_fs(fs_url, result, writeable, create, cwd)
+    
+    def getImplFS(self, url, parse_result, writable, create, cwd) -> FS:
+        return MyWrapReadOnly(ThemeFS())
 
 
 import builtins

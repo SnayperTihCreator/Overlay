@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from PySide6.QtGui import QColor, QFont, QFontDatabase, QIcon, QPixmap, QImage
 from attrs import define, field
 
-from APIService.colorize import modulatePixmap, modulateIcon, modulateImage
+from ColorControl.colorize import modulatePixmap, modulateIcon, modulateImage
 
 
 def stripColor(func):
@@ -100,6 +100,16 @@ class Theme(ABC):
                 image = QImage()
                 image.loadFromData(data)
                 return modulateImage(image, modulate)
+        
+    def modulated(self, obj):
+        if isinstance(obj, QIcon):
+            return modulateIcon(obj, self.modulateImage())
+        elif isinstance(obj, QPixmap):
+            return modulatePixmap(obj, self.modulateImage())
+        elif isinstance(obj, QImage):
+            return modulateImage(obj, self.modulateImage())
+        else:
+            raise TypeError("Not modulate image provider")
     
     @staticmethod
     def addFontFile(path):

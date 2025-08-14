@@ -14,22 +14,28 @@ from uis.main_ui import Ui_MainWindow
 
 from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager, Config, CLInterface
 
-from APIService import getAppPath, ToolsIniter, ThemeController
+from PathControl.tools_folder import ToolsIniter
+from PathControl import getAppPath
+from PathControl.themeLoader import ThemeLoader
+from PathControl.pluginLoader import PluginLoader
 
 from Service.webSocket import AppServerControl
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
-from Service.pluginControl import PluginControl
 from Service.core import flags
-from Service.pluginItems import PluginItem
+from ApiPlugins.pluginControl import PluginControl
+from ApiPlugins.pluginItems import PluginItem
+
+from ColorControl.themeController import ThemeController
 
 from .setting import SettingWidget
 
 (getAppPath() / "configs").mkdir(exist_ok=True)
-import Service.Loggins
-import assets_rc
 
 qApp: QApplication
+
+# noinspection PyUnresolvedReferences
+import Service.Loggins
 
 
 class Overlay(QMainWindow, Ui_MainWindow):
@@ -45,7 +51,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.setMaximumSize(self.screen().size())
         
-        self.config = Config(getAppPath() / "main.py", "apps")
+        self.config = Config.configApplication()
         self.webSocketIn = AppServerControl(self.config.websockets.IN, self)
         self.webSocketIn.action_triggered.connect(self.handler_websockets_shortcut)
         self.webSocketIn.call_cli.connect(self.cliRunner)
@@ -99,6 +105,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
         ThemeController().register(self, "overlay/main.css")
         ThemeController().update()
         
+        self.themeLoader = ThemeLoader()
+        self.pluginLoader = PluginLoader()
+        
         self.hide()
         
         self.handled_global_shortkey.connect(self.handled_shortcut)
@@ -133,7 +142,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def registered_handler(self, comb, name):
         self.input_bridge.add_hotkey(comb, self.handled_global_shortkey.emit, name)
-        
+    
     def updateIcon(self):
         iconSetting = ThemeController().getImage(":/root/icons/setting.png", "icon", True)
         self.btnSetting.setIcon(iconSetting)
@@ -239,41 +248,31 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def updateDataPlugins(self):
         self.listPlugins.clear()
         
-        PACKAGES_DIR = getAppPath() / "plugins"
+        self.pluginLoader.load()
         
-        if not PACKAGES_DIR.exists():
-            PACKAGES_DIR.mkdir(exist_ok=True)
-            (PACKAGES_DIR / "__init__.py").touch(exist_ok=True)
-        
-        for zip_pack in PACKAGES_DIR.glob("*.plugin"):
-            plugin_name = zip_pack.stem
-            importer = zipimport.zipimporter(str(zip_pack))
-            
-            try:
-                module = importer.load_module(plugin_name)
-                pluginTypes = self.getModuleTypePlugin(module)
-                if pluginTypes:
-                    for pluginType in pluginTypes:
-                        item = None
-                        match pluginType:
-                            case "Window":
-                                item = DraggableWindow.dumper.overCreateItem(module)
-                            case "Widget":
-                                item = OverlayWidget.dumper.overCreateItem(module)
-                        self.listPlugins.addItem(item)
-                else:
-                    qDebug(f"Пакет без инициализации: {plugin_name}")
-                qDebug(f"Успешно импортирован пакет: {plugin_name}")
-            except ImportError as e:
+        for plugin_name, module in self.pluginLoader.plugins.items():
+            if module is None:
+                e = self.pluginLoader.getError(plugin_name)
                 trace = "".join(traceback.format_exception(e))
                 qDebug(f"Ошибка импорта пакета {plugin_name}:\n {trace}")
-    
-    def hasCreateObj(self, item: PluginItem):
-        return item.widget is None
+                continue
+            pluginTypes = self.pluginLoader.getTypes(plugin_name)
+            if pluginTypes:
+                for pluginType in pluginTypes:
+                    item = None
+                    match pluginType:
+                        case "Window":
+                            item = DraggableWindow.dumper.overCreateItem(module)
+                        case "Widget":
+                            item = OverlayWidget.dumper.overCreateItem(module)
+                    self.listPlugins.addItem(item)
+            else:
+                qDebug(f"Пакет без инициализации: {plugin_name}")
+            qDebug(f"Успешно импортирован пакет: {plugin_name}")
     
     def updateStateItem(self, item: PluginItem):
         
-        is_obj_create = self.hasCreateObj(item)
+        is_obj_create = item.widget is None
         if is_obj_create:
             item.build(self)
             self.setWidgetMemory(item.save_name, item.widget)
@@ -351,17 +350,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.webSocketIn.sendConfirmState(uid)
         except Exception as e:
             self.webSocketIn.sendErrorState(uid, e)
-    
-    @staticmethod
-    def getModuleTypePlugin(module):
-        result = []
-        if hasattr(module, "createWindow"):
-            result.append("Window")
-        if hasattr(module, "createWidget"):
-            result.append("Widget")
-        if hasattr(module, "createWorker"):
-            result.append("Worker")
-        return result
     
     def event(self, event, /):
         if event == QEvent.Type.ShortcutOverride:

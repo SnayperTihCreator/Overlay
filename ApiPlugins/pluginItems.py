@@ -2,13 +2,12 @@ from enum import IntEnum, auto
 from functools import cached_property
 from types import ModuleType
 
-from PySide6.QtCore import Qt, qWarning
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 from attrs import define, field
 
-from API.core import APIBaseWidget
-from APIService.themeController import ThemeController
+from Common.core import APIBaseWidget
+from ColorControl.themeController import ThemeController
 
 __all__ = ["PluginItemRole", "PluginItem"]
 

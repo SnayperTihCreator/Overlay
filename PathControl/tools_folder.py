@@ -1,7 +1,7 @@
 import platform
 import sys
 
-from APIService.path_controls import getAppPath
+from PathControl import getAppPath
 
 
 class ToolsIniter:

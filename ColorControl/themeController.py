@@ -6,8 +6,8 @@ from PySide6.QtWidgets import QApplication, QWidget
 from jinja2 import Environment, Template
 from attrs import define, field
 
-from .jloader import FSLoader
-from APIService.theme import Theme
+from PathControl.jloader import FSLoader
+from ColorControl.theme import Theme
 
 
 class MetaSingtools(type):
@@ -51,11 +51,13 @@ class ThemeController(metaclass=MetaSingtools):
         self.interface["app"] = InterfaceStyle(app, "app/main.css")
     
     def register(self, widget: QWidget, path: str, isEnv=True):
+        uid = getattr(widget, "uid", uuid.uuid4().hex)
         if isEnv:
-            self.interface[uuid.uuid4().hex] = InterfaceStyle(widget, path)
+            self.interface[uid] = InterfaceStyle(widget, path)
         else:
             template = Template(open(path, encoding="utf-8").read())
-            self.interface[uuid.uuid4().hex] = InterfaceStyle(widget, None, template)
+            self.interface[uid] = InterfaceStyle(widget, None, template)
+        return uid
     
     def update(self):
         if self.currentTheme is None: return
@@ -64,6 +66,11 @@ class ThemeController(metaclass=MetaSingtools):
             if name != "app":
                 int_style.initialized(self.env)
                 int_style.initStyleSheet(theme=self.currentTheme)
+    
+    def updateUid(self, uid):
+        int_style = self.interface[uid]
+        int_style.initialized(self.env)
+        int_style.initStyleSheet(theme=self.currentTheme)
     
     def updateApp(self):
         if self.currentTheme is None: return
@@ -91,4 +98,12 @@ class ThemeController(metaclass=MetaSingtools):
         if isinstance(color, str):
             return QColor(f"#{color}")
         return color
+    
+    def modulated(self, obj):
+        if self.currentTheme is None: return
         
+        return self.currentTheme.modulated(obj)
+    
+    def setTheme(self, theme: Theme):
+        self.currentTheme = theme
+        self.updateAll()

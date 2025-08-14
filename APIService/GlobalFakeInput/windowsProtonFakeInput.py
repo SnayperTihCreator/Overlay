@@ -1,7 +1,7 @@
 import time
 
 from APIService.webControls import ClientWebSockets
-from APIService.path_controls import getAppPath
+from PathControl import getAppPath
 from API.config import Config
 
 from .enums import BaseCommonKey

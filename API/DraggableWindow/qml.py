@@ -1,12 +1,11 @@
 from PySide6.QtCore import QUrl, Qt, qCritical, QEvent
-from PySide6.QtGui import QPalette
 from PySide6.QtQml import QQmlEngine
 from PySide6.QtQuickWidgets import QQuickWidget
 from PySide6.QtQuick import QQuickItem
 from PySide6.QtWidgets import QApplication
 
 from .base_window import DraggableWindow
-from APIService.themeController import ThemeController
+from ColorControl.themeController import ThemeController
 
 qApp: QApplication
 

@@ -1,21 +1,25 @@
+import uuid
+
 from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import Qt, qWarning
+from PySide6.QtCore import Qt
 
 from API.config import Config
-from API.core import APIBaseWidget
+from Common.core import APIBaseWidget
 
-from .dumper import OverlayWidgetDumper
+from ApiPlugins.widgetPreloader import WidgetPreLoader
 from API.PluginSetting import PluginSettingWidget
+from ColorControl.themeController import ThemeController
 
 
 class OverlayWidget(QWidget, APIBaseWidget):
-    dumper = OverlayWidgetDumper()
+    dumper = WidgetPreLoader()
     
     def __init__(self, config, parent=None):
         super().__init__(parent, Qt.WindowType.Widget)
         
         self.setObjectName(self.__class__.__name__)
         self.setProperty("class", "OverlayWidget")
+        self.uid = uuid.uuid4().hex
         
         self.config: Config = config
         
@@ -37,8 +41,8 @@ class OverlayWidget(QWidget, APIBaseWidget):
         pass
     
     def loadConfig(self):
-        with self.config.loadFile(self.config.widget.styleFile) as file:
-            self.setStyleSheet(file.read())
+        ThemeController().register(self, f"plugin://{self.config.plugin_name}/{self.config.widget.styleFile}", False)
+        ThemeController().updateUid(self.uid)
     
     @classmethod
     def createSettingWidget(cls, widget: "OverlayWidget", name_plugin: str, parent):

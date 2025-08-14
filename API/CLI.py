@@ -3,10 +3,10 @@ from io import StringIO
 import inspect
 
 from rich import print as rich_print
-from PySide6.QtWidgets import QWidget
+from Common.core import MetaBaseWidget
 
 
-class MetaCliInterface(type(QWidget)):
+class MetaCliInterface(MetaBaseWidget):
     def __new__(cls, name, bases, namespace):
         new_class = super().__new__(cls, name, bases, namespace)
         

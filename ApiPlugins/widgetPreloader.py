@@ -3,12 +3,11 @@ from types import ModuleType
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QMenu
 
-from APIService.dumper import Dumper
+from ApiPlugins.preloader import PreLoader
+from ApiPlugins.pluginItems import PluginItem
 
-from Service.pluginItems import PluginItem
 
-
-class OverlayWidgetDumper(Dumper):
+class WidgetPreLoader(PreLoader):
     @classmethod
     def overCreateItem(cls, module: ModuleType, checked: bool = False, **kwargs):
         return super().overCreateItem(module, "Widget", checked)

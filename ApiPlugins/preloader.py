@@ -7,10 +7,10 @@ from PySide6.QtWidgets import QMenu
 import json5
 from box import Box
 
-from Service.pluginItems import PluginItem
+from ApiPlugins.pluginItems import PluginItem
 
 
-class Dumper(ABC):
+class PreLoader(ABC):
     @classmethod
     def saved(cls, target, item: PluginItem, setting: QSettings):
         setting.beginGroup(item.save_name)

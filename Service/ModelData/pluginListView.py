@@ -3,7 +3,7 @@ from PySide6.QtCore import Signal, QPoint
 
 from .pluginModel import PluginDataModel
 from .pluginDelegate import PluginDelegate
-from Service.pluginItems import PluginItem, PluginItemRole
+from ApiPlugins.pluginItems import PluginItem, PluginItemRole
 
 
 class PluginList(QListView):

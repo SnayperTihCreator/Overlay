@@ -3,12 +3,12 @@ from types import ModuleType
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QMenu
 
-from APIService.dumper import Dumper
+from .preloader import PreLoader
 
-from Service.pluginItems import PluginItem
+from ApiPlugins.pluginItems import PluginItem
 
 
-class DraggableWindowDumper(Dumper):
+class WindowPreLoader(PreLoader):
     
     @classmethod
     def overCreateItem(

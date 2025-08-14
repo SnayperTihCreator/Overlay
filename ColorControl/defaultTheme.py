@@ -1,4 +1,4 @@
-from APIService.theme import Theme
+from ColorControl.theme import Theme
 from PySide6.QtGui import QColor, QFont
 
 from attrs import define, field

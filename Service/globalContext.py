@@ -1,6 +1,6 @@
 from attrs import define, field
 from pathlib import Path
-from APIService.path_controls import getAppPath
+from PathControl import getAppPath
 
 
 class MetaSingTools(type):
