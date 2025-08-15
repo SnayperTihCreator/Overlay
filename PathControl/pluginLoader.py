@@ -10,7 +10,7 @@ from PathControl import getAppPath
 class PluginLoader(Loader):
     def __init__(self):
         super().__init__()
-        self.folder:Path = (getAppPath()/"plugins")
+        self.folder: Path = (getAppPath() / "plugins")
         self.fs = open_fs("plugin://")
         
         self.plugins = {}
@@ -31,7 +31,7 @@ class PluginLoader(Loader):
                 self.plugins[plugin_name] = None
                 self.types_plugins[plugin_name] = []
                 self.errors[plugin_name] = e
-                
+    
     def getTypes(self, plugin_name):
         return self.types_plugins[plugin_name]
     
@@ -46,8 +46,6 @@ class PluginLoader(Loader):
         if hasattr(module, "createWidget"):
             types.append("Widget")
         return types
-        
-        
     
     def list(self) -> list[str]:
         return self.fs.listdir("")

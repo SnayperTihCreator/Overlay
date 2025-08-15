@@ -34,7 +34,7 @@ class CLInterface(metaclass=MetaCliInterface):
     def namespace(self):
         output = StringIO()
         for name, func in self.cliFunction.items():
-            rich_print(name.strip("action_"), "=:=", file=output, end=" ")
+            rich_print(name[7:], "=:=", file=output, end=" ")
             rich_print(*[param for name, param in inspect.signature(func).parameters.items() if name != "self"],
                        file=output, sep=" | ")
         return output.getvalue()
@@ -42,8 +42,9 @@ class CLInterface(metaclass=MetaCliInterface):
     def runner(self, args) -> str:
         if args:
             impl = self.cliFunction.get(f"action_{args[0]}")
-            if impl(self, *args[1:]):
-                return "True"
+            result = impl(self, *args[1:])
+            if result:
+                return str(result)
             return "False"
         else:
             return self.namespace()

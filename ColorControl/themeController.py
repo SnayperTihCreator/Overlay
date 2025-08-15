@@ -1,6 +1,7 @@
 from typing import Optional
 import uuid
 
+from PySide6.QtCore import QEvent, QCoreApplication
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication, QWidget
 from jinja2 import Environment, Template
@@ -40,12 +41,26 @@ class InterfaceStyle:
         self.interface.setStyleSheet(css)
 
 
+@define
+class WidgetIcon:
+    widget: QWidget
+    path: str
+    typeImage: str
+    isQrc: bool
+    nameMethod: str = "setIcon"
+    
+    def setImage(self, image):
+        method = getattr(self.widget, self.nameMethod)
+        method(image)
+
+
 class ThemeController(metaclass=MetaSingtools):
     def __init__(self):
         self.env = Environment(loader=FSLoader("qt://root/css"))
         self.app_template = self.env.get_template("app/main.css")
         self.currentTheme: Optional[Theme] = None
         self.interface: dict[str, InterfaceStyle] = {}
+        self.widgets: dict[int, WidgetIcon] = {}
     
     def registerApp(self, app: QApplication):
         self.interface["app"] = InterfaceStyle(app, "app/main.css")
@@ -79,9 +94,19 @@ class ThemeController(metaclass=MetaSingtools):
         self.interface["app"].initialized(self.env)
         self.interface["app"].initStyleSheet(theme=self.currentTheme)
     
+    def updateImage(self):
+        for widgetImage in self.widgets.values():
+            self.updateWidget(widgetImage.widget)
+    
     def updateAll(self):
         self.updateApp()
         self.update()
+        self.updateImage()
+        
+    def updateWidget(self, widget: QWidget):
+        widgetImage = self.widgets[id(widget)]
+        image = self.getImage(widgetImage.path, widgetImage.typeImage, widgetImage.isQrc)
+        widgetImage.setImage(image)
     
     def getImage(self, path: str, typeImage: str = "pixmap", isQt=False):
         if self.currentTheme is None: return
@@ -107,3 +132,13 @@ class ThemeController(metaclass=MetaSingtools):
     def setTheme(self, theme: Theme):
         self.currentTheme = theme
         self.updateAll()
+        
+        paletteChange = QEvent(QEvent.Type.ApplicationPaletteChange)
+        QCoreApplication.postEvent(QCoreApplication.instance(), paletteChange)
+    
+    def registerWidget(self, widget: QWidget, path: str, nameMethod: str = "setIcon", typeImage: str = "pixmap",
+                       isQt=False):
+        widgetImage = WidgetIcon(
+            widget, path, typeImage, isQt, nameMethod
+        )
+        self.widgets[id(widget)] = widgetImage

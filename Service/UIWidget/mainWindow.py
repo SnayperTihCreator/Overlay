@@ -25,6 +25,7 @@ from Service.GlobalShortcutControl import HotkeyManager
 from Service.core import flags
 from ApiPlugins.pluginControl import PluginControl
 from ApiPlugins.pluginItems import PluginItem
+from APIService.themeCLI import ThemeCLI
 
 from ColorControl.themeController import ThemeController
 
@@ -89,8 +90,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
         )
         
         self.btnSetting.setIconSize(QSize(50, 50))
-        
         self.btnSetting.setFixedSize(60, 60)
+        ThemeController().registerWidget(self.btnSetting, ":/root/icons/setting.png", "setIcon", "icon", True)
+        ThemeController().updateWidget(self.btnSetting)
         
         self.btnStopOverlay.pressed.connect(self.stopOverlay)
         self.btnHide.pressed.connect(self.hideOverlay)
@@ -117,6 +119,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.input_bridge.start()
         
         self.tray = QSystemTrayIcon()
+        ThemeController().registerWidget(self.tray, ":/root/icons/overlay.png", "setIcon", "icon", True)
+        ThemeController().updateWidget(self.tray)
         self.initSystemTray()
         
         if str(getAppPath()) not in sys.path:
@@ -134,26 +138,21 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.dialogSettings = None
         
-        self.updateIcon()
-        
         self.updateDataPlugins()
-        
         self.loadConfigs()
+        self.loadTheme()
     
     def registered_handler(self, comb, name):
         self.input_bridge.add_hotkey(comb, self.handled_global_shortkey.emit, name)
-    
-    def updateIcon(self):
-        iconSetting = ThemeController().getImage(":/root/icons/setting.png", "icon", True)
-        self.btnSetting.setIcon(iconSetting)
-        iconTray = ThemeController().getImage(":/root/icons/overlay.png", "icon", True)
-        self.tray.setIcon(iconTray)
     
     def registered_shortcut(self, comb, name, window):
         self.registered_handler(comb, name)
         self.shortcuts[name] = window
     
     def cliRunner(self, uid, name_int, args):
+        if name_int == "overlay_cli":
+            self.webSocketIn.sendMassage(uid, " ".join(self.interface.keys()))
+            return
         if name_int not in self.interface:
             self.webSocketIn.sendErrorState(uid, NameError(f"Not find interface {name_int}"))
             return
@@ -186,6 +185,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def deactive_web_sockets(self):
         self.settingWidget.setOptions({"websoc": {"btn": False}})
         self.webSocketIn.quit()
+    
+    def loadTheme(self):
+        self.interface["ThemeCLI"] = ThemeCLI(self.themeLoader)
     
     def loadConfigs(self):
         self.settings.beginGroup("windows")

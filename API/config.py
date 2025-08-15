@@ -39,7 +39,7 @@ class Config:
         self._config: Box = self._load_config()
     
     def _load_config(self) -> Box[str, Any]:
-        configFile: Optional[io.TextIOWrapper] = None
+        configFile = None
         try:
             
             match self._plugin_type:
@@ -50,7 +50,7 @@ class Config:
                 case "setting":
                     configFile = io.StringIO()
                 case "theme":
-                    configFile = open(f"")
+                    configFile = open(f"resource://theme/{self.plugin_name}/{self._config_name}.toml", encoding="utf-8")
             return Box(toml.load(configFile))
         except Exception as e:
             print(e)

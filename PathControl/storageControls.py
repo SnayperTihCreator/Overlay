@@ -119,7 +119,7 @@ class ProjectFS(OSFS):
 
 
 class ThemeFS(ZipFormatFile):
-    suffix_file = "theme"
+    suffix_file = "overtheme"
     
     def __init__(self):
         super().__init__(str(global_cxt.resourcePath))
@@ -184,7 +184,12 @@ class ResourcePathOpener(BasePathOpener):
     def open_fs(self, fs_url: str, parse_result: ParseResult, writeable: bool, create: bool, cwd: str) -> FS:
         path: str = parse_result.resource
         parts = fs_path.parts(path)
-        if parts[1] not in ["theme"]: raise errors.ResourceNotFound
+        if parts[1].lower() not in ["theme", "resource"]: raise errors.ResourceNotFound
+        match parts[1].lower():
+            case "theme":
+                self.typeResource = "theme"
+            case "resource":
+                self.typeResource = "resource"
         parts.pop(1)
         path = fs_path.join(*parts)
         result = ParseResult(
@@ -198,7 +203,10 @@ class ResourcePathOpener(BasePathOpener):
         return super().open_fs(fs_url, result, writeable, create, cwd)
     
     def getImplFS(self, url, parse_result, writable, create, cwd) -> FS:
-        return MyWrapReadOnly(ThemeFS())
+        if self.typeResource == "theme":
+            return MyWrapReadOnly(ThemeFS())
+        elif self.typeResource == "resource":
+            return MyWrapReadOnly(ResourceFS())
 
 
 import builtins
