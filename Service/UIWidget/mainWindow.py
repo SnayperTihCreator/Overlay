@@ -188,6 +188,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def loadTheme(self):
         self.interface["ThemeCLI"] = ThemeCLI(self.themeLoader)
+        
+        themeName = self.settings.value("theme", None)
+        if themeName is None: return
+        
+        if themeName == "DefaultTheme":
+            self.interface["ThemeCLI"].action_default_change()
+        else:
+            self.interface["ThemeCLI"].action_change(themeName)
     
     def loadConfigs(self):
         self.settings.beginGroup("windows")
@@ -225,6 +233,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             if item.typeModule not in ["Window", "Widget"]: return
             PluginControl.saveConfig(item, self.settings)
         self.settingWidget.save_setting(self.settings)
+        self.settings.setValue("theme", ThemeController().themeName())
         self.settings.sync()
         qDebug("Сохранение приложения")
     

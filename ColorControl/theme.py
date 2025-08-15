@@ -25,9 +25,11 @@ class Theme(ABC):
     mainTextColor: QColor = field()
     altTextColor: QColor = field()
     
+    themeName: str = field(init=False)
     _imagePaths: dict[str, str] = field(factory=dict, init=False, repr=False)
     
     def __attrs_pre_init__(self):
+        self.themeName = self.__class__.__name__
         self.addFontFile(":/base/fonts/Montserrat.ttf")
         self.addFontFile(":/base/fonts/MontserratI.ttf")
         self.preInitTheme()

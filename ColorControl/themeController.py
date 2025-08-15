@@ -135,6 +135,11 @@ class ThemeController(metaclass=MetaSingtools):
         
         paletteChange = QEvent(QEvent.Type.ApplicationPaletteChange)
         QCoreApplication.postEvent(QCoreApplication.instance(), paletteChange)
+        
+    def themeName(self):
+        if self.currentTheme is None: return
+        
+        return self.currentTheme.themeName
     
     def registerWidget(self, widget: QWidget, path: str, nameMethod: str = "setIcon", typeImage: str = "pixmap",
                        isQt=False):
