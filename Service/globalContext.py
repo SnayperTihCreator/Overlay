@@ -1,6 +1,6 @@
 from attrs import define, field
 from pathlib import Path
-from APIService.path_controls import getAppPath
+from PathControl import getAppPath
 
 
 class MetaSingTools(type):
@@ -18,6 +18,7 @@ class GlobalContext(metaclass=MetaSingTools):
     pluginPath: Path = field(default=getAppPath() / "plugins")
     pluginDataPath: Path = field(default=getAppPath()/"plugins"/"plugin_data")
     toolsPath: Path = field(default=getAppPath()/"tools")
+    resourcePath: Path = field(default=getAppPath()/"resource")
 
 
 def registryGlobalContext():

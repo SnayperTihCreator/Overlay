@@ -1,23 +1,27 @@
+import uuid
+
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QMainWindow, QGraphicsColorizeEffect, QWidget
-from PySide6.QtCore import Qt, QPoint, QTimer, qWarning
+from PySide6.QtCore import Qt, QPoint, QTimer
 
 from API.config import Config
-from API.core import APIBaseWidget
+from Common.core import APIBaseWidget
 from API.PluginSetting import PluginSettingWindow
 
-from .dumper import DraggableWindowDumper
+from ApiPlugins.windowPreloader import WindowPreLoader
 from APIService.clamps import clampAllDesktop, clampAllDesktopP
+from ColorControl.themeController import ThemeController
 
 
 class DraggableWindow(QMainWindow, APIBaseWidget):
-    dumper = DraggableWindowDumper()
+    dumper = WindowPreLoader()
 
     def __init__(self, config, parent=None):
         super().__init__(parent)
 
         self.setObjectName(self.__class__.__name__)
         self.setProperty("class", "DraggableWindow")
+        self.uid = uuid.uuid4().hex
 
         self.config: Config = config
         # Настройки окна
@@ -25,6 +29,7 @@ class DraggableWindow(QMainWindow, APIBaseWidget):
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.Tool
             | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.Window
         )
 
         self.baseflag = self.windowFlags()
@@ -56,8 +61,10 @@ class DraggableWindow(QMainWindow, APIBaseWidget):
     def loadConfig(self):
         width, height = self.config.window.width, self.config.window.height
         self.setFixedSize(width, height)
-        with self.config.loadFile(self.config.window.styleFile) as file:
-            self.setStyleSheet(file.read())
+        
+        ThemeController().register(self, f"plugin://{self.config.plugin_name}/{self.config.window.styleFile}", False)
+        ThemeController().updateUid(self.uid)
+        
         self.setWindowOpacity(self.config.window.opacity)
 
     def reloadConfig(self):

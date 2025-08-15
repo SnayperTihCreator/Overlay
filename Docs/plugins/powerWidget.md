@@ -1,6 +1,12 @@
+# PowerWidget
+
 [Главная](../README.md) | [Плагины](index.md)
 
-# PowerWidget
+![Фото плагина](image/powerWidget.png)
+
+## Заметка
+
+* Доступно на всех доступных плалатформах  
 
 ## Описание
 

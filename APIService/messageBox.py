@@ -1,5 +1,3 @@
-from typing import Self
-
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import Qt, Signal
 

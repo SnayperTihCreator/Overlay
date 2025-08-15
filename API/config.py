@@ -1,11 +1,10 @@
-import toml
-from pathlib import Path
+from typing import Optional
+import io
 from typing import Any
 from dataclasses import dataclass
 
 from box import Box
-from APIService.path_controls import PluginPath
-import inspect
+import toml
 
 
 @dataclass
@@ -18,37 +17,47 @@ class Defaults:
         "websockets": {"IN": [8000, 8010], "OUT": [8015, 8020]},
         "shortkey": {"open": "shift+alt+o"}
     }
+    setting = {}
+    theme = {
+        "plugin": {
+            "name": "<unknown>"
+        },
+        "colors": {
+            "base": "#6e738d",
+            "main_text": "#cad3f5",
+            "alt_text": "#8aadf4"
+        }
+    }
 
 
 class Config:
-    def __init__(self, path, plugin_type, config_name="config", create_is_not=True):
+    def __init__(self, plugin_name, plugin_type, config_name="config"):
         self._config_name = config_name
-        self._create_is_not = create_is_not
-        self._default_config = getattr(Defaults, plugin_type)
+        self._default_config = getattr(Defaults, plugin_type, {})
         self._plugin_type = plugin_type
-        plugin_name = Path(path).parent.name if ".plugin" else Path(path).name
-        self._load_path = PluginPath(plugin_name)
+        self.plugin_name = plugin_name
         self._config: Box = self._load_config()
     
     def _load_config(self) -> Box[str, Any]:
+        configFile = None
         try:
-            with self.loadFile(f"{self._config_name}.toml", "r") as f:
-                return Box(toml.load(f))
-        except (FileNotFoundError, toml.TomlDecodeError) as e:
-            print(f"{type(e)}: {e}")
-            # Если файла нет или он поврежден, создаем новый с дефолтными значениями
-            if self._create_is_not:
-                with self.loadFile(f"{self._config_name}.toml", "w") as f:
-                    toml.dump(self._default_config, f)
+            
+            match self._plugin_type:
+                case "apps":
+                    configFile = open(f"project://{self._config_name}.toml", encoding="utf-8")
+                case "draggable_window" | "overlay_widget":
+                    configFile = open(f"plugin://{self.plugin_name}/{self._config_name}.toml", encoding="utf-8")
+                case "setting":
+                    configFile = io.StringIO()
+                case "theme":
+                    configFile = open(f"resource://theme/{self.plugin_name}/{self._config_name}.toml", encoding="utf-8")
+            return Box(toml.load(configFile))
+        except Exception as e:
+            print(e)
             return Box(self._default_config)
-    
-    def loadFile(self, path, mode="r", data_storage="auto"):
-        prefix = data_storage
-        if data_storage == "auto" and "w" not in mode:
-            prefix = "plugin" if self._plugin_type != "apps" else "project"
-        elif data_storage == "auto" and "w" in mode:
-            prefix = "plugin_data" if self._plugin_type != "apps" else "project"
-        return self._load_path.open(f"{prefix}:/{path}", mode)
+        finally:
+            if configFile is not None:
+                configFile.close()
     
     def __getattr__(self, item):
         return getattr(self._config, item)
@@ -58,3 +67,7 @@ class Config:
     
     def plugin_path(self):
         return self._load_path
+    
+    @classmethod
+    def configApplication(cls):
+        return cls("Overlay", "apps")

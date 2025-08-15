@@ -4,6 +4,8 @@ import uuid
 from PySide6.QtNetwork import QHostAddress
 from PySide6.QtWebSockets import QWebSocketServer, QWebSocket
 from PySide6.QtCore import QObject, Signal, Slot, qDebug, QUrl, qWarning
+from rich.console import Console
+from rich.text import Text
 
 from .webControls import find_free_port
 
@@ -17,6 +19,8 @@ class ServerWebSockets(QObject):
         
         self._server: Optional[QWebSocketServer] = None
         self.clients: dict[str, QWebSocket] = {}
+        
+        self._console = Console(record=True, )
     
     def start(self):
         self._server = QWebSocketServer("Overlay WebSockets", QWebSocketServer.SslMode.NonSecureMode)
@@ -38,7 +42,7 @@ class ServerWebSockets(QObject):
         qDebug("Остановка сервера...")
         
         # Закрываем все клиентские подключения
-        for client in self.clients:
+        for client in self.clients.values():
             client.close()
             client.deleteLater()
         
@@ -75,11 +79,17 @@ class ServerWebSockets(QObject):
         qDebug("Клиент отключился")
         
     def sendConfirmState(self, uid):
-        self.sendMassage(uid, "[Confirm]")
+        self._console.print(Text("True", "green"))
+        self.sendMassage(uid, self._console.export_text(styles=True))
         
     def sendErrorState(self, uid, e):
-        self.sendMassage(uid, f"[Error]{e}")
+        self._console.print(Text(f"Error: {e}", "Red"))
+        self.sendMassage(uid, self._console.export_text(styles=True))
         
     def sendMassage(self, uid, msg):
         self.clients[uid].sendTextMessage(msg)
+        
+    def sendPrettyMsg(self, uid, msgs):
+        self._console.print(Text.assemble(msgs))
+        self.sendMassage(uid, self._console.export_text(styles=True))
         

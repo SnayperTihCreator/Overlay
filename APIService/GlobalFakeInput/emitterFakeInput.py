@@ -1,6 +1,6 @@
 from functools import cache
 
-from APIService.platformCurrent import getSystem
+from PathControl.platformCurrent import getSystem
 from .enums import BaseCommonKey, BaseWindowsKey, BaseLinuxKey
 
 

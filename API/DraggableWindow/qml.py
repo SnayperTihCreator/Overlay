@@ -1,11 +1,11 @@
-from PySide6.QtCore import QUrl, Qt, qCritical
-from PySide6.QtGui import QPalette
+from PySide6.QtCore import QUrl, Qt, qCritical, QEvent
 from PySide6.QtQml import QQmlEngine
 from PySide6.QtQuickWidgets import QQuickWidget
 from PySide6.QtQuick import QQuickItem
 from PySide6.QtWidgets import QApplication
 
 from .base_window import DraggableWindow
+from ColorControl.themeController import ThemeController
 
 qApp: QApplication
 
@@ -33,13 +33,26 @@ class QmlDraggableWindow(DraggableWindow):
         if status == QQuickWidget.Status.Error:
             for error in self.central_widget.errors():
                 qCritical(str(error))
+                
+    def _loadPrivatePresetData(self):
+        self.setContextProperty("mainTextColor", ThemeController().color("mainText"))
+        self.setContextProperty("altTextColor", ThemeController().color("altText"))
+        self.setContextProperty("baseColor", ThemeController().color("base"))
+        alphaBaseColor = ThemeController().color("base")
+        alphaBaseColor.setAlpha(128)
+        self.setContextProperty("alphaBaseColor", alphaBaseColor)
     
     def loadPresetData(self) -> QQmlEngine:
         engine = self.central_widget.engine()
         
-        engine.rootContext().setContextProperty("mainTextColor", qApp.palette().color(QPalette.ColorRole.Text))
+        self._loadPrivatePresetData()
         
         return engine
+    
+    def event(self, event: QEvent):
+        if event.type() == QEvent.Type.ApplicationPaletteChange:
+            self._loadPrivatePresetData()
+        return super().event(event)
     
     def getRootQml(self) -> QQuickItem:
         return self.central_widget.rootObject()
@@ -47,11 +60,11 @@ class QmlDraggableWindow(DraggableWindow):
     def setRootProperty(self, name, value):
         if self.getRootQml():
             self.getRootQml().setProperty(name, value)
-            
+    
     def setContextProperty(self, name, value):
-        self.central_widget.rootContext().setContextProperty(name, value)
+        if self.central_widget.rootContext():
+            self.central_widget.rootContext().setContextProperty(name, value)
     
     def reloadConfig(self):
         self.loadPresetData()
         super().reloadConfig()
-        

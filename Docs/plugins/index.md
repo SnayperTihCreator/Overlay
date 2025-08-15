@@ -1,6 +1,6 @@
-[Главная](../README.md)
-
 # Плагины
+
+[Главная](../README.md)
 
 ## Общее описание
 
@@ -19,10 +19,16 @@
 3. styleFile - имя файл откуда брать стили (по умолчанию: "style.css")
 4. opacity - параметр отвечающий за прозрачность от 0 до 1(0 - полностью прозрачный, 1 - полностью непрозрачный)
 
+### Общий раздел widget
+
+1. styleFile - имя файл откуда брать стили (по умолчанию: "style.css")
+
 ## На данный момент доступны плагины
 
 1. [ClockDateWidget](clockDateWidget.md)
 2. [PlayerControl](playerControl.md)
 3. [PowerWidget](powerWidget.md)
 4. [VirtualizationWidget](virtualizationWidget.md)
-5. ~~ManagerTask~~
+5. [ManagerTask](managerTask.md)
+6. [VolumeControl](volumeControl.md)
+7. [ResourceSystem](resourceSystem.md)

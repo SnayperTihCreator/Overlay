@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 
 from API.config import Config
-from API.core import APIBaseWidget
+from Common.core import APIBaseWidget
 
 
 class OverlayWidget(QWidget, APIBaseWidget):

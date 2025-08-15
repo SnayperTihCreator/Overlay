@@ -1,0 +1,15 @@
+QLabel {
+    color: #{{ theme.mainText }};
+}
+
+QLabel:disabled {
+    color: #{{ theme.disabledText() }};
+}
+
+QLineEdit, QTextEdit {
+    background-color: #{{ theme.baseInput() }};
+    color: #{{ theme.altText }};
+    border: 1px solid #{{ theme.mainText }};
+    border-radius: 4px;
+    padding: 3px;
+}

@@ -8,11 +8,20 @@
         <file alias="loader.png">assets/icons/loader.png</file>
         <file alias="setting.png">assets/icons/setting.png</file>
     </qresource>
-    <qresource prefix="root/css">
-        <file alias="main.css">assets/css/main.qss</file>
-        <file alias="overlay.css">assets/css/overlay.qss</file>
+    <qresource prefix="root/css/app">
+        <file alias="main.css">assets/css/app/main.css</file>
+        <file alias="common.css">assets/css/app/common.css</file>
+        <file alias="labels.css">assets/css/app/labels.css</file>
+        <file alias="buttons.css">assets/css/app/buttons.css</file>
+        <file alias="ranges.css">assets/css/app/ranges.css</file>
+        <file alias="actions.css">assets/css/app/actions.css</file>
+        <file alias="views.css">assets/css/app/views.css</file>
+    </qresource>
+    <qresource prefix="root/css/overlay">
+        <file alias="main.css">assets/css/overlay/main.css</file>
     </qresource>
     <qresource prefix="base/fonts">
-        <file alias="MarckScript.ttf">assets/fonts/MarckScript-Regular.ttf</file>
+        <file alias="MontserratI.ttf">assets/fonts/Montserrat-Italic-VariableFont_wght.ttf</file>
+        <file alias="Montserrat.ttf">assets/fonts/Montserrat-VariableFont_wght.ttf</file>
     </qresource>
 </RCC>

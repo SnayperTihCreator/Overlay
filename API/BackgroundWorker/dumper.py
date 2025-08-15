@@ -3,10 +3,10 @@ from types import ModuleType
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QListWidgetItem, QMenu
 
-from APIService.dumper import Dumper
+from ApiPlugins.widgetPreloader import PreLoader
 
 
-class WorkerDumper(Dumper):
+class WorkerPreLoader(PreLoader):
     @classmethod
     def overCreateItem(
         cls,

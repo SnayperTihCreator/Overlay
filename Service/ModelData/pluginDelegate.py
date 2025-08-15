@@ -1,10 +1,10 @@
 from PySide6.QtCore import Qt, QSize, QRect, QEvent, Signal, QPoint
 from PySide6.QtWidgets import QStyledItemDelegate, QApplication, QListView
-from PySide6.QtGui import QPixmap, QPalette, QMouseEvent, QColor
+from PySide6.QtGui import QPixmap, QMouseEvent
 
-from APIService.colorize import modulatePixmap
+from ColorControl.themeController import ThemeController
 
-from Service.pluginItems import PluginItemRole, PluginItem
+from ApiPlugins.pluginItems import PluginItemRole, PluginItem
 
 qApp: QApplication
 
@@ -25,9 +25,7 @@ class PluginDelegate(QStyledItemDelegate):
         typePlugin: str = index.data(PluginItemRole.TypePluginRole)
         active: bool = index.data(PluginItemRole.ActiveRole)
         isClone: bool = index.data(PluginItemRole.Duplication)
-        if icon and not icon.isNull():
-            icon = modulatePixmap(icon, qApp.palette().color(QPalette.ColorRole.WindowText))
-        else:
+        if not(icon and not icon.isNull()):
             icon = index.data(PluginItemRole.Icon)
         
         icon_rect = option.rect.adjusted(48, 14, -option.rect.width()+90, -14)
@@ -41,7 +39,7 @@ class PluginDelegate(QStyledItemDelegate):
             
         # Рисуем основной текст (зеленый)
         text_rect = option.rect.adjusted(100, 0, -100, 0)
-        painter.setPen(option.palette.color(QPalette.ColorRole.Text))  # Зеленый цвет текста
+        painter.setPen(ThemeController().color("mainText"))  # Зеленый цвет текста
         painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, pluginName)
         
         if isClone:
@@ -50,13 +48,14 @@ class PluginDelegate(QStyledItemDelegate):
         
         # Рисуем тип плагина (фиолетовый)
         type_rect = option.rect.adjusted(0, 0, -20, -3)
-        painter.setPen(option.palette.color(QPalette.ColorRole.ButtonText))  # Фиолетовый цвет текста
+        painter.setPen(ThemeController().color("altText"))  # Фиолетовый цвет текста
         painter.drawText(type_rect, Qt.AlignBottom | Qt.AlignRight, typePlugin)
         
         # Рисуем чекбокс (в виде изображения)
         checkbox_rect = option.rect.adjusted(0, 14, -option.rect.width()+48, -14)
         checkbox_img = ":/base/icons/c_checkbox.png" if active else ":/base/icons/u_checkbox.png"
-        pixmap = QPixmap(checkbox_img).scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap: QPixmap = ThemeController().getImage(checkbox_img, "pixmap", True)
+        pixmap = pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         painter.drawPixmap(checkbox_rect, pixmap)
     
     def sizeHint(self, option, index):
