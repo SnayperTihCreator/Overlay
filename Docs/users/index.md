@@ -57,6 +57,12 @@ sudo chmod +x "/путь/к/оверлею/OverlayCLI"
 
 > В файле config.toml есть поле open в разделе shortkey, оно отвечает за открытие самого Overlay
 
+## Стилизация
+
+На данный момент возможно только смена цвета
+
+[Настройка темы](theme.md)
+
 ## Возможные проблемы
 
 скачайте бинарник `OverlayCLI` под вашу систему с [облака](https://drive.google.com/drive/folders/1jkbPM_lJKnIv-bnrRmSW4jxCYETueIty?usp=sharing)
