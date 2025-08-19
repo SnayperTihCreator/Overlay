@@ -65,11 +65,6 @@ class PreLoader(ABC):
     
     @classmethod
     @abstractmethod
-    def overRunFunction(cls, module: ModuleType, parent):
-        pass
-    
-    @classmethod
-    @abstractmethod
     def overSaved(cls, item: PluginItem, setting: QSettings):
         pass
     

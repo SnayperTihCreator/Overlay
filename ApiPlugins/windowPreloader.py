@@ -25,10 +25,6 @@ class WindowPreLoader(PreLoader):
         return item
 
     @classmethod
-    def overRunFunction(cls, module: ModuleType, parent):
-        return module.createWindow(parent)
-
-    @classmethod
     def overSaved(cls, item: PluginItem, setting: QSettings):
         setting.setValue("count_dub", int(item.countClone))
         setting.setValue("is_dub", int(item.isDuplication))

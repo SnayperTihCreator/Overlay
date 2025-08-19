@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Literal
 import io
 from typing import Any
 from dataclasses import dataclass
@@ -31,7 +31,7 @@ class Defaults:
 
 
 class Config:
-    def __init__(self, plugin_name, plugin_type, config_name="config"):
+    def __init__(self, plugin_name, plugin_type: Literal["draggable_window", "overlay_widget", "apps", "setting", "theme"], config_name="config"):
         self._config_name = config_name
         self._default_config = getattr(Defaults, plugin_type, {})
         self._plugin_type = plugin_type

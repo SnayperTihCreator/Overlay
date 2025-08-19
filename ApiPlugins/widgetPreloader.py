@@ -13,10 +13,6 @@ class WidgetPreLoader(PreLoader):
         return super().overCreateItem(module, "Widget", checked)
 
     @classmethod
-    def overRunFunction(cls, module: ModuleType, parent):
-        return module.createWidget(parent)
-
-    @classmethod
     def overSaved(cls, item: PluginItem, setting: QSettings):
         return None
 

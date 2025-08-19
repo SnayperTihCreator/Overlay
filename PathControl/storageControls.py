@@ -110,7 +110,8 @@ class PluginFS(ZipFormatFile):
 
 class PluginDataFS(OSFS):
     def __init__(self):
-        super().__init__(str(global_cxt.pluginDataPath))
+        global_cxt.pluginDataPath.mkdir(exist_ok=True)
+        super().__init__(str(global_cxt.pluginDataPath), True)
 
 
 class ProjectFS(OSFS):
@@ -224,14 +225,18 @@ class OpenManager:
         self.extra = extra
     
     @lru_cache(maxsize=10)
-    def _get_fs(self, folder):
+    def _get_fs(self, folder, mode):
         """Открывает FS с кешированием."""
+        scheme, sub_folder = folder.split("://", 1)
         if not folder:
             return None
         try:
             return open_fs(folder)
+        except errors.ResourceNotFound as e:
+            if not(("w" in mode) or ("x" in mode)): raise e
+            fs = open_fs(f"{scheme}://")
+            return fs.makedir(sub_folder)
         except errors.CreateFailed as e:
-            scheme = folder.split("://")[0]
             hint = self.SCHEME_HINTS.get(scheme, "")
             raise ImportError(
                 f"Не удалось открыть файловую систему {scheme}. {hint}\n{e}"
@@ -250,7 +255,7 @@ class OpenManager:
         if "://" in file:
             folder, filename = self._get_file(file)
             try:
-                fs = self._get_fs(folder)
+                fs = self._get_fs(folder, mode)
                 self._check_writable(fs, mode)
                 return fs.open(filename, mode=mode, **kwargs)
             except errors.ResourceError as e:
