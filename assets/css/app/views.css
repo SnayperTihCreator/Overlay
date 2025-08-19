@@ -15,3 +15,18 @@ QListView::indicator:checked {
 QListView::item {
     padding: 10px 5px;
 }
+
+QTableView {
+    gridline-color: #{{ theme.disabledText() }};
+    alternate-background-color: #{{ theme.baseInput() }};
+    selection-color: transparent;
+}
+
+QTableView::item {
+    text-align: center;
+    padding: 2px;
+}
+
+QTableView QHeaderView {
+    border-radius: 0px;
+}
