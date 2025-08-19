@@ -13,7 +13,7 @@
 - [PlayerControl](playerControl.md) - Управление медиа (пауза, воспроизвести и пр.)
 - [ResourceSystem](resourceSystem.md) - мониторинг использования мощностей устройства
 - [ClockDateWidget](clockDateWidget.md) - показывает время
-- [VizualizationWidget](virtualizationWidget.md) - визуализация звука
+- [VizualizationWidget](vizualizationWidget.md) - визуализация звука
 - [VolumeControl](volumeControl.md) - управление громкостью
 
 Неофициальные плагины - плагины, разработанные сообществом.
