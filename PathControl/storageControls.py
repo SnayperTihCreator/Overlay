@@ -1,7 +1,6 @@
-import os, io
+import io
 from contextlib import contextmanager
 from contextvars import ContextVar
-from os import path as ospath, fsencode
 import pathlib
 from abc import abstractmethod
 from functools import lru_cache, wraps
@@ -9,7 +8,7 @@ import re
 
 from fs.base import FS
 from fs.opener import Opener, registry
-from fs.opener.parse import ParseResult, parse_fs_url
+from fs.opener.parse import ParseResult
 from fs.enums import ResourceType
 from fs.osfs import OSFS
 from fs.wrap import WrapReadOnly
@@ -252,7 +251,7 @@ class OpenManager:
                 pass  # Если метаданные не поддерживаются
     
     def _custom_open(self, file, mode='r', **kwargs):
-        if "://" in file:
+        if not isinstance(file, pathlib.Path) and "://" in file:
             folder, filename = self._get_file(file)
             try:
                 fs = self._get_fs(folder, mode)

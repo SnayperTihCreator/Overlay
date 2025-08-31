@@ -1,34 +1,34 @@
 QSlider::groove:horizontal {
     height: 5px;
-    background: #{{ theme.baseInput() }};
+    background: {{ theme.baseInput() | color }};
     border-radius: 10px;
 }
 
 QSlider::handle:horizontal {
-    background: #{{ theme.mainText }};
+    background: {{ theme.mainText | color }};
     width: 16px;
     height: 16px;
     border-radius: 10px;
 }
 
 QProgressBar {
-    border: 1px solid #{{ theme.mainText }};
+    border: 1px solid {{ theme.mainText | color }};
     border-radius: 4px;
     text-aling: center;
-    color: #{{ theme.altText }};
+    color: {{ theme.altText | color }};
 }
 
 QProgressBar::chunk {
-    background-color: #{{ theme.mainText }};
+    background-color: {{ theme.mainText | color}};
 }
 
 QScrollBar:vertical {
-    background: #{{ theme.baseInput() }};
+    background: {{ theme.baseInput() | color}};
     width: 12px;
 }
 
 QScrollBar::handle:vertical {
-    background: #{{ theme.mainText }};
+    background: {{ theme.mainText | color}};
     min-height: 20px;
 }
 

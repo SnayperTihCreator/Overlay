@@ -11,7 +11,7 @@ class AppServerControl(ServerWebSockets):
         super().__init__(ports, parent)
         self.message_received.connect(self.handle_message)
     
-    def handle_message(self, message:str, uid):
+    def handle_message(self, message: str, uid):
         match message.strip().split(" "):
             case ["action", name]:
                 self.action_triggered.emit(name, uid)

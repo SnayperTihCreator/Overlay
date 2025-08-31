@@ -7,17 +7,6 @@ from attrs import define, field
 from ColorControl.colorize import modulatePixmap, modulateIcon, modulateImage
 
 
-def stripColor(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-        if isinstance(result, QColor):
-            result = result.name(QColor.NameFormat.HexRgb)
-        return result.strip("#")
-    
-    return wrapper
-
-
 @define
 class Theme(ABC):
     font: QFont = field()
@@ -27,50 +16,53 @@ class Theme(ABC):
     
     themeName: str = field(init=False)
     _imagePaths: dict[str, str] = field(factory=dict, init=False, repr=False)
+    _iconsTheme: list[str] = field(factory=list, init=False, repr=False)
     
     def __attrs_pre_init__(self):
         self.themeName = self.__class__.__name__
         self.addFontFile(":/base/fonts/Montserrat.ttf")
         self.addFontFile(":/base/fonts/MontserratI.ttf")
+        self.addFontFile(":/base/fonts/Uncage-bold.ttf")
         self.preInitTheme()
     
     def __attrs_post_init__(self):
-        self.addImagePath("UCheckbox", ":/base/icons/u_checkbox.png")
-        self.addImagePath("CCheckbox", ":/base/icons/c_checkbox.png")
+        self.addImagePath("UCheckbox", "icon:/main/checkbox_unchecked.svg")
+        self.addImagePath("CCheckbox", "icon:/main/checkbox_checked.svg")
+        self.addImagePath("UpArrow", "icon:/main/uparrow.svg")
+        self.addImagePath("DownArrow", "icon:/main/downarrow.svg")
+        self.addImagePath("Overlay", "icon:/main/overlay.svg")
+        
+        self.addIconTheme("qt://template/icons/checkbox_checked.svg")
+        self.addIconTheme("qt://template/icons/checkbox_unchecked.svg")
+        self.addIconTheme("qt://template/icons/uparrow.svg")
+        self.addIconTheme("qt://template/icons/downarrow.svg")
+        self.addIconTheme("qt://template/icons/overlay.svg")
         self.postInitTheme()
     
     @property
-    @stripColor
     def base(self):
         return self.baseColor
     
     @property
-    @stripColor
     def mainText(self):
         return self.mainTextColor
     
     @property
-    @stripColor
     def altText(self):
         return self.altTextColor
     
-    @stripColor
     def disabledText(self):
         return self.baseColor.lighter(175)
     
-    @stripColor
     def baseInput(self):
         return self.baseColor.darker(125)
     
-    @stripColor
     def hovered(self):
         return self.baseColor.lighter(125)
     
-    @stripColor
     def pressed(self):
         return self.mainTextColor.lighter(125)
     
-    @stripColor
     def mainSelectText(self):
         return self.altTextColor.lighter(125)
     
@@ -115,11 +107,18 @@ class Theme(ABC):
     
     @staticmethod
     def addFontFile(path):
-        QFontDatabase.addApplicationFont(path)
-        # print(QFontDatabase.applicationFontFamilies(idx))
+        idx = QFontDatabase.addApplicationFont(path)
+        return QFontDatabase.applicationFontFamilies(idx)
     
     def addImagePath(self, name, path):
         self._imagePaths[name] = path
+        
+    def addIconTheme(self, path):
+        self._iconsTheme.append(path)
+        
+    @property
+    def getIconTheme(self):
+        return self._iconsTheme.copy()
     
     def getImage(self, name):
         return self._imagePaths[name]
@@ -133,4 +132,4 @@ class Theme(ABC):
         ...
 
 
-__all__ = ["Theme", "stripColor"]
+__all__ = ["Theme"]

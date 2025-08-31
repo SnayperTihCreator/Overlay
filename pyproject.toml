@@ -20,7 +20,6 @@ dependencies = [
     "pycaw>=20240210; sys_platform == 'win32'",
     "markupsafe>=3.0.2",
     "typer>=0.16.0",
-    "wcmatch>=10.1",
     "numba>=0.61.2",
     "textual>=3.5.0",
     "pulsectl>=24.12.0; sys_platform == 'linux'",
@@ -32,4 +31,6 @@ dependencies = [
     "pyside6==6.9.0",
     "setuptools<81",
     "pulsectl>=24.12.0; sys_platform == 'linux'",
+    "pydantic[all]>=2.11.7",
+    "json-schema-to-pydantic>=0.4.1",
 ]

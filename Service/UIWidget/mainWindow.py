@@ -1,18 +1,18 @@
-import zipimport
 import sys
 import traceback
+from importlib import metadata
 
 from PySide6.QtWidgets import (
     QMainWindow,
     QSystemTrayIcon,
-    QMenu, QApplication, QWidget
+    QMenu, QApplication, QWidget, QLabel
 )
 from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
-from PySide6.QtGui import QKeyEvent, QAction
+from PySide6.QtGui import QKeyEvent, QAction, QIcon
 
 from uis.main_ui import Ui_MainWindow
 
-from API import DraggableWindow, OverlayWidget, BackgroundWorkerManager, Config, CLInterface
+from API import OWindow, OWidget, BackgroundWorkerManager, Config, CLInterface
 
 from PathControl.tools_folder import ToolsIniter
 from PathControl import getAppPath
@@ -22,8 +22,7 @@ from PathControl.pluginLoader import PluginLoader
 from Service.webSocket import AppServerControl
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
-from Service.core import flags
-from ApiPlugins.pluginControl import PluginControl
+from ApiPlugins.preloader import PreLoader
 from ApiPlugins.pluginItems import PluginItem
 from APIService.themeCLI import ThemeCLI
 
@@ -43,7 +42,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
     handled_global_shortkey = Signal(str)
     
     def __init__(self):
-        super().__init__(None, flags)
+        self.defaultFlags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint
+        super().__init__(None, self.defaultFlags)
         self.setObjectName("OverlayMain")
         self.setupUi(self)
         
@@ -53,7 +53,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.setMaximumSize(self.screen().size())
         
         self.config = Config.configApplication()
-        self.webSocketIn = AppServerControl(self.config.websockets.IN, self)
+        self.webSocketIn = AppServerControl(self.config.data.websockets.IN, self)
         self.webSocketIn.action_triggered.connect(self.handler_websockets_shortcut)
         self.webSocketIn.call_cli.connect(self.cliRunner)
         
@@ -89,6 +89,13 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.settingWidget, [Qt.AnchorPoint.AnchorHorizontalCenter, Qt.AnchorPoint.AnchorVerticalCenter]
         )
         
+        versionLabel = QLabel(metadata.version("Overlay::App"), self)
+        # versionLabel.setStyleSheet("background: #f00;")
+        self.addWidget(
+            versionLabel, [Qt.AnchorPoint.AnchorLeft, Qt.AnchorPoint.AnchorBottom],
+            QMargins(0, 0, 100, 50)
+        )
+        
         self.btnSetting.setIconSize(QSize(50, 50))
         self.btnSetting.setFixedSize(60, 60)
         ThemeController().registerWidget(self.btnSetting, ":/root/icons/setting.png", "setIcon", "icon", True)
@@ -115,11 +122,11 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.handled_global_shortkey.connect(self.handled_shortcut)
         
         self.input_bridge = HotkeyManager()
-        self.registered_handler(self.config.shortkey.open, "toggle_show")
+        self.registered_handler(self.config.data.shortkey.open, "toggle_show")
         self.input_bridge.start()
         
         self.tray = QSystemTrayIcon()
-        ThemeController().registerWidget(self.tray, ":/root/icons/overlay.png", "setIcon", "icon", True)
+        ThemeController().registerWidget(self.tray, "icon:/main/overlay.svg", "setIcon", "icon", True)
         ThemeController().updateWidget(self.tray)
         self.initSystemTray()
         
@@ -131,7 +138,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.settings = QSettings("./configs/settings.ini", QSettings.Format.IniFormat)
         
-        self.widgets: dict[str, OverlayWidget | DraggableWindow | BackgroundWorkerManager] = {}
+        self.widgets: dict[str, OWidget | OWindow | BackgroundWorkerManager] = {}
         self.interface: dict[str, CLInterface] = {}
         
         self.shortcuts = {}
@@ -182,7 +189,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.settingWidget.setOptions({"websoc": {"btn": True}})
         self.webSocketIn.start()
     
-    def deactive_web_sockets(self):
+    def deactivate_web_sockets(self):
         self.settingWidget.setOptions({"websoc": {"btn": False}})
         self.webSocketIn.quit()
     
@@ -204,7 +211,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             if item is not None:
                 self.listPlugins.remove(item)
             try:
-                win, item = DraggableWindow.dumper.loaded(self.settings, win_name, self)
+                win, item = OWindow.dumper.loaded(self.settings, win_name, self)
                 self.setWidgetMemory(item.save_name, win)
                 self.listPlugins.addItem(item)
             except ModuleNotFoundError:
@@ -217,7 +224,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             if item:
                 self.listPlugins.remove(item)
             try:
-                wid, item = OverlayWidget.dumper.loaded(self.settings, wid_name, self)
+                wid, item = OWidget.dumper.loaded(self.settings, wid_name, self)
                 self.setWidgetMemory(item.save_name, wid)
                 self.listPlugins.addItem(item)
             except ModuleNotFoundError:
@@ -231,7 +238,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.settings.clear()
         for item in self.listPlugins.items():
             if item.typeModule not in ["Window", "Widget"]: return
-            PluginControl.saveConfig(item, self.settings)
+            PreLoader.save(item, self.settings)
         self.settingWidget.save_setting(self.settings)
         self.settings.setValue("theme", ThemeController().themeName())
         self.settings.sync()
@@ -273,9 +280,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
                     item = None
                     match pluginType:
                         case "Window":
-                            item = DraggableWindow.dumper.overCreateItem(module)
+                            item = OWindow.dumper.overCreateItem(module)
                         case "Widget":
-                            item = OverlayWidget.dumper.overCreateItem(module)
+                            item = OWidget.dumper.overCreateItem(module)
                     self.listPlugins.addItem(item)
             else:
                 qDebug(f"Пакет без инициализации: {plugin_name}")
@@ -307,7 +314,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if obj is None:
             return
         
-        actions: dict[str, QAction] = PluginControl.getDumper(item.typeModule).createActionMenu(menu, obj, item)
+        actions: dict[str, QAction] = PreLoader.createMenu(menu, obj, item)
         
         act_settings = actions["settings"]
         act_settings.triggered.connect(lambda: self.onCreateSetting(item, obj))
@@ -322,7 +329,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         menu.exec(self.listPlugins.viewport().mapToGlobal(pos))
     
-    def onCreateSetting(self, item: PluginItem, win: DraggableWindow | OverlayWidget):
+    def onCreateSetting(self, item: PluginItem, win: OWindow | OWidget):
         if self.dialogSettings is not None:
             self.box.removeWidget(self.dialogSettings)
             self.dialogSettings.deleteLater()
@@ -337,7 +344,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.dialogSettings.show()
     
     def duplicateWindowPlugin(self, item: PluginItem):
-        d_item = DraggableWindow.dumper.duplicate(item)
+        d_item = OWindow.dumper.duplicate(item)
         self.listPlugins.addItem(d_item)
     
     def deleteDuplicateWindowPlugin(self, item, win):
@@ -379,12 +386,12 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.box.addWidget(widget, anchor, margins)
     
     def hideOverlay(self):
-        self.setWindowFlags(flags)
+        self.setWindowFlags(self.defaultFlags)
         self.hide()
         self.tray.show()
     
     def showOverlay(self):
-        self.setWindowFlags(Qt.WindowType.Popup | flags)
+        self.setWindowFlags(Qt.WindowType.Popup | self.defaultFlags)
         self.showFullScreen()
         self.tray.hide()
     

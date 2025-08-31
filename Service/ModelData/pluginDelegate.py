@@ -53,8 +53,8 @@ class PluginDelegate(QStyledItemDelegate):
         
         # Рисуем чекбокс (в виде изображения)
         checkbox_rect = option.rect.adjusted(0, 14, -option.rect.width()+48, -14)
-        checkbox_img = ":/base/icons/c_checkbox.png" if active else ":/base/icons/u_checkbox.png"
-        pixmap: QPixmap = ThemeController().getImage(checkbox_img, "pixmap", True)
+        checkbox_img = ThemeController().getPathImage("CCheckbox" if active else "UCheckbox")
+        pixmap = QPixmap(checkbox_img)
         pixmap = pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         painter.drawPixmap(checkbox_rect, pixmap)
     

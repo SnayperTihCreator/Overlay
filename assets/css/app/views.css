@@ -9,7 +9,7 @@ QListView::indicator:unchecked {
 
 QListView::indicator:checked {
     image: url("{{ theme.getImage("CCheckbox") }}");
-    color: #{{ theme.mainText }};
+    color: {{ theme.mainText | color}};
 }
 
 QListView::item {
@@ -17,8 +17,8 @@ QListView::item {
 }
 
 QTableView {
-    gridline-color: #{{ theme.disabledText() }};
-    alternate-background-color: #{{ theme.baseInput() }};
+    gridline-color: {{ theme.disabledText() | color }};
+    alternate-background-color: {{ theme.baseInput() | color }};
     selection-color: transparent;
 }
 
