@@ -7,7 +7,7 @@ from ApiPlugins.preloader import PreLoader
 from ApiPlugins.pluginItems import PluginItem
 
 
-class WidgetPreLoader(PreLoader):
+class WidgetPreLoader(PreLoader, type="widget"):
     @classmethod
     def overCreateItem(cls, module: ModuleType, checked: bool = False, **kwargs):
         return super().overCreateItem(module, "Widget", checked)

@@ -17,3 +17,5 @@ wheels/
 /plugins/
 /tools/
 /resource/
+/.cache/
+/assets/gif/loader.mp4

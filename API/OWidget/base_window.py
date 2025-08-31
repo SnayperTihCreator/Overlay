@@ -2,17 +2,19 @@ import uuid
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
+from pydantic import BaseModel
 
 from API.config import Config
 from Common.core import APIBaseWidget
 
 from ApiPlugins.widgetPreloader import WidgetPreLoader
-from API.PluginSetting import PluginSettingWidget
+from .pluginSettingWidget import PluginSettingWidget, WidgetConfigData
 from ColorControl.themeController import ThemeController
 
 
-class OverlayWidget(QWidget, APIBaseWidget):
+class OWidget(QWidget, APIBaseWidget):
     dumper = WidgetPreLoader()
+    _config_data_ = WidgetConfigData
     
     def __init__(self, config, parent=None):
         super().__init__(parent, Qt.WindowType.Widget)
@@ -30,20 +32,34 @@ class OverlayWidget(QWidget, APIBaseWidget):
         self.loader()
         
         self.loadConfig()
+        
+    def save_config(self) -> BaseModel:
+        return self._config_data_(**self.__save_config__())
     
-    def savesConfig(self):
-        return {}
+    def __save_config__(self) -> dict:
+        return {"position": self.pos()}
     
-    def restoreConfig(self, config):
+    def restore_config(self, config: dict):
+        self.__restore_config__(self._config_data_(**config))
+        
+    def __restore_config__(self, config: BaseModel):
         pass
     
     def loader(self):
         pass
     
     def loadConfig(self):
-        ThemeController().register(self, f"plugin://{self.config.plugin_name}/{self.config.widget.styleFile}", False)
+        ThemeController().register(self,
+                                   f"plugin://{self.config.name}/{self.config.data.widget.styleFile}",
+                                   False)
         ThemeController().updateUid(self.uid)
+        
+    def gridOverlay(self, anchorX, anchorY):
+        self.parent().addWidget(
+            self,
+            [anchorX, anchorY]
+        )
     
     @classmethod
-    def createSettingWidget(cls, widget: "OverlayWidget", name_plugin: str, parent):
+    def createSettingWidget(cls, widget: "OWidget", name_plugin: str, parent):
         return PluginSettingWidget(widget, name_plugin, parent)

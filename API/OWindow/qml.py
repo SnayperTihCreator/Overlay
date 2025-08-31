@@ -4,13 +4,13 @@ from PySide6.QtQuickWidgets import QQuickWidget
 from PySide6.QtQuick import QQuickItem
 from PySide6.QtWidgets import QApplication
 
-from .base_window import DraggableWindow
+from .base_window import OWindow
 from ColorControl.themeController import ThemeController
 
 qApp: QApplication
 
 
-class QmlDraggableWindow(DraggableWindow):
+class QmlDraggableWindow(OWindow):
     central_widget: QQuickWidget
     
     def __init__(self, config, url, parent=None):

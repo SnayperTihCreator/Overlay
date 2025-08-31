@@ -1,72 +1,86 @@
-from typing import Optional, Literal
+from typing import Literal
 import io
 from typing import Any
-from dataclasses import dataclass
+import traceback
 
+from attrs import define, field
 from box import Box
 import toml
 
-
-@dataclass
-class Defaults:
-    draggable_window = {
-        "window": {"width": 300, "height": 200}
-    }
-    overlay_widget = {}
-    apps = {
-        "websockets": {"IN": [8000, 8010], "OUT": [8015, 8020]},
-        "shortkey": {"open": "shift+alt+o"}
-    }
-    setting = {}
-    theme = {
-        "plugin": {
-            "name": "<unknown>"
-        },
-        "colors": {
-            "base": "#6e738d",
-            "main_text": "#cad3f5",
-            "alt_text": "#8aadf4"
-        }
-    }
+from .defaultConfigs import *
 
 
+@define
 class Config:
-    def __init__(self, plugin_name, plugin_type: Literal["draggable_window", "overlay_widget", "apps", "setting", "theme"], config_name="config"):
-        self._config_name = config_name
-        self._default_config = getattr(Defaults, plugin_type, {})
-        self._plugin_type = plugin_type
-        self.plugin_name = plugin_name
-        self._config: Box = self._load_config()
+    _resource_name: str = field(alias="resource")
+    _resource_type: Literal["window", "widget", "apps", "setting", "theme"] = field()
+    _config_name: str = field(default="config")
+    
+    _scheme: type[BaseConfig] = field(default=None, repr=False)
+    _config: BaseConfig = field(init=False, repr=False)
+    
+    def __attrs_post_init__(self):
+        if self._scheme is None:
+            self._scheme = self.getSchemeConfig(self._resource_type)
+        self._config = self._load_config()
+    
+    @staticmethod
+    def getSchemeConfig(resource_type) -> type[BaseConfig]:
+        match resource_type:
+            case "window":
+                return ConfigWindow
+            case "widget":
+                return ConfigWidget
+            case "apps":
+                return ConfigApps
+            case "theme":
+                return ConfigTheme
+            case "setting":
+                return BaseConfig
+            case _:
+                raise TypeError(f"Не известный формат конфигураций - {resource_type}")
     
     def _load_config(self) -> Box[str, Any]:
         configFile = None
         try:
-            
-            match self._plugin_type:
+            match self._resource_type:
                 case "apps":
-                    configFile = open(f"project://{self._config_name}.toml", encoding="utf-8")
-                case "draggable_window" | "overlay_widget":
-                    configFile = open(f"plugin://{self.plugin_name}/{self._config_name}.toml", encoding="utf-8")
+                    configFile = open(f"project://configs/{self._config_name}.toml", encoding="utf-8")
+                case "window" | "widget":
+                    configFile = open(f"plugin://{self.name}/{self._config_name}.toml", encoding="utf-8")
                 case "setting":
                     configFile = io.StringIO()
                 case "theme":
-                    configFile = open(f"resource://theme/{self.plugin_name}/{self._config_name}.toml", encoding="utf-8")
-            return Box(toml.load(configFile))
+                    configFile = open(f"resource://theme/{self.name}/{self._config_name}.toml", encoding="utf-8")
+            return self._scheme(**toml.load(configFile))
+        except FileNotFoundError as e:
+            if self._resource_type == "apps":
+                with open(f"project://configs/{self._config_name}.toml", "w", encoding="UTF-8") as file:
+                    default = self._scheme().model_dump()
+                    toml.dump(default, file)
+                return self._scheme()
+            raise e
         except Exception as e:
-            print(e)
-            return Box(self._default_config)
+            print(*traceback.format_exception(e))
+            return self._scheme()
         finally:
             if configFile is not None:
                 configFile.close()
     
-    def __getattr__(self, item):
-        return getattr(self._config, item)
+    @property
+    def data(self):
+        return self._config.copy()
+    
+    @property
+    def name(self):
+        return self._resource_name
+    
+    @property
+    def type(self):
+        return self._resource_type
     
     def reload(self):
         self._config = self._load_config()
-    
-    def plugin_path(self):
-        return self._load_path
     
     @classmethod
     def configApplication(cls):

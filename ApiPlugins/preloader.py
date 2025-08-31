@@ -1,22 +1,34 @@
 import importlib
 from types import ModuleType
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, qWarning
 from PySide6.QtWidgets import QMenu
 import json5
-from box import Box
 
-from ApiPlugins.pluginItems import PluginItem
+from .pluginItems import PluginItem
+from Common.core import APIBaseWidget
 
 
-class PreLoader(ABC):
+class MetaSingToolsPreloader(ABCMeta):
+    _instance = None
+    
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
+
+
+class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
+    instances = {}
+    
     @classmethod
-    def saved(cls, target, item: PluginItem, setting: QSettings):
+    def saved(cls, target: APIBaseWidget, item: PluginItem, setting: QSettings):
         setting.beginGroup(item.save_name)
         if target is not None:
+            config = target.save_config().model_dump(mode="json")
             setting.setValue(
-                "config", json5.dumps(target.savesConfig(), ensure_ascii=False)
+                "config", json5.dumps(config, ensure_ascii=False)
             )
         else:
             setting.setValue("config", "{}")
@@ -47,7 +59,7 @@ class PreLoader(ABC):
         
         if has_init:
             target = item.build(parent)
-            target.restoreConfig(Box(config, default_box=True))
+            target.restore_config(config)
             cls.activatedWidget(active, target)
         setting.endGroup()
         return target, item
@@ -70,7 +82,7 @@ class PreLoader(ABC):
     
     @classmethod
     @abstractmethod
-    def overLoaded(cls, setting: QSettings, name: str, parent):
+    def overLoaded(cls, setting: QSettings, name: str, parent) -> APIBaseWidget:
         pass
     
     @classmethod
@@ -96,3 +108,24 @@ class PreLoader(ABC):
         act_settings = menu.addAction("Setting")
         
         return {"settings": act_settings}
+    
+    def __init_subclass__(cls, **kwargs):
+        if "type" not in kwargs: return
+        cls.instances[kwargs.get("type")] = cls
+    
+    @classmethod
+    def save(cls, item: PluginItem, setting: QSettings):
+        preloader: PreLoader = cls.instances[item.typeModule.lower()]
+        try:
+            setting.beginGroup(f"{item.typeModule.lower()}s")
+            preloader.saved(item.widget, item, setting)
+        except Exception as e:
+            qWarning(f"Error {type(e)}: {e}")
+        finally:
+            setting.endGroup()
+            
+    @classmethod
+    def createMenu(cls, menu: QMenu, widget, item: PluginItem):
+        preloader: PreLoader = cls.instances[item.typeModule.lower()]
+        return preloader.createActionMenu(menu, widget, item)
+    
