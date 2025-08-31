@@ -1,19 +1,19 @@
 QMenuBar {
-    background-color: #{{ theme.baseInput() }};
-    color: #{{ theme.altText }};
+    background-color: {{ theme.baseInput() | color}};
+    color: {{ theme.altText }};
 }
 
 QMenuBar::item:selected {
-    background-color: #{{ theme.hovered() }};
-    color: #{{ theme.mainSelectText() }}
+    background-color: {{ theme.hovered() | color }};
+    color: {{ theme.mainSelectText() | color }}
 }
 
 QMenu {
-    background-color: #ff{{ theme.base }};
-    color: #{{ theme.altText }};
-    border: 1px solid #{{ theme.mainText }};
+    background-color: {{ theme.base | opacity(255) }};
+    color: {{ theme.altText | color }};
+    border: 1px solid {{ theme.mainText | color }};
 }
 
 QMenu::item:selected {
-    color: #{{ theme.mainSelectText() }};
+    color: {{ theme.mainSelectText() | color }};
 }

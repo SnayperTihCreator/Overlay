@@ -1,5 +1,5 @@
 * {
-    background-color: #7f{{ theme.base }};
-    color: #{{ theme.mainText }};
+    background-color: {{ theme.base | opacity(127) }};
+    color: {{ theme.mainText | color }};
     border-radius: 20px;
 }
