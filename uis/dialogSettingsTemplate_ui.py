@@ -53,6 +53,7 @@ class Ui_Form(object):
         self.formLayout.setObjectName(u"formLayout")
         self.label_2 = QLabel(Form)
         self.label_2.setObjectName(u"label_2")
+        self.label_2.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);")
 
         self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.label_2)
 

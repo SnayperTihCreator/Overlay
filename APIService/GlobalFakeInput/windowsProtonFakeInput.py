@@ -1,7 +1,6 @@
 import time
 
 from APIService.webControls import ClientWebSockets
-from PathControl import getAppPath
 from API.config import Config
 
 from .enums import BaseCommonKey
@@ -10,8 +9,8 @@ from .baseHandlerFakeInput import BaseHandlerFakeInput
 
 class ClientProtonFakeInput(ClientWebSockets):
     def __init__(self, parent=None):
-        self.config = Config(getAppPath(), "apps")
-        super().__init__(self.config.websockets.OUT, parent)
+        self.config = Config.configApplication()
+        super().__init__(self.config.data.websockets.OUT)
     
     def isPlayingMusic(self):
         self.send_message("check pmusic")

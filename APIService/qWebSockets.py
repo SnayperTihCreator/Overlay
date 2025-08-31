@@ -15,7 +15,7 @@ class ServerWebSockets(QObject):
     
     def __init__(self, ports, parent=None):
         super().__init__(parent)
-        self.free_port = find_free_port(*ports)
+        self.free_port = find_free_port(ports.begin, ports.end)
         
         self._server: Optional[QWebSocketServer] = None
         self.clients: dict[str, QWebSocket] = {}

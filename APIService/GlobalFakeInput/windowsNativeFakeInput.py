@@ -1,7 +1,6 @@
 from pycaw.pycaw import AudioUtilities
 import win32api
 import win32con
-import time
 
 from .enums import BaseWindowsKey
 from .baseHandlerFakeInput import BaseHandlerFakeInput
