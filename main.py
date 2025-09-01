@@ -15,6 +15,7 @@ from Service.PrintManager import PrintManager
 from Service.gifSplashScreen import GifSplashScreen
 from ColorControl.themeController import ThemeController
 from ColorControl.defaultTheme import DefaultTheme
+from PathControl.tools_folder import ToolsIniter
 # noinspection PyUnresolvedReferences
 import Service.globalContext
 # noinspection PyUnresolvedReferences
@@ -29,6 +30,9 @@ if __name__ == "__main__":
         os.environ["QT_QPA_PLATFORM"] = "xcb"
     
     app = QApplication(sys.argv)
+
+    tools_folder = ToolsIniter("tools")
+    tools_folder.load()
     
     with OpenManager() as om, PrintManager() as pm:
         pm.show_caller_info(True)

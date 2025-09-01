@@ -27,7 +27,7 @@ class PluginLoader(Loader):
                 self.plugins[plugin_name] = module
                 self.types_plugins[plugin_name] = types
                 self.errors[plugin_name] = None
-            except ImportError as e:
+            except Exception as e:
                 self.plugins[plugin_name] = None
                 self.types_plugins[plugin_name] = []
                 self.errors[plugin_name] = e
