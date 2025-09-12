@@ -14,7 +14,7 @@ from uis.main_ui import Ui_MainWindow
 
 from API import OWindow, OWidget, BackgroundWorkerManager, Config, CLInterface
 
-from PathControl.tools_folder import ToolsIniter
+
 from PathControl import getAppPath
 from PathControl.themeLoader import ThemeLoader
 from PathControl.pluginLoader import PluginLoader
@@ -132,9 +132,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         if str(getAppPath()) not in sys.path:
             sys.path.append(str(getAppPath()))
-        
-        self.tools_folder = ToolsIniter("tools")
-        self.tools_folder.load()
         
         self.settings = QSettings("./configs/settings.ini", QSettings.Format.IniFormat)
         
