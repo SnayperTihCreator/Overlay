@@ -1,17 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
 import os
-import toml
 
 sys.path.append(os.getcwd())
-from PathControl.storageControls import OpenManager
-
-import PathControl.qtStorageControls
+from MinTools import OpenManager
+from Service.metadata import version
 import assets_rc
 
 with OpenManager():
-    data_file = open("qt://app/metadata.toml", encoding="utf-8").read()
-    data = toml.loads(data_file)
 
     a = Analysis(
         ['main.py'],
@@ -34,7 +30,7 @@ with OpenManager():
         a.binaries,
         a.datas,
         [],
-        name=f'Overlay({data["version"]})',
+        name=f'Overlay({version("App")})',
         debug=False,
         bootloader_ignore_signals=False,
         strip=False,

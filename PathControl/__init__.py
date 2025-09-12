@@ -11,3 +11,9 @@ def getAppPath():
         if getattr(sys, "frozen", False)
         else Path(os.getcwd())
     )
+
+
+@cache
+def getAssetsPath():
+    path = getattr(sys, "_MEIPASS", os.getcwd())
+    return Path(path) / "assets"

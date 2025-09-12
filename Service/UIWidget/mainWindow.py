@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QMenu, QApplication, QWidget, QLabel
 )
 from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
-from PySide6.QtGui import QKeyEvent, QAction, QIcon
+from PySide6.QtGui import QKeyEvent, QAction
 
 from uis.main_ui import Ui_MainWindow
 
