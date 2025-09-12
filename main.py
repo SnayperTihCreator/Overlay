@@ -16,11 +16,15 @@ from Service.metadata import version, metadata
 from ColorControl.themeController import ThemeController
 from ColorControl.defaultTheme import DefaultTheme
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from PathControl.tools_folder import ToolsIniter
 # noinspection PyUnresolvedReferences
 import Service.globalContext
 # noinspection PyUnresolvedReferences
 import PathControl.qtStorageControls
+=======
+from MinTools import OpenManager
+>>>>>>> Stashed changes
 =======
 from MinTools import OpenManager
 >>>>>>> Stashed changes
