@@ -24,6 +24,7 @@ if __name__ == "__main__":
         os.environ["QT_QPA_PLATFORM"] = "xcb"
     
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
 
     tools_folder = ToolsIniter("tools")
     tools_folder.load()
@@ -41,7 +42,7 @@ if __name__ == "__main__":
         splash.drawText(version("App"), (20, splash.height()-20))
         splash.show()
         
-        app.setQuitOnLastWindowClosed(False)
+        
         
         
         def load():
