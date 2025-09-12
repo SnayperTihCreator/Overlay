@@ -1,3 +1,4 @@
+import pathlib
 from typing import Optional
 import uuid
 import re
@@ -39,7 +40,7 @@ class ResourceBuilder:
     def __attrs_post_init__(self):
         project = open_fs("project://")
         self._cache = project.makedir(".cache", recreate=True).makedir("theme", recreate=True)
-        QDir.addSearchPath("icon", self._cache.getospath(""))
+        QDir.addSearchPath("icon", (getAppPath()/".cache"/"theme").as_posix())
     
     def builder(self, mainColor: QColor, altColor: QColor):
         try:
