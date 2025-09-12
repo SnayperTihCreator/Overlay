@@ -2,7 +2,6 @@ import sys
 import os
 import builtins
 import warnings
-from importlib import metadata
 
 warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="__main__")
@@ -10,20 +9,23 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="__main__"
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
 
-from PathControl.storageControls import OpenManager
+
 from Service.PrintManager import PrintManager
 from Service.gifSplashScreen import GifSplashScreen
+from Service.metadata import version, metadata
 from ColorControl.themeController import ThemeController
 from ColorControl.defaultTheme import DefaultTheme
+<<<<<<< Updated upstream
 from PathControl.tools_folder import ToolsIniter
 # noinspection PyUnresolvedReferences
 import Service.globalContext
 # noinspection PyUnresolvedReferences
 import PathControl.qtStorageControls
+=======
+from MinTools import OpenManager
+>>>>>>> Stashed changes
 # noinspection PyUnresolvedReferences
 import assets_rc
-# noinspection PyUnresolvedReferences
-import Service.metadatas
 
 if __name__ == "__main__":
     if sys.platform == "linux":
@@ -43,8 +45,8 @@ if __name__ == "__main__":
         ThemeController().setTheme(DefaultTheme())
         
         splash = GifSplashScreen(":/root/gif/loader.gif")
-        splash.drawText(metadata.metadata("Overlay::App")["author"], (20, 30), size=10, font="UNCAGE")
-        splash.drawText(metadata.version("Overlay::App"), (20, splash.height()-20))
+        splash.drawText(metadata("App").author, (20, 30), size=10, font="UNCAGE")
+        splash.drawText(version("App"), (20, splash.height()-20))
         splash.show()
         
         app.setQuitOnLastWindowClosed(False)

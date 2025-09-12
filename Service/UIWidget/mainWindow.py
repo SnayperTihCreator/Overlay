@@ -1,6 +1,5 @@
 import sys
 import traceback
-from importlib import metadata
 
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -20,6 +19,7 @@ from PathControl.themeLoader import ThemeLoader
 from PathControl.pluginLoader import PluginLoader
 
 from Service.webSocket import AppServerControl
+from Service.metadata import version
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
 from ApiPlugins.preloader import PreLoader
@@ -89,8 +89,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             self.settingWidget, [Qt.AnchorPoint.AnchorHorizontalCenter, Qt.AnchorPoint.AnchorVerticalCenter]
         )
         
-        versionLabel = QLabel(metadata.version("Overlay::App"), self)
-        # versionLabel.setStyleSheet("background: #f00;")
+        versionLabel = QLabel(version("App"), self)
         self.addWidget(
             versionLabel, [Qt.AnchorPoint.AnchorLeft, Qt.AnchorPoint.AnchorBottom],
             QMargins(0, 0, 100, 50)
@@ -192,7 +191,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def loadTheme(self):
         self.interface["ThemeCLI"] = ThemeCLI(self.themeLoader)
-        
+    
         themeName = self.settings.value("theme", None)
         if themeName is None: return
         

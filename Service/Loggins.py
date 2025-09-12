@@ -54,9 +54,6 @@ handler.setFormatter(formatter)
 
 
 def qt_message_handler(mode: QtMsgType, context: QMessageLogContext, message):
-    # frame = inspect.currentframe().f_back
-    # func = frame.f_code.co_name
-    # extra={"filename": frame.f_code.co_filename, "lineno": frame.f_lineno}
     if mode == QtMsgType.QtDebugMsg:
         logger.debug(message, stacklevel=2)
     elif mode == QtMsgType.QtInfoMsg:
