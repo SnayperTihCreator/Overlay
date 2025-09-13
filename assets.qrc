@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="root/icons">
-        <file alias="overlay.png">assets/icons/overlay.png</file>
         <file alias="loader.png">assets/icons/loader.png</file>
         <file alias="setting.png">assets/icons/setting.png</file>
     </qresource>
