@@ -25,7 +25,7 @@ if __name__ == "__main__":
     
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
-
+    
     tools_folder = ToolsIniter("tools")
     tools_folder.load()
     
@@ -39,10 +39,8 @@ if __name__ == "__main__":
         
         splash = GifSplashScreen(":/root/gif/loader.gif")
         splash.drawText(metadata("App").author, (20, 30), size=10, font="UNCAGE")
-        splash.drawText(version("App"), (20, splash.height()-20))
+        splash.drawText(version("App"), (20, splash.height() - 20))
         splash.show()
-        
-        
         
         
         def load():

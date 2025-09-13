@@ -203,6 +203,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def loadConfigs(self):
         self.settings.beginGroup("windows")
         for win_name in self.settings.childGroups():
+            qApp.processEvents()
             item = self.listPlugins.findItemBySaveName(win_name)
             if item is not None:
                 self.listPlugins.remove(item)
@@ -216,6 +217,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.settings.endGroup()
         self.settings.beginGroup("widgets")
         for wid_name in self.settings.childGroups():
+            qApp.processEvents()
             item = self.listPlugins.findItemBySaveName(wid_name)
             if item:
                 self.listPlugins.remove(item)
@@ -241,6 +243,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
         qDebug("Сохранение приложения")
     
     def initSystemTray(self):
+        self.tray.setToolTip("Overlay")
+        
         menu = QMenu()
         
         act_show_overlay = menu.addAction("Show overlay")
@@ -265,6 +269,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.pluginLoader.load()
         
         for plugin_name, module in self.pluginLoader.plugins.items():
+            qApp.processEvents()
             if module is None:
                 e = self.pluginLoader.getError(plugin_name)
                 trace = "".join(traceback.format_exception(e))

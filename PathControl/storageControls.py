@@ -79,6 +79,15 @@ class ZipFormatFile(OSFS):
             return _zipfs
         else:
             return _zipfs.opendir("/".join(parts))
+        
+    def open(self, path, mode="r", buffering=-1, encoding=None,
+             errors=None, newline="", line_buffering=False,  **options
+    ):
+        folder, file = path.rsplit("/", 1)
+        if folder and file:
+            zipfs = self.opendir(folder)
+            return zipfs.open(file, mode, buffering, encoding, errors, newline, line_buffering, **options)
+        return super().open(path, mode, buffering, encoding, errors, newline, line_buffering, **options)
     
     @staticmethod
     def _getRootPlugin(path: pathlib.Path):
@@ -86,11 +95,15 @@ class ZipFormatFile(OSFS):
         return _parts[0], _parts[1:]
     
     def getinfo(self, path, namespaces=None):
-        lastInfo = super().getinfo(f"{path}.{self.suffix_file}", namespaces)
-        lastInfo.raw["basic"]["is_dir"] = True
-        lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(f".{self.suffix_file}")
-        if "details" in lastInfo.raw:
-            lastInfo.raw["details"]["type"] = ResourceType.directory
+        folder, file = path.rsplit("/", 1)
+        if folder and file:
+            lastInfo = self.opendir(folder).getinfo(file, namespaces)
+        else:
+            lastInfo = super().getinfo(f"{path}.{self.suffix_file}", namespaces)
+            lastInfo.raw["basic"]["is_dir"] = True
+            lastInfo.raw["basic"]["name"] = lastInfo.raw["basic"]["name"].rstrip(f".{self.suffix_file}")
+            if "details" in lastInfo.raw:
+                lastInfo.raw["details"]["type"] = ResourceType.directory
         return lastInfo
     
     def listdir(self, path):

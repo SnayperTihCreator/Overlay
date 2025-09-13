@@ -1,4 +1,3 @@
-import pathlib
 from typing import Optional
 import uuid
 import re
@@ -127,7 +126,11 @@ class ThemeController(metaclass=MetaSingtools):
         return f"url({self.currentTheme.getImage(name)})"
     
     def __init__(self):
-        self.env = Environment(loader=FSLoader("qt://root/css"))
+        self.loader = ChoiceLoader([
+            FSLoader("qt://root/css"),
+            FSLoader("plugin://")
+        ])
+        self.env = Environment(loader=self.loader)
         self.resource_builder = ResourceBuilder("#ff0000", "#00ff00")
         
         self.env.filters["opacity"] = self.__opacity
@@ -147,7 +150,8 @@ class ThemeController(metaclass=MetaSingtools):
         if isEnv:
             self.interface[uid] = InterfaceStyle(widget, path)
         else:
-            template = Template(open(path, encoding="utf-8").read())
+            _, path = path.split("://")
+            template = self.env.get_template(path)
             self.interface[uid] = InterfaceStyle(widget, None, template)
         return uid
     

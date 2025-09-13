@@ -1,4 +1,3 @@
-from functools import wraps
 from abc import ABC, abstractmethod
 
 from PySide6.QtGui import QColor, QFont, QFontDatabase, QIcon, QPixmap, QImage
