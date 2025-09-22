@@ -1,4 +1,5 @@
 import uuid
+from abc import ABC
 
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QMainWindow, QGraphicsColorizeEffect, QWidget
@@ -15,7 +16,7 @@ from ColorControl.themeController import ThemeController
 from .pluginSettingWindow import PluginSettingWindow, WindowConfigData
 
 
-class OWindow(QMainWindow, APIBaseWidget):
+class OWindow(QMainWindow, APIBaseWidget, ABC):
     _config_data_ = WindowConfigData
     
     dumper = WindowPreLoader()
@@ -26,6 +27,10 @@ class OWindow(QMainWindow, APIBaseWidget):
         self.setObjectName(self.__class__.__name__)
         self.setProperty("class", "DraggableWindow")
         self.uid = uuid.uuid4().hex
+        
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.process)
+        self.time_msec = 1000
         
         self.config: Config = config
         # Настройки окна
@@ -58,8 +63,10 @@ class OWindow(QMainWindow, APIBaseWidget):
         self.colorize_effect.setStrength(0)  # Изначально выключен
         self.setGraphicsEffect(self.colorize_effect)
     
-    def updateData(self):
+    def __process__(self):
         self.reloading = False
+        
+    def __ready__(self): ...
     
     def loadConfig(self):
         width, height = self.config.data.window.width, self.config.data.window.height
@@ -76,7 +83,7 @@ class OWindow(QMainWindow, APIBaseWidget):
         
         self.loadConfig()
         
-        self.updateData()
+        self.process()
     
     def __save_config__(self) -> dict:
         return dict(

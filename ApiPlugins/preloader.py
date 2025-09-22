@@ -32,7 +32,6 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
             )
         else:
             setting.setValue("config", "{}")
-        setting.setValue("has_init", int(target is not None))
         setting.setValue("module", item.module.__name__)
         setting.setValue("active", int(item.active))
         setting.setValue("orig_name", item.namePlugin)
@@ -44,7 +43,6 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
         setting.beginGroup(name)
         config = json5.loads(setting.value("config")) if setting.value("config") else {}
         active = bool(int(setting.value("active")))
-        has_init = int(setting.value("has_init"))
         module = importlib.import_module(setting.value("module"))
         origname = setting.value("orig_name", name.rsplit("_", 1)[0])
         parameters = [
@@ -57,7 +55,7 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
         
         target = cls.overLoaded(setting, name, parent)
         
-        if has_init:
+        if active:
             target = item.build(parent)
             target.restore_config(config)
             cls.activatedWidget(active, target)

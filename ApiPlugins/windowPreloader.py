@@ -40,6 +40,7 @@ class WindowPreLoader(PreLoader, type="window"):
     @classmethod
     def activatedWidget(cls, state, target):
         if state:
+            target.ready()
             target.show()
         else:
             target.hide()

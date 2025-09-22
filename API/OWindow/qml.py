@@ -1,3 +1,5 @@
+from abc import ABC
+
 from PySide6.QtCore import QUrl, Qt, qCritical, QEvent
 from PySide6.QtQml import QQmlEngine
 from PySide6.QtQuickWidgets import QQuickWidget
