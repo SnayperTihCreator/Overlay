@@ -1,14 +1,37 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
 import os
+import pathlib
+import zipfile
 
 sys.path.append(os.getcwd())
+
+from PyInstaller.building.build_main import Analysis
+# noinspection PyUnresolvedReferences
+from PyInstaller.building.api import EXE, COLLECT, PYZ, logger
+
 from MinTools import OpenManager
 from Service.metadata import version
+# noinspection PyUnresolvedReferences
 import assets_rc
 
-with OpenManager():
+DISTPATH: str
 
+
+def buildZipFile(dist: pathlib.Path, dir_name: str):
+    folderApp = dist / dir_name
+    zipFile = dist / f"{dir_name}.zip"
+    if folderApp.exists():
+        logger.info("📁 Сборка архива")
+        with zipfile.ZipFile(zipFile, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
+            for file_path in folderApp.rglob('*'):
+                if file_path.is_file():
+                    arcname = file_path.relative_to(folderApp)
+                    zipf.write(file_path, arcname)
+        logger.info("📁 Архив собран")
+
+
+with OpenManager():
     a = Analysis(
         ['main.py'],
         pathex=[],
@@ -27,16 +50,13 @@ with OpenManager():
     exe = EXE(
         pyz,
         a.scripts,
-        a.binaries,
-        a.datas,
         [],
-        name=f'Overlay({version("App")})',
+        exclude_binaries=True,
+        name=f'Overlay',
         debug=False,
         bootloader_ignore_signals=False,
         strip=False,
         upx=True,
-        upx_exclude=[],
-        runtime_tmpdir=None,
         console=False,
         disable_windowed_traceback=False,
         argv_emulation=False,
@@ -45,3 +65,15 @@ with OpenManager():
         entitlements_file=None,
         icon=['assets/icons/icon.png'],
     )
+    
+    coll = COLLECT(
+        exe,
+        a.binaries,
+        a.datas,
+        strip=False,
+        upx=True,
+        upx_exclude=[],
+        name=f'Overlay({version("App")})',
+    )
+    
+    buildZipFile(pathlib.Path(DISTPATH), coll.name)

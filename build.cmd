@@ -1,2 +1,2 @@
 uv sync
-uv run pyinstaller overlay.spec
+uv run pyinstaller overlay.spec --noconfirm

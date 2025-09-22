@@ -144,6 +144,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.updateDataPlugins()
         self.loadConfigs()
         self.loadTheme()
+        
+    def __ready__(self):
+        pass
     
     def registered_handler(self, comb, name):
         self.input_bridge.add_hotkey(comb, self.handled_global_shortkey.emit, name)
