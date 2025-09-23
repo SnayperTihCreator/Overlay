@@ -298,10 +298,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if is_obj_create:
             item.build(self)
             self.setWidgetMemory(item.save_name, item.widget)
-        if item.active:
-            item.widget.show()
-        else:
-            item.widget.hide()
+        item.widget.dumper.activatedWidget(item.active, item.widget)
     
     def setWidgetMemory(self, name: str, widget: QWidget):
         self.widgets[name] = widget
