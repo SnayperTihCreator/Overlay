@@ -3,7 +3,7 @@ from abc import ABC
 from PySide6.QtCore import QUrl, Qt, qCritical, QEvent
 from PySide6.QtQml import QQmlEngine
 from PySide6.QtQuickWidgets import QQuickWidget
-from PySide6.QtQuick import QQuickItem
+from PySide6.QtQuick import QQuickItem, QQuickWindow, QSGRendererInterface
 from PySide6.QtWidgets import QApplication
 
 from .base_window import OWindow
@@ -16,8 +16,8 @@ class QmlDraggableWindow(OWindow):
     central_widget: QQuickWidget
     
     def __init__(self, config, url, parent=None):
+        QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Software)
         super().__init__(config, parent)
-        
         self.central_widget = QQuickWidget(self)
         self.central_widget.statusChanged.connect(self._onChangeStatus)
         self.loadPresetData()
