@@ -8,6 +8,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="__main__"
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
+from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
 from pyi18n.loaders import PyI18nYamlLoader
 
 from Service.PrintManager import PrintManager
@@ -26,6 +27,7 @@ if __name__ == "__main__":
     if sys.platform == "linux":
         os.environ["QT_QPA_PLATFORM"] = "xcb"
     
+    QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Software)
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     
@@ -52,7 +54,7 @@ if __name__ == "__main__":
             builtins.windowOverlay = window
             splash.finish(window)
         
-        
         QTimer.singleShot(2500, load)
+        
         
         app.exec()
