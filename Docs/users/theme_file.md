@@ -10,9 +10,9 @@
 ThemeConfig = Config("<ИмяТемы>", "theme", "theme")
 @define
 class <ИмяТемы>(Theme):
-    baseColor: QColor = field(default=QColor(ThemeConfig.colors.base))
-    mainTextColor: QColor = field(default=QColor(ThemeConfig.colors.main_text))
-    altTextColor: QColor = field(default=QColor(ThemeConfig.colors.alt_text))
+    baseColor: QColor = field(default=QColor(ThemeConfig.data.colors.base))
+    mainTextColor: QColor = field(default=QColor(ThemeConfig.data.colors.main_text))
+    altTextColor: QColor = field(default=QColor(ThemeConfig.data.colors.alt_text))
     font: QFont = field(default=QFont("Montserrat", 12, 700))
     
     def preInitTheme(self, *args): ...
@@ -113,11 +113,6 @@ font: QFont = field(default=QFont("Montserrat", 12, 700))
 Здесь место для добавления остального контента
 
 ### Метод для перегрузки, но наложение декоратора
-
-Здесь обязательной декоратор stripColor из модуля `ColorControl.theme`
-Если метод возращает объект QColor
-
-Если метод возщает уже строку цвета в hex формата без `#` декоратор не нужен
 
 #### disabledText
 
