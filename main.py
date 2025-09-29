@@ -8,16 +8,19 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="__main__"
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
+from pyi18n.loaders import PyI18nYamlLoader
 
 from Service.PrintManager import PrintManager
 from Service.metadata import metadata, version
 from Service.gifSplashScreen import GifSplashScreen
+from Service.internalization import CustomPyI18n
 from ColorControl.themeController import ThemeController
 from ColorControl.defaultTheme import DefaultTheme
 from PathControl.tools_folder import ToolsIniter
 from MinTools import OpenManager
 # noinspection PyUnresolvedReferences
 import assets_rc
+
 
 if __name__ == "__main__":
     if sys.platform == "linux":
@@ -42,9 +45,10 @@ if __name__ == "__main__":
         splash.drawText(version("App"), (20, splash.height() - 20))
         splash.show()
         
+        window = Overlay()
         
         def load():
-            window = Overlay()
+            window.ready()
             builtins.windowOverlay = window
             splash.finish(window)
         

@@ -141,12 +141,10 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.dialogSettings = None
         
+    def ready(self):
         self.updateDataPlugins()
         self.loadConfigs()
         self.loadTheme()
-        
-    def __ready__(self):
-        pass
     
     def registered_handler(self, comb, name):
         self.input_bridge.add_hotkey(comb, self.handled_global_shortkey.emit, name)
@@ -263,7 +261,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
             "Уведомление",
             "Программа запущена!",
             QSystemTrayIcon.MessageIcon.Information,
-            1000,
+            500,
         )
     
     def updateDataPlugins(self):
@@ -293,12 +291,13 @@ class Overlay(QMainWindow, Ui_MainWindow):
             qDebug(f"Успешно импортирован пакет: {plugin_name}")
     
     def updateStateItem(self, item: PluginItem):
-        
         is_obj_create = item.widget is None
         if is_obj_create:
             item.build(self)
             self.setWidgetMemory(item.save_name, item.widget)
         item.widget.dumper.activatedWidget(item.active, item.widget)
+        PreLoader.save(item, self.settings)
+        self.settings.sync()
     
     def setWidgetMemory(self, name: str, widget: QWidget):
         self.widgets[name] = widget

@@ -1,4 +1,4 @@
-from typing import Any
+import re
 from abc import ABC, abstractmethod
 from functools import cached_property
 
@@ -6,11 +6,15 @@ from pydantic import BaseModel, Field
 from attrs import define, field
 from toml import loads
 
+version_pattern = re.compile(r"alpha|beta|release"
+                             r" \d+\.\d+\.\d+(?: - "
+                             r"unstable|stable)?", re.I)
+
 
 class BaseMetaData(BaseModel):
     author: str = Field("<unknown>")
     description: str = Field("<no description>")
-    version: Any = Field(...)
+    version: str = Field(..., pattern=version_pattern)
     
     @classmethod
     def from_toml(cls, toml_data: str):
