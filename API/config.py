@@ -4,7 +4,6 @@ from typing import Any
 import traceback
 
 from attrs import define, field
-from box import Box
 import toml
 
 from .defaultConfigs import *
@@ -40,7 +39,7 @@ class Config:
             case _:
                 raise TypeError(f"Не известный формат конфигураций - {resource_type}")
     
-    def _load_config(self) -> Box[str, Any]:
+    def _load_config(self) -> BaseConfig:
         configFile = None
         try:
             match self._resource_type:

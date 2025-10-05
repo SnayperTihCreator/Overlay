@@ -8,7 +8,6 @@ dependencies = [
     "json5>=0.12.0",
     "psutil>=7.0.0",
     "pyinstaller>=6.13.0",
-    "python-box>=7.3.2",
     "pywin32>=310; sys_platform == 'win32'",
     "toml>=0.10.2",
     "evdev; sys_platform == 'linux'",
