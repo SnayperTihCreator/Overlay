@@ -9,6 +9,7 @@ class ToolsIniter:
         self.tools_name = name
 
     def load(self):
+        (getAppPath() / "plugins").mkdir(parents=True, exist_ok=True)
         (getAppPath() / self.tools_name / "common").mkdir(parents=True, exist_ok=True)
         (getAppPath() / self.tools_name / "windows").mkdir(parents=True, exist_ok=True)
         (getAppPath() / self.tools_name / "linux").mkdir(parents=True, exist_ok=True)
