@@ -1,4 +1,4 @@
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtWidgets import QWidget
 from pydantic import BaseModel, field_serializer, field_validator, ConfigDict
 
@@ -36,6 +36,7 @@ class SettingConfigData(BaseModel):
 
 
 class PluginSettingTemplate(QWidget, Ui_Form):
+    saved_configs = Signal()
     
     def __init__(self, obj, name_plugin: str, parent=None):
         super().__init__(parent, Qt.WindowType.Widget)
@@ -45,6 +46,7 @@ class PluginSettingTemplate(QWidget, Ui_Form):
         self.setupUi(self)
         
         self.obj: APIBaseWidget = obj
+        self.save_name = name_plugin
         name_plugin = "{0}({1})".format(*name_plugin.rsplit("_", 1))
         self.labelNamePlugin.setText(name_plugin)
         
@@ -57,6 +59,7 @@ class PluginSettingTemplate(QWidget, Ui_Form):
     
     def confirming(self):
         self.obj.restore_config(self.send_data())
+        self.saved_configs.emit()
     
     def canceling(self):
         self.loader()

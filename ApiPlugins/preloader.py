@@ -21,46 +21,65 @@ class MetaSingToolsPreloader(ABCMeta):
 
 class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
     instances = {}
+    configs = {}
+    
+    @classmethod
+    def loadConfigs(cls):
+        cls.configs.clear()
+        with open("project://configs/configs_plugins.json5") as configs_file:
+            cls.configs |= json5.load(configs_file)
+    
+    @classmethod
+    def saveConfigs(cls):
+        with open("project://configs/configs_plugins.json5", "w") as configs_file:
+            json5.dump(cls.configs, configs_file, ensure_ascii=False, indent=4)
     
     @classmethod
     def saved(cls, target: APIBaseWidget, item: PluginItem, setting: QSettings):
-        setting.beginGroup(item.save_name)
-        if target is not None:
-            config = target.save_config().model_dump(mode="json")
-            setting.setValue(
-                "config", json5.dumps(config, ensure_ascii=False)
-            )
-        else:
-            setting.setValue("config", "{}")
-        setting.setValue("module", item.module.__name__)
-        setting.setValue("active", int(item.active))
-        setting.setValue("orig_name", item.namePlugin)
-        cls.overSaved(item, setting)
-        setting.endGroup()
+        try:
+            setting.beginGroup(item.save_name)
+            if target is not None:
+                config = target.save_config().model_dump(mode="json")
+                cls.configs[item.save_name] = config
+            setting.setValue("module", item.module.__name__)
+            setting.setValue("active", int(item.active))
+            setting.setValue("orig_name", item.namePlugin)
+            cls.overSaved(item, setting)
+        finally:
+            setting.endGroup()
     
     @classmethod
     def loaded(cls, setting: QSettings, name: str, parent):
-        setting.beginGroup(name)
-        config = json5.loads(setting.value("config")) if setting.value("config") else {}
-        active = bool(int(setting.value("active")))
-        module = importlib.import_module(setting.value("module"))
-        origname = setting.value("orig_name", name.rsplit("_", 1)[0])
-        parameters = [
-            module,
-            active,
-            *cls.getParameterCreateItem(setting, name, parent),
-        ]
-        item = cls.overCreateItem(*parameters)
-        item.namePlugin = origname
-        
-        target = cls.overLoaded(setting, name, parent)
-        
-        if active:
-            target = item.build(parent)
-            target.restore_config(config)
-            cls.activatedWidget(active, target)
-        setting.endGroup()
+        try:
+            setting.beginGroup(name)
+            active = bool(int(setting.value("active")))
+            module = importlib.import_module(setting.value("module"))
+            origname = setting.value("orig_name", name.rsplit("_", 1)[0])
+            parameters = [
+                module,
+                active,
+                *cls.getParameterCreateItem(setting, name, parent),
+            ]
+            item = cls.overCreateItem(*parameters)
+            item.namePlugin = origname
+            
+            target = cls.overLoaded(setting, name, parent)
+            
+            if active:
+                target = item.build(parent)
+                cls.loadConfigInItem(item)
+                cls.activatedWidget(active, target)
+        finally:
+            setting.endGroup()
         return target, item
+    
+    @classmethod
+    def loadConfigInItem(cls, item: PluginItem):
+        if item.widget is None:
+            return
+        
+        config = cls.configs.get(item.save_name, {})
+        item.widget.restore_config(config)
     
     @classmethod
     @abstractmethod
@@ -121,9 +140,8 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
             qWarning(f"Error {type(e)}: {e}")
         finally:
             setting.endGroup()
-            
+    
     @classmethod
     def createMenu(cls, menu: QMenu, widget, item: PluginItem):
         preloader: PreLoader = cls.instances[item.typeModule.lower()]
         return preloader.createActionMenu(menu, widget, item)
-    

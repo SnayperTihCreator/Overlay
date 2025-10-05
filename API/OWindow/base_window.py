@@ -88,7 +88,7 @@ class OWindow(QMainWindow, APIBaseWidget, ABC):
     def __save_config__(self) -> dict:
         return dict(
             hasMoved=self.hasMoved,
-            notClicked=self.windowFlags() & Qt.WindowType.WindowTransparentForInput,
+            notClicked=bool(self.windowFlags() & Qt.WindowType.WindowTransparentForInput),
             position=self.pos()
         )
     
