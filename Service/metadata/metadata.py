@@ -6,9 +6,11 @@ from pydantic import BaseModel, Field
 from attrs import define, field
 from toml import loads
 
-version_pattern = re.compile(r"alpha|beta|release"
-                             r" \d+\.\d+\.\d+(?: - "
-                             r"unstable|stable)?", re.I)
+version_pattern = re.compile(r"(?P<ver>alpha|beta|release)"
+                             r" (?P<v1>\d+)\.(?P<v2>\d+)\.(?P<v3>\d+)(?:\s?-\s?"
+                             r"(?P<state>unstable|stable))?", re.I)
+version_type = ["alpha", "beta", "release"]
+version_state = ["unstable", "stable"]
 
 
 class BaseMetaData(BaseModel):
@@ -19,6 +21,15 @@ class BaseMetaData(BaseModel):
     @classmethod
     def from_toml(cls, toml_data: str):
         return cls(**loads(toml_data))
+    
+    def tuple_version(self):
+        dv = self.dict_version()
+        return (version_type.index(dv["ver"].lower()),
+                int(dv["v1"]), int(dv["v2"]), int(dv["v3"]),
+                version_state.index(dv["state"].lower()))
+    
+    def dict_version(self):
+        return version_pattern.fullmatch(self.version).groupdict()
 
 
 @define(frozen=True, hash=True, order=True)

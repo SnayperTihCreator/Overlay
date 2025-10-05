@@ -1,10 +1,11 @@
 import sys
 import traceback
+import typing
 
 from PySide6.QtWidgets import (
     QMainWindow,
     QSystemTrayIcon,
-    QMenu, QApplication, QWidget, QLabel
+    QMenu, QApplication, QLabel
 )
 from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
 from PySide6.QtGui import QKeyEvent, QAction
@@ -13,17 +14,17 @@ from uis.main_ui import Ui_MainWindow
 
 from API import OWindow, OWidget, BackgroundWorkerManager, Config, CLInterface
 
-
 from PathControl import getAppPath
 from PathControl.themeLoader import ThemeLoader
 from PathControl.pluginLoader import PluginLoader
 
 from Service.webSocket import AppServerControl
-from Service.metadata import version
+from Service.metadata import version, metadata
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
 from ApiPlugins.preloader import PreLoader
 from ApiPlugins.pluginItems import PluginItem
+from API.PlugSetting import PluginSettingTemplate
 from APIService.themeCLI import ThemeCLI
 
 from ColorControl.themeController import ThemeController
@@ -37,6 +38,9 @@ qApp: QApplication
 # noinspection PyUnresolvedReferences
 import Service.Loggins
 
+PluginWidget: typing.TypeAlias = OWidget | OWindow | BackgroundWorkerManager
+
+print(metadata("App").tuple_version())
 
 class Overlay(QMainWindow, Ui_MainWindow):
     handled_global_shortkey = Signal(str)
@@ -100,7 +104,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         ThemeController().registerWidget(self.btnSetting, ":/root/icons/setting.png", "setIcon", "icon", True)
         ThemeController().updateWidget(self.btnSetting)
         
-        self.btnStopOverlay.pressed.connect(self.stopOverlay)
+        self.btnStopOverlay.pressed.connect(self.close)
         self.btnHide.pressed.connect(self.hideOverlay)
         self.btnSetting.pressed.connect(lambda: self.settingWidget.setVisible(not (self.settingWidget.isVisible())))
         
@@ -134,13 +138,13 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.settings = QSettings("./configs/settings.ini", QSettings.Format.IniFormat)
         
-        self.widgets: dict[str, OWidget | OWindow | BackgroundWorkerManager] = {}
+        self.widgets: dict[str, PluginWidget] = {}
         self.interface: dict[str, CLInterface] = {}
         
         self.shortcuts = {}
         
-        self.dialogSettings = None
-        
+        self.dialogSettings: typing.Optional[PluginSettingTemplate] = None
+    
     def ready(self):
         self.updateDataPlugins()
         self.loadConfigs()
@@ -192,13 +196,16 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def loadTheme(self):
         self.interface["ThemeCLI"] = ThemeCLI(self.themeLoader)
-    
+        
         themeName = self.settings.value("theme", None)
-        if themeName is None: return
+        if themeName is None:
+            return
         
         if themeName == "DefaultTheme":
+            # noinspection PyUnresolvedReferences
             self.interface["ThemeCLI"].action_default_change()
         else:
+            # noinspection PyUnresolvedReferences
             self.interface["ThemeCLI"].action_change(themeName)
     
     def loadConfigs(self):
@@ -236,8 +243,10 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def saveConfigs(self):
         self.settings.clear()
         for item in self.listPlugins.items():
-            if item.typeModule not in ["Window", "Widget"]: return
+            if item.typeModule not in ["Window", "Widget"]:
+                continue
             PreLoader.save(item, self.settings)
+        PreLoader.saveConfigs()
         self.settingWidget.save_setting(self.settings)
         self.settings.setValue("theme", ThemeController().themeName())
         self.settings.sync()
@@ -252,7 +261,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         act_show_overlay.triggered.connect(self.showOverlay)
         
         act_stop_overlay = menu.addAction("Stop overlay")
-        act_stop_overlay.triggered.connect(self.stopOverlay)
+        act_stop_overlay.triggered.connect(self.close)
         
         self.tray.setContextMenu(menu)
         
@@ -267,6 +276,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def updateDataPlugins(self):
         self.listPlugins.clear()
         
+        PreLoader.loadConfigs()
         self.pluginLoader.load()
         
         for plugin_name, module in self.pluginLoader.plugins.items():
@@ -294,12 +304,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
         is_obj_create = item.widget is None
         if is_obj_create:
             item.build(self)
+            # noinspection PyTypeChecker
             self.setWidgetMemory(item.save_name, item.widget)
         item.widget.dumper.activatedWidget(item.active, item.widget)
+        PreLoader.loadConfigInItem(item)
         PreLoader.save(item, self.settings)
         self.settings.sync()
     
-    def setWidgetMemory(self, name: str, widget: QWidget):
+    def setWidgetMemory(self, name: str, widget: PluginWidget):
         self.widgets[name] = widget
         if isinstance(widget, CLInterface):
             self.interface[name] = widget
@@ -331,10 +343,12 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def onCreateSetting(self, item: PluginItem, win: OWindow | OWidget):
         if self.dialogSettings is not None:
+            self.dialogSettings.saved_configs.disconnect(self.updateConfigsPlugins)
             self.box.removeWidget(self.dialogSettings)
             self.dialogSettings.deleteLater()
         
         self.dialogSettings = win.createSettingWidget(win, item.save_name, self)
+        self.dialogSettings.saved_configs.connect(self.updateConfigsPlugins)
         if self.dialogSettings:
             self.box.addWidget(
                 self.dialogSettings,
@@ -342,6 +356,12 @@ class Overlay(QMainWindow, Ui_MainWindow):
             )
             self.dialogSettings.loader()
             self.dialogSettings.show()
+            
+    def updateConfigsPlugins(self):
+        config = self.dialogSettings.obj.save_config().model_dump(mode="json")
+        PreLoader.configs[self.dialogSettings.save_name] = config
+        PreLoader.saveConfigs()
+        
     
     def duplicateWindowPlugin(self, item: PluginItem):
         d_item = OWindow.dumper.duplicate(item)
@@ -377,7 +397,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Escape:
             event.accept()
-            self.stopOverlay()
+            self.close()
         if event.key() == Qt.Key.Key_Backspace:
             event.accept()
             self.hideOverlay()
@@ -397,11 +417,11 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def stopOverlay(self):
         self.webSocketIn.quit()
-        self.close()
-    
-    def closeEvent(self, event, /):
         self.saveConfigs()
         self.settings.sync()
+    
+    def closeEvent(self, event, /):
+        self.stopOverlay()
         self.input_bridge.stop()
         qApp.quit()
         return super().closeEvent(event)
