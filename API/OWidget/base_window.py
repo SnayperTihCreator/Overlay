@@ -1,5 +1,6 @@
 import uuid
 from abc import ABC
+from enum import IntEnum, auto
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QTimer
@@ -13,6 +14,12 @@ from .pluginSettingWidget import PluginSettingWidget, WidgetConfigData
 from ColorControl.themeController import ThemeController
 
 
+class ModeRuns(IntEnum):
+    AUTO = auto()
+    VISIBLE_OVERLAY = auto()
+    VISIBLE_WIDGET = auto()
+
+
 class OWidget(QWidget, APIBaseWidget, ABC):
     dumper = WidgetPreLoader()
     _config_data_ = WidgetConfigData
@@ -24,6 +31,9 @@ class OWidget(QWidget, APIBaseWidget, ABC):
         self.setProperty("class", "OverlayWidget")
         self.uid = uuid.uuid4().hex
         
+        self.running = False
+        self.mode: ModeRuns = ModeRuns.AUTO
+        
         self.config: Config = config
         self.time_msec = 1000
         
@@ -31,10 +41,22 @@ class OWidget(QWidget, APIBaseWidget, ABC):
         self.timer.timeout.connect(self.process)
         
         self.loadConfig()
-        
-    def __ready__(self): ...
     
-    def __process__(self): ...
+    def __ready__(self):
+        ...
+    
+    def process(self):
+        match self.mode:
+            case ModeRuns.AUTO | ModeRuns.VISIBLE_WIDGET if self.running:
+                self.__process__()
+            case ModeRuns.VISIBLE_OVERLAY:
+                super().process()
+    
+    def setActive(self, state):
+        self.running = state
+    
+    def __process__(self):
+        ...
     
     def reloadConfig(self):
         self.config.reload()

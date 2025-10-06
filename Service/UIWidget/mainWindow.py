@@ -40,7 +40,6 @@ import Service.Loggins
 
 PluginWidget: typing.TypeAlias = OWidget | OWindow | BackgroundWorkerManager
 
-print(metadata("App").tuple_version())
 
 class Overlay(QMainWindow, Ui_MainWindow):
     handled_global_shortkey = Signal(str)
@@ -304,10 +303,12 @@ class Overlay(QMainWindow, Ui_MainWindow):
         is_obj_create = item.widget is None
         if is_obj_create:
             item.build(self)
+            item.widget.ready()
             # noinspection PyTypeChecker
             self.setWidgetMemory(item.save_name, item.widget)
         item.widget.dumper.activatedWidget(item.active, item.widget)
-        PreLoader.loadConfigInItem(item)
+        if item.active:
+            PreLoader.loadConfigInItem(item)
         PreLoader.save(item, self.settings)
         self.settings.sync()
     
@@ -356,12 +357,11 @@ class Overlay(QMainWindow, Ui_MainWindow):
             )
             self.dialogSettings.loader()
             self.dialogSettings.show()
-            
+    
     def updateConfigsPlugins(self):
         config = self.dialogSettings.obj.save_config().model_dump(mode="json")
         PreLoader.configs[self.dialogSettings.save_name] = config
         PreLoader.saveConfigs()
-        
     
     def duplicateWindowPlugin(self, item: PluginItem):
         d_item = OWindow.dumper.duplicate(item)

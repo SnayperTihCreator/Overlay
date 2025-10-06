@@ -26,6 +26,7 @@ class WidgetPreLoader(PreLoader, type="widget"):
 
     @classmethod
     def activatedWidget(cls, state, target):
+        target.setActive(state)
         if state:
             target.ready()
             target.show()
