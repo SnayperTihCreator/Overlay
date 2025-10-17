@@ -21,7 +21,8 @@ from PathControl.tools_folder import ToolsIniter
 from MinTools import OpenManager
 # noinspection PyUnresolvedReferences
 import assets_rc
-
+# noinspection PyUnresolvedReferences
+import Service.importer_overlayaddons
 
 if __name__ == "__main__":
     if sys.platform == "linux":
@@ -49,12 +50,13 @@ if __name__ == "__main__":
         
         window = Overlay()
         
+        
         def load():
             window.ready()
             builtins.windowOverlay = window
             splash.finish(window)
         
-        QTimer.singleShot(2500, load)
         
+        QTimer.singleShot(2500, load)
         
         app.exec()

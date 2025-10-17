@@ -19,13 +19,15 @@ from PathControl.themeLoader import ThemeLoader
 from PathControl.pluginLoader import PluginLoader
 
 from Service.webSocket import AppServerControl
-from Service.metadata import version, metadata
+from Service.metadata import version
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
 from ApiPlugins.preloader import PreLoader
 from ApiPlugins.pluginItems import PluginItem
 from API.PlugSetting import PluginSettingTemplate
 from APIService.themeCLI import ThemeCLI
+
+from OExtension import hotkey
 
 from ColorControl.themeController import ThemeController
 
@@ -317,6 +319,22 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if isinstance(widget, CLInterface):
             self.interface[name] = widget
     
+    def onCreateSetting(self, item: PluginItem, win: OWindow | OWidget):
+        if self.dialogSettings is not None:
+            self.dialogSettings.saved_configs.disconnect(self.updateConfigsPlugins)
+            self.box.removeWidget(self.dialogSettings)
+            self.dialogSettings.deleteLater()
+        
+        self.dialogSettings = win.createSettingWidget(win, item.save_name, self)
+        self.dialogSettings.saved_configs.connect(self.updateConfigsPlugins)
+        if self.dialogSettings:
+            self.box.addWidget(
+                self.dialogSettings,
+                [Qt.AnchorPoint.AnchorRight, Qt.AnchorPoint.AnchorVerticalCenter],
+            )
+            self.dialogSettings.loader()
+            self.dialogSettings.show()
+    
     def contextMenuItem(self, pos):
         item = self.listPlugins.itemAt(pos)
         if item is None:
@@ -341,22 +359,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
             act_delete_duplicate.triggered.connect(lambda: self.deleteDuplicateWindowPlugin(item, obj))
         
         menu.exec(self.listPlugins.viewport().mapToGlobal(pos))
-    
-    def onCreateSetting(self, item: PluginItem, win: OWindow | OWidget):
-        if self.dialogSettings is not None:
-            self.dialogSettings.saved_configs.disconnect(self.updateConfigsPlugins)
-            self.box.removeWidget(self.dialogSettings)
-            self.dialogSettings.deleteLater()
-        
-        self.dialogSettings = win.createSettingWidget(win, item.save_name, self)
-        self.dialogSettings.saved_configs.connect(self.updateConfigsPlugins)
-        if self.dialogSettings:
-            self.box.addWidget(
-                self.dialogSettings,
-                [Qt.AnchorPoint.AnchorRight, Qt.AnchorPoint.AnchorVerticalCenter],
-            )
-            self.dialogSettings.loader()
-            self.dialogSettings.show()
     
     def updateConfigsPlugins(self):
         config = self.dialogSettings.obj.save_config().model_dump(mode="json")
