@@ -5,6 +5,7 @@ import pathlib
 from abc import abstractmethod
 from functools import lru_cache, wraps
 import re
+import enum
 
 from fs.base import FS
 from fs.opener import Opener, registry
@@ -79,10 +80,10 @@ class ZipFormatFile(OSFS):
             return _zipfs
         else:
             return _zipfs.opendir("/".join(parts))
-        
+    
     def open(self, path, mode="r", buffering=-1, encoding=None,
-             errors=None, newline="", line_buffering=False,  **options
-    ):
+             errors=None, newline="", line_buffering=False, **options
+             ):
         folder, file = path.rsplit("/", 1)
         if folder and file:
             zipfs = self.opendir(folder)
@@ -145,6 +146,13 @@ class ResourceFS(ZipFormatFile):
         super().__init__(str(global_cxt.resourcePath))
 
 
+class OverlayAddonsFS(ZipFormatFile):
+    suffix_file = "oaddons"
+    
+    def __init__(self):
+        super().__init__(str(global_cxt.resourcePath))
+
+
 class BasePathOpener(Opener):
     filePattern = re.compile(r"^.*\..+$", re.I)
     
@@ -191,35 +199,44 @@ class ProjectPathOpener(BasePathOpener):
 class ResourcePathOpener(BasePathOpener):
     protocols = ["resource"]
     
+    class TypeResource(enum.StrEnum):
+        TYPE_NOT_TYPE = "NOT_TYPE"
+        TYPE_THEME = "theme"
+        TYPE_RESOURCE = "resource"
+        TYPE_OVERLAY_ADDONS = "overlay_addons"
+    
     def __init__(self):
-        self.typeResource = ""
+        self.typeResource = self.TypeResource.TYPE_NOT_TYPE
     
     def open_fs(self, fs_url: str, parse_result: ParseResult, writeable: bool, create: bool, cwd: str) -> FS:
         path: str = parse_result.resource
         parts = fs_path.parts(path)
-        if parts[1].lower() not in ["theme", "resource"]: raise errors.ResourceNotFound
-        match parts[1].lower():
-            case "theme":
-                self.typeResource = "theme"
-            case "resource":
-                self.typeResource = "resource"
+        if parts[1].lower() == "NOT_TYPE":
+            raise errors.ResourceNotFound(path)
+        try:
+            self.TypeResource(parts[1].lower())
+        except ValueError as e:
+            raise errors.ResourceNotFound(path, e)
+        self.typeResource = self.TypeResource(parts[1].lower())
         parts.pop(1)
-        path = fs_path.join(*parts)
         result = ParseResult(
             parse_result.protocol,
             parse_result.username,
             parse_result.password,
-            path,
+            fs_path.join(*parts),
             parse_result.params,
             parse_result.path
         )
         return super().open_fs(fs_url, result, writeable, create, cwd)
     
     def getImplFS(self, url, parse_result, writable, create, cwd) -> FS:
-        if self.typeResource == "theme":
-            return MyWrapReadOnly(ThemeFS())
-        elif self.typeResource == "resource":
-            return MyWrapReadOnly(ResourceFS())
+        match self.typeResource:
+            case self.TypeResource.TYPE_THEME:
+                return MyWrapReadOnly(ThemeFS())
+            case self.TypeResource.TYPE_RESOURCE:
+                return MyWrapReadOnly(ResourceFS())
+            case self.TypeResource.TYPE_OVERLAY_ADDONS:
+                return MyWrapReadOnly(OverlayAddonsFS())
 
 
 import builtins
@@ -245,7 +262,7 @@ class OpenManager:
         try:
             return open_fs(folder)
         except errors.ResourceNotFound as e:
-            if not(("w" in mode) or ("x" in mode)): raise e
+            if not (("w" in mode) or ("x" in mode)): raise e
             fs = open_fs(f"{scheme}://")
             return fs.makedir(sub_folder)
         except errors.CreateFailed as e:
