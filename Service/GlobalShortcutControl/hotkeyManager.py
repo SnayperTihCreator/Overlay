@@ -1,28 +1,22 @@
 from typing import Callable
-from functools import cache
 
-from PathControl.platformCurrent import getSystem
+from PySide6.QtCore import qInfo
+from Common.baseHotkey import BaseHotkeyHandler
+from .stubHotkey import StubHotkey
 
 
 class HotkeyManager:
-    def __init__(self):
-        self._handler = self._create_handler()
-    
-    @cache
-    def _create_handler(self):
-        """Создает обработчик в зависимости от ОС."""
-        match getSystem():
-            case ["win32", _]:
-                from .windowsHotkeyHandler import WindowsHotkeyHandler
-                return WindowsHotkeyHandler()
-            case ["linux", "wayland"]:
-                from .waylandHotkeyHandler import WaylandHotkeyHandler
-                return WaylandHotkeyHandler()
-            case ["linux", "x11"]:
-                from .x11HotkeyHandler import X11HotkeyHandler
-                return X11HotkeyHandler()
-            case [system, window]:
-                raise NotImplementedError(f"Unsupported OS: {system}/{window}")
+    def __init__(self, oaddons_loader, hotkey_name):
+        if hotkey_name is None:
+            qInfo("not find hotkey handler")
+            self._hotkey_name = "stub hotkey"
+            self._hotkey_module = None
+            self._handler: BaseHotkeyHandler = StubHotkey()
+        else:
+            qInfo(f"module load {hotkey_name}")
+            self._hotkey_name = hotkey_name
+            self._hotkey_module = oaddons_loader.import_module(hotkey_name)
+            self._handler: BaseHotkeyHandler = self._hotkey_module.HotkeyHandler()
     
     def add_hotkey(self, combo: str, callback: Callable, uname: str):
         """Добавляет горячую клавишу."""

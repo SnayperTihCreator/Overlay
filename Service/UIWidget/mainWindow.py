@@ -17,6 +17,7 @@ from API import OWindow, OWidget, BackgroundWorkerManager, Config, CLInterface
 from PathControl import getAppPath
 from PathControl.themeLoader import ThemeLoader
 from PathControl.pluginLoader import PluginLoader
+from PathControl.overlayAddonsLoader import OverlayAddonsLoader
 
 from Service.webSocket import AppServerControl
 from Service.metadata import version
@@ -26,8 +27,6 @@ from ApiPlugins.preloader import PreLoader
 from ApiPlugins.pluginItems import PluginItem
 from API.PlugSetting import PluginSettingTemplate
 from APIService.themeCLI import ThemeCLI
-
-from OExtension import hotkey
 
 from ColorControl.themeController import ThemeController
 
@@ -120,12 +119,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.themeLoader = ThemeLoader()
         self.pluginLoader = PluginLoader()
+        self.oaddons = OverlayAddonsLoader()
         
         self.hide()
         
         self.handled_global_shortkey.connect(self.handled_shortcut)
         
-        self.input_bridge = HotkeyManager()
+        hotkey_name = self.oaddons.find_platform_prefix("hotkey")
+        self.input_bridge = HotkeyManager(self.oaddons, hotkey_name)
         self.registered_handler(self.config.data.shortkey.open, "toggle_show")
         self.input_bridge.start()
         
