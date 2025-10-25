@@ -1,19 +1,16 @@
-.. Overlay documentation master file, created by
-   sphinx-quickstart on Sat Oct 25 21:36:37 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 Overlay documentation
 =====================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+Приложение служит платформой для создания окон, которые отображаются поверх других
+Данное приложение служит для работы поверх вернем слоем отображения
+
+Подерживает кастомные плагины которые соотвествуют API
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   ./views.rst
+   .. Для пользователей: ./users/index.md
 
