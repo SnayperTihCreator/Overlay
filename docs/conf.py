@@ -19,7 +19,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'autoapi.extension',
-],
+]
 
 source_suffix = {
     '.rst': 'restructuredtext',

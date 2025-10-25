@@ -34,4 +34,5 @@ dependencies = [
     "pyi18n-v2[yaml]>=1.2.2",
     "sphinx>=8.2.3",
     "sphinx-autoapi>=3.6.1",
+    "myst-parser>=4.0.1",
 ]
