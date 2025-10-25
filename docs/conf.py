@@ -15,8 +15,16 @@ release = 'Beta 4.3.0 - unstable'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.autodoc'
-]
+    'myst_parser',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    'autoapi.extension',
+],
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -28,3 +36,15 @@ language = 'ru'
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+
+myst_enable_extensions = [
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_image",
+]
+
+autoapi_type = 'python'
+autoapi_dirs = ['../API']  # путь к вашему коду
+autoapi_root = 'autoapi'
+autoapi_add_toctree_entry = True

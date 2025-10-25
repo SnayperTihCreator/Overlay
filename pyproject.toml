@@ -33,4 +33,5 @@ dependencies = [
     "pydantic[all]>=2.11.7",
     "pyi18n-v2[yaml]>=1.2.2",
     "sphinx>=8.2.3",
+    "sphinx-autoapi>=3.6.1",
 ]
