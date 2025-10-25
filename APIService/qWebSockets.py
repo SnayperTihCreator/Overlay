@@ -3,9 +3,7 @@ import uuid
 
 from PySide6.QtNetwork import QHostAddress
 from PySide6.QtWebSockets import QWebSocketServer, QWebSocket
-from PySide6.QtCore import QObject, Signal, Slot, qDebug, QUrl, qWarning
-from rich.console import Console
-from rich.text import Text
+from PySide6.QtCore import QObject, Signal, Slot, qDebug, qWarning
 
 from .webControls import find_free_port
 
@@ -19,8 +17,6 @@ class ServerWebSockets(QObject):
         
         self._server: Optional[QWebSocketServer] = None
         self.clients: dict[str, QWebSocket] = {}
-        
-        self._console = Console(record=True, )
     
     def start(self):
         self._server = QWebSocketServer("Overlay WebSockets", QWebSocketServer.SslMode.NonSecureMode)
@@ -64,32 +60,25 @@ class ServerWebSockets(QObject):
             self.clients[uid] = client
             client.textMessageReceived.connect(lambda msg: self.actSendMessage(msg, uid))
             client.disconnected.connect(lambda: self.actDisconnectClient(uid))
-            
+    
     @Slot(str, str)
-    def actSendMessage(self, msg, uid):
+    def actSendMessage(self, msg: str, uid: str):
         qDebug(f"Клиент прислал сообщение: {msg}")
         self.message_received.emit(msg, uid)
     
     @Slot(str)
-    def actDisconnectClient(self, uid):
+    def actDisconnectClient(self, uid: str):
         client = self.clients[uid]
         if uid in self.clients:
             del self.clients[uid]
         client.deleteLater()
         qDebug("Клиент отключился")
-        
-    def sendConfirmState(self, uid):
-        self._console.print(Text("True", "green"))
-        self.sendMassage(uid, self._console.export_text(styles=True))
-        
-    def sendErrorState(self, uid, e):
-        self._console.print(Text(f"Error: {e}", "Red"))
-        self.sendMassage(uid, self._console.export_text(styles=True))
-        
-    def sendMassage(self, uid, msg):
+    
+    def sendConfirmState(self, uid: str):
+        self.sendMassage(uid, "[bold green]Done[/bold green]")
+    
+    def sendErrorState(self, uid: str, e: Exception):
+        self.sendMassage(uid, f"[bold red]Error {type(e).__name__}: {e}[/bold red]")
+    
+    def sendMassage(self, uid: str, msg: str):
         self.clients[uid].sendTextMessage(msg)
-        
-    def sendPrettyMsg(self, uid, msgs):
-        self._console.print(Text.assemble(msgs))
-        self.sendMassage(uid, self._console.export_text(styles=True))
-        

@@ -7,7 +7,7 @@ warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="__main__")
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, qFatal
 from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
 from pyi18n.loaders import PyI18nYamlLoader
 
@@ -18,6 +18,7 @@ from Service.internalization import CustomPyI18n
 from ColorControl.themeController import ThemeController
 from ColorControl.defaultTheme import DefaultTheme
 from PathControl.tools_folder import ToolsIniter
+from PathControl import getAppPath
 from MinTools import OpenManager
 # noinspection PyUnresolvedReferences
 import assets_rc
@@ -40,6 +41,8 @@ if __name__ == "__main__":
         
         from Service.UIWidget.mainWindow import Overlay
         
+        os.chdir(getAppPath())
+        
         ThemeController().registerApp(app)
         ThemeController().setTheme(DefaultTheme())
         
@@ -52,9 +55,14 @@ if __name__ == "__main__":
         
         
         def load():
-            window.ready()
-            builtins.windowOverlay = window
-            splash.finish(window)
+            try:
+                window.ready()
+                builtins.windowOverlay = window
+                splash.finish(window)
+            except Exception as e:
+                qFatal(f"Error {type(e)}: {e}")
+                app.exit()
+                
         
         
         QTimer.singleShot(2500, load)

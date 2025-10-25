@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import Field
 
@@ -10,6 +10,7 @@ class OverlayMetadata(BaseMetaData): ...
 
 class OverlayThemeMetadata(BaseMetaData):
     version: Any = Field("<no version>")
+    docs: Optional[str] = Field(None)
 
 
 @registry

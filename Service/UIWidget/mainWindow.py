@@ -161,14 +161,19 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def cliRunner(self, uid, name_int, args):
         if name_int == "overlay_cli":
-            self.webSocketIn.sendMassage(uid, " ".join(self.interface.keys()))
+            self.webSocketIn.sendMassage(uid, "\n".join(
+                f"* [green]{name}[/green]: [cyan]{inter.__docs_inter__}[/cyan]" for name, inter in self.interface.items()))
             return
         if name_int not in self.interface:
             self.webSocketIn.sendErrorState(uid, NameError(f"Not find interface {name_int}"))
             return
-        interface: CLInterface = self.interface.get(name_int)
-        result = interface.runner(args)
-        self.webSocketIn.sendMassage(uid, result)
+        try:
+            interface: CLInterface = self.interface.get(name_int)
+            result = interface.runner(args)
+            self.webSocketIn.sendMassage(uid, result)
+        except Exception as e:
+            qWarning(f"Error: {''.join(traceback.format_exception(e))}")
+            self.webSocketIn.sendErrorState(uid, e)
     
     def notificationNotImpl(self):
         self.tray.show()
@@ -205,10 +210,10 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         if themeName == "DefaultTheme":
             # noinspection PyUnresolvedReferences
-            self.interface["ThemeCLI"].action_default_change()
+            self.interface["ThemeCLI"].default_change()
         else:
             # noinspection PyUnresolvedReferences
-            self.interface["ThemeCLI"].action_change(themeName)
+            self.interface["ThemeCLI"].change(themeName)
     
     def loadConfigs(self):
         self.settings.beginGroup("windows")

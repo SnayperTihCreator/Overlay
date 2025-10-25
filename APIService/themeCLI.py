@@ -5,7 +5,7 @@ from ColorControl.defaultTheme import DefaultTheme
 from PathControl.themeLoader import ThemeLoader
 
 
-class ThemeCLI(CLInterface):
+class ThemeCLI(CLInterface, docs_interface="Протокол для управлениями темами"):
     def __init__(self, themeLoader: ThemeLoader):
         self.loader = themeLoader
         self.defaultTheme = DefaultTheme()
@@ -13,7 +13,10 @@ class ThemeCLI(CLInterface):
         self.cache = {}
         
     @CLInterface.register()
-    def action_change(self, name: str):
+    def change(self, name: str):
+        """
+        Изменить тему по названию
+        """
         if name in self.cache:
             theme = self.cache[name]
         else:
@@ -24,10 +27,23 @@ class ThemeCLI(CLInterface):
         return True
         
     @CLInterface.register()
-    def action_list(self):
-        return " ".join(self.loader.list())
+    def list(self):
+        """
+        Вывести список доступных тем
+        """
+        return self.loader.list()
     
     @CLInterface.register()
-    def action_default_change(self):
+    def default_change(self):
+        """
+        Установить стандартную тему
+        """
         ThemeController().setTheme(self.defaultTheme)
         return True
+    
+    @CLInterface.register()
+    def current(self):
+        """
+        Получение текущей темы
+        """
+        return ThemeController().currentTheme.themeName
