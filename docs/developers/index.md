@@ -72,4 +72,4 @@ uv sync
 
 Включение подержки выполения через OverlayCLI[[CLInterface](cliterface.md)]
 
-Индекс рекомендуемых API для использования[../api.rst]
+Индекс рекомендуемых API для использования[../autoapi/index.html]
