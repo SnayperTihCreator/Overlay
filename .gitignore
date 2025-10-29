@@ -14,8 +14,11 @@ wheels/
 /tools/common/
 /configs
 /.env
+
 /plugins/
 /tools/
 /resource/
 /.cache/
 /assets/gif/loader.mp4
+
+/*-stubs/

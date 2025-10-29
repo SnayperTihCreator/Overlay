@@ -137,7 +137,7 @@ class OWindow(QMainWindow, APIBaseWidget, ABC):
             self.dragging = False
         super().mouseReleaseEvent(event)
     
-    def keyPressEvent(self, event, /):
+    def keyPressEvent(self, event):
         if event.key() in [Qt.Key.Key_Escape, Qt.Key.Key_Backspace]:
             self.parent().keyPressEvent(event)
         return super().keyPressEvent(event)
