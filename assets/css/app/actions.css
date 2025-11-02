@@ -1,6 +1,6 @@
 QMenuBar {
     background-color: {{ theme.baseInput() | color}};
-    color: {{ theme.altText }};
+    color: {{ theme.altText | color }};
 }
 
 QMenuBar::item:selected {
