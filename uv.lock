@@ -3717,6 +3717,12 @@ wheels = [
 name = "stubgen"
 version = "0.1.2"
 source = { directory = "StubGen" }
+dependencies = [
+    { name = "setuptools" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "setuptools", specifier = ">=80.9.0" }]
 
 [[package]]
 name = "textual"

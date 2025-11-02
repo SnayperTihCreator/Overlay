@@ -1,8 +1,6 @@
 import pyttsx3
 import speech_recognition as sr
-import os
 from fuzzywuzzy import fuzz
-import datetime
 import win32com.client as wincl
 
 opts = {
@@ -83,10 +81,11 @@ def speak(what):
     speak.Speak(what)
 
 
-def callback(recognizer, audio):
+def callback(recognizer: sr.Recognizer, audio):
     try:
         global voice
-        voice = recognizer.recognize_google(audio, language="ru-RU").lower()
+        # voice = recognizer.recognize_google(audio, language="ru-RU").lower()
+        voice = recognizer.recognize_vosk(audio, "ru").lower()
 
         print("[log] Распознано: " + voice)
 
@@ -112,9 +111,9 @@ def callback(recognizer, audio):
 def listen():
     with m as source:
         r.adjust_for_ambient_noise(source)
-    stop_listening = r.listen_in_background(m, callback)
+    r.listen_in_background(m, callback)
     while True:
-        time.sleep(0.1)
+        time.sleep(0.01)
 
 
 def recognize_cmd(cmd):

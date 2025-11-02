@@ -260,7 +260,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         qDebug("Сохранение приложения")
     
     def initSystemTray(self):
-        self.tray.setToolTip("Overlay")
+        self.tray.setToolTip("Overlay" if getattr(sys, 'frozen', False) else "Overlay(Debug)")
         
         menu = QMenu()
         

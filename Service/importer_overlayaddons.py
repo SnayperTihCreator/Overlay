@@ -1,7 +1,6 @@
 import importlib.abc
 import importlib.util
 import importlib.machinery
-import types
 import sys
 from PathControl.overlayAddonsLoader import OverlayAddonsLoader
 
