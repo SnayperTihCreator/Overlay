@@ -1,13 +1,15 @@
 from enum import IntEnum, auto
 from functools import cached_property
-from types import ModuleType
+from types import ModuleType, NoneType
+from traceback import format_exception
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, qWarning
 from PySide6.QtWidgets import QWidget
 from attrs import define, field
 
 from Common.core import APIBaseWidget
 from ColorControl.themeController import ThemeController
+from Service.errors import PluginBuild
 
 __all__ = ["PluginItemRole", "PluginItem"]
 
@@ -18,10 +20,14 @@ class PluginItemRole(IntEnum):
     Self = auto()
     Icon = auto()
     Duplication = auto()
+    BadItem = auto()
+    Error = auto()
 
 
 @define
 class PluginItem:
+    bad_item = False
+    
     module: ModuleType = field()
     typeModule: str = field()
     active: bool = field(default=False)
@@ -60,3 +66,30 @@ class PluginItem:
                 case "Widget":
                     self.widget = self.module.createWidget(parent)
         return self.widget
+
+
+@define
+class PluginBadItem(PluginItem):
+    bad_item = True
+    
+    namePlugin: str = field(default=None)
+    error: Exception = field(default=None)
+    
+    module: NoneType = field(init=False, default=None)
+    typeModule: NoneType = field(init=False, default=None)
+    active: NoneType = field(init=False, default=None)
+    
+    def __attrs_post_init__(self):
+        pass
+    
+    def build(self, parent):
+        raise PluginBuild(self.namePlugin)
+        
+    def showInfo(self):
+        dataInfo = "".join(format_exception(self.error))
+        qWarning(f"Ошибка импорта пакета {self.namePlugin}:\n {dataInfo}")
+        
+    def getErrorStr(self):
+        return f"Error {type(self.error).__name__}: {self.error}"
+        
+    

@@ -7,6 +7,7 @@ from fs import open_fs
 from . import getAppPath
 from .loader import Loader
 from .platformCurrent import getSystem
+from Service.errors import OAddonsInit, OAddonsNotFound
 
 
 class OverlayAddonsLoader(Loader):
@@ -51,9 +52,14 @@ class OverlayAddonsLoader(Loader):
     
     def import_module(self, name):
         path = self.folder / f"{name}.oaddons"
-        importer = zipimport.zipimporter(str(path))
-        module = importer.load_module(name)
-        return module
+        if not path.exists():
+            raise OAddonsNotFound(name)
+        try:
+            importer = zipimport.zipimporter(str(path))
+            module = importer.load_module(name)
+            return module
+        except zipimport.ZipImportError as e:
+            raise OAddonsInit(name, e)
     
     def list(self) -> list[str]:
         return self.fs.listdir("")

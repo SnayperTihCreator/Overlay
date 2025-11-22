@@ -1,6 +1,6 @@
 from PySide6.QtCore import QAbstractListModel, QByteArray, Qt, QModelIndex, Slot
 
-from ApiPlugins.pluginItems import PluginItem, PluginItemRole
+from ApiPlugins.pluginItems import PluginItem, PluginItemRole, PluginBadItem
 
 
 class PluginDataModel(QAbstractListModel):
@@ -35,20 +35,35 @@ class PluginDataModel(QAbstractListModel):
         return len(self._plugins)
     
     def data(self, index, /, role=Qt.ItemDataRole.DisplayRole):
-        if role == Qt.ItemDataRole.DisplayRole:
-            return self._plugins[index.row()].namePlugin
-        if role == Qt.ItemDataRole.DecorationRole:
-            return self._plugins[index.row()].icon
-        if role == PluginItemRole.TypePluginRole:
-            return self._plugins[index.row()].typeModule
-        if role == PluginItemRole.Duplication:
-            return self._plugins[index.row()].isDuplication
-        if role == PluginItemRole.ActiveRole:
-            return self._plugins[index.row()].active
-        if role == PluginItemRole.Icon:
-            return self._plugins[index.row()].icon
-        if role == PluginItemRole.Self:
-            return self._plugins[index.row()]
+        match role:
+            case Qt.ItemDataRole.DisplayRole:
+                return self._plugins[index.row()].namePlugin
+            case Qt.ItemDataRole.DisplayRole:
+                return self._plugins[index.row()].icon
+            case PluginItemRole.TypePluginRole:
+                return self._plugins[index.row()].typeModule
+            case PluginItemRole.Duplication:
+                return self._plugins[index.row()].isDuplication
+            case PluginItemRole.ActiveRole:
+                return self._plugins[index.row()].active
+            case PluginItemRole.Icon:
+                return self._plugins[index.row()].icon
+            case PluginItemRole.Self:
+                return self._plugins[index.row()]
+            case Qt.ItemDataRole.ToolTipRole:
+                if self.data(index, PluginItemRole.BadItem):
+                    return self._plugins[index.row()].getErrorStr(), "#ffe0e0"
+                if self._plugins[index.row()].widget is not None:
+                    return "Работает корректно", "#26fc75"
+                else:
+                    return "Импортировано успешно", "#26fc75"
+            case PluginItemRole.BadItem:
+                return isinstance(self._plugins[index.row()], PluginBadItem)
+            case PluginItemRole.Error:
+                if self.data(index, PluginItemRole.BadItem):
+                    return self._plugins[index.row()].error
+                else:
+                    return
     
     def setData(self, index, value, role=Qt.ItemDataRole.DisplayRole):
         if role == PluginItemRole.ActiveRole:
