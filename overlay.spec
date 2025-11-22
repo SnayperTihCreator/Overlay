@@ -12,6 +12,7 @@ from PyInstaller.building.api import EXE, COLLECT, PYZ, logger
 
 from MinTools import OpenManager
 from Service.metadata import version
+from PathControl.platformCurrent import getSystem
 # noinspection PyUnresolvedReferences
 import assets_rc
 
@@ -31,13 +32,21 @@ def buildZipFile(dist: pathlib.Path, dir_name: str):
         logger.info("📁 Архив собран")
 
 
+himpr = ["json", "psutil", "cProfile", "xml.etree.ElementTree", "requests", "numpy", "colorama"]
+
+match getSystem():
+    case ["win32", _]:
+        himpr.extend(["keyboard"])
+    case ["linux", _]:
+        himpr.extend(["evdev"])
+
 with OpenManager():
     a = Analysis(
         ['main.py'],
         pathex=[],
         binaries=[],
         datas=[],
-        hiddenimports=["json", "psutil", "cProfile", "xml.etree.ElementTree", "requests", "numpy"],
+        hiddenimports=himpr,
         hookspath=[],
         hooksconfig={},
         runtime_hooks=[],

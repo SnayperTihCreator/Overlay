@@ -24,7 +24,7 @@ from Service.metadata import version
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
 from ApiPlugins.preloader import PreLoader
-from ApiPlugins.pluginItems import PluginItem
+from ApiPlugins.pluginItems import PluginItem, PluginBadItem
 from API.PlugSetting import PluginSettingTemplate
 from APIService.themeCLI import ThemeCLI
 
@@ -54,6 +54,18 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if old_lay := self.centralwidget.layout():
             old_lay.deleteLater()
         
+        self.themeLoader = ThemeLoader()
+        self.pluginLoader = PluginLoader()
+        self.oaddons = OverlayAddonsLoader()
+        
+        self.settings = QSettings("./configs/settings.ini", QSettings.Format.IniFormat)
+        
+        self.widgets: dict[str, PluginWidget] = {}
+        self.interface: dict[str, CLInterface] = {}
+        
+        self.shortcuts = {}
+        self.loadTheme()
+        
         self.setMaximumSize(self.screen().size())
         
         self.config = Config.configApplication()
@@ -69,7 +81,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.listPlugins.setIconSize(QSize(1, 1) * 32)
         self.btnListUpdate.pressed.connect(self.notificationNotImpl)
         
-        self.settingWidget = SettingWidget(self)
+        self.settingWidget = SettingWidget(self.themeLoader, self)
         self.settingWidget.hide()
         
         self.addWidget(
@@ -101,11 +113,14 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.btnSetting.setIconSize(QSize(50, 50))
         self.btnSetting.setFixedSize(60, 60)
+        self.btnSetting.setToolTip("Настройки")
         ThemeController().registerWidget(self.btnSetting, ":/root/icons/setting.png", "setIcon", "icon", True)
         ThemeController().updateWidget(self.btnSetting)
         
         self.btnStopOverlay.pressed.connect(self.close)
+        self.btnStopOverlay.setToolTip("Завершить работу Overlay")
         self.btnHide.pressed.connect(self.hideOverlay)
+        self.btnHide.setToolTip("Скрыть Overlay")
         self.btnSetting.pressed.connect(lambda: self.settingWidget.setVisible(not (self.settingWidget.isVisible())))
         
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -116,10 +131,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         ThemeController().register(self, "overlay/main.css")
         ThemeController().update()
-        
-        self.themeLoader = ThemeLoader()
-        self.pluginLoader = PluginLoader()
-        self.oaddons = OverlayAddonsLoader()
         
         self.hide()
         
@@ -138,19 +149,12 @@ class Overlay(QMainWindow, Ui_MainWindow):
         if str(getAppPath()) not in sys.path:
             sys.path.append(str(getAppPath()))
         
-        self.settings = QSettings("./configs/settings.ini", QSettings.Format.IniFormat)
-        
-        self.widgets: dict[str, PluginWidget] = {}
-        self.interface: dict[str, CLInterface] = {}
-        
-        self.shortcuts = {}
-        
         self.dialogSettings: typing.Optional[PluginSettingTemplate] = None
     
     def ready(self):
         self.updateDataPlugins()
         self.loadConfigs()
-        self.loadTheme()
+        
     
     def registered_handler(self, comb, name):
         self.input_bridge.add_hotkey(comb, self.handled_global_shortkey.emit, name)
@@ -162,7 +166,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def cliRunner(self, uid, name_int, args):
         if name_int == "overlay_cli":
             self.webSocketIn.sendMassage(uid, "\n".join(
-                f"* [green]{name}[/green]: [cyan]{inter.__docs_inter__}[/cyan]" for name, inter in self.interface.items()))
+                f"* [green]{name}[/green]: [cyan]{inter.__docs_inter__}[/cyan]" for name, inter in
+                self.interface.items()))
             return
         if name_int not in self.interface:
             self.webSocketIn.sendErrorState(uid, NameError(f"Not find interface {name_int}"))
@@ -290,8 +295,9 @@ class Overlay(QMainWindow, Ui_MainWindow):
             qApp.processEvents()
             if module is None:
                 e = self.pluginLoader.getError(plugin_name)
-                trace = "".join(traceback.format_exception(e))
-                qDebug(f"Ошибка импорта пакета {plugin_name}:\n {trace}")
+                item = PluginBadItem(plugin_name, e)
+                item.showInfo()
+                self.listPlugins.addItem(item)
                 continue
             pluginTypes = self.pluginLoader.getTypes(plugin_name)
             if pluginTypes:

@@ -1,3 +1,4 @@
+from functools import lru_cache
 from API.CLI import CLInterface
 
 from ColorControl.themeController import ThemeController
@@ -10,19 +11,17 @@ class ThemeCLI(CLInterface, docs_interface="Протокол для управл
         self.loader = themeLoader
         self.defaultTheme = DefaultTheme()
         
-        self.cache = {}
+    @lru_cache(128)
+    def _get_theme_name(self, name):
+        themeType = self.loader.loadTheme(name)
+        return themeType()
         
     @CLInterface.register()
     def change(self, name: str):
         """
         Изменить тему по названию
         """
-        if name in self.cache:
-            theme = self.cache[name]
-        else:
-            themeType = self.loader.loadTheme(name)
-            theme = themeType()
-            self.cache[name] = theme
+        theme = self._get_theme_name(name)
         ThemeController().setTheme(theme)
         return True
         

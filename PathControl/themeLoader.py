@@ -1,8 +1,10 @@
+import zipimport
 from zipimport import zipimporter
-from typing import Optional
+from typing import Iterator
 
 from fs import open_fs
 from attrs import define
+from PySide6.QtCore import qWarning
 
 from Service.metadata import metadata
 from Service.versionControl import OverlayThemeMetadata
@@ -25,8 +27,6 @@ class ThemeInfo:
         result = docsFirst
         result += f" [bright_cyan](V: {self.metadataTheme.version})[/bright_cyan]"
         return result
-        
-        
 
 
 class ThemeLoader(Loader):
@@ -39,12 +39,16 @@ class ThemeLoader(Loader):
         pass
     
     def loadTheme(self, name):
-        themePath = self.folder / f"{name}.overtheme"
-        importer = zipimporter(str(themePath))
-        moduleTheme = importer.load_module("theme")
-        return getattr(moduleTheme, name)
+        try:
+            themePath = self.folder / f"{name}.overtheme"
+            importer = zipimporter(str(themePath))
+            moduleTheme = importer.load_module("theme")
+            return getattr(moduleTheme, name)
+        except zipimport.ZipImportError:
+            qWarning(f"Не удалось загрузить тему: {name}")
+            raise
     
-    def list(self):
+    def list(self) -> Iterator[ThemeInfo]:
         for name in self.fs.listdir(""):
             try:
                 yield ThemeInfo(name, metadata(f"theme::{name}"))
