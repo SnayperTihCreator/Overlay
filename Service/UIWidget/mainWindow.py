@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
     QMenu, QApplication, QLabel
 )
-from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer
+from PySide6.QtCore import Qt, QSettings, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer, qFatal, QEventLoop
 from PySide6.QtGui import QKeyEvent, QAction
 
 from uis.main_ui import Ui_MainWindow
@@ -20,15 +20,18 @@ from PathControl.pluginLoader import PluginLoader
 from PathControl.overlayAddonsLoader import OverlayAddonsLoader
 
 from Service.webSocket import AppServerControl
-from Service.metadata import version
+from Service.metadata import version, metadata
 from Service.AnchorLayout import AnchorLayout
 from Service.GlobalShortcutControl import HotkeyManager
 from ApiPlugins.preloader import PreLoader
 from ApiPlugins.pluginItems import PluginItem, PluginBadItem
-from API.PlugSetting import PluginSettingTemplate
+from API.pluginSetting import PluginSettingTemplate
 from APIService.themeCLI import ThemeCLI
 
 from ColorControl.themeController import ThemeController
+
+if typing.TYPE_CHECKING:
+    from Service.gifSplashScreen import GifSplashScreen
 
 from .setting import SettingWidget
 
@@ -37,15 +40,16 @@ from .setting import SettingWidget
 qApp: QApplication
 
 # noinspection PyUnresolvedReferences
-import Service.Loggins
+import Service.logs
 
 PluginWidget: typing.TypeAlias = OWidget | OWindow | BackgroundWorkerManager
 
 
 class Overlay(QMainWindow, Ui_MainWindow):
     handled_global_shortkey = Signal(str)
+    finished_loading = Signal()
     
-    def __init__(self):
+    def __init__(self, splash: "GifSplashScreen"):
         self.defaultFlags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint
         super().__init__(None, self.defaultFlags)
         self.setObjectName("OverlayMain")
@@ -62,6 +66,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.widgets: dict[str, PluginWidget] = {}
         self.interface: dict[str, CLInterface] = {}
+        self._splash = splash
         
         self.shortcuts = {}
         self.loadTheme()
@@ -82,6 +87,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.btnListUpdate.pressed.connect(self.notificationNotImpl)
         
         self.settingWidget = SettingWidget(self.themeLoader, self)
+        self.settingWidget.webSocketToggled.connect(self._handler_settings_websocket)
         self.settingWidget.hide()
         
         self.addWidget(
@@ -152,9 +158,47 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.dialogSettings: typing.Optional[PluginSettingTemplate] = None
     
     def ready(self):
+        """Запуск пошаговой загрузки"""
+        self._load_generator = self._ready_generator()
+        self._process_next_step()
+    
+    def _handler_settings_websocket(self, state: bool):
+        if state:
+            self.active_web_sockets()
+        else:
+            self.deactivate_web_sockets()
+    
+    def _process_next_step(self):
+        try:
+            next(self._load_generator)
+            QTimer.singleShot(10, self._process_next_step)
+        except StopIteration:
+            self.finished_loading.emit()
+        except Exception as e:
+            qFatal(f"Critical load error: {e}")
+    
+    def _ready_generator(self):
+        """Собственно шаги загрузки с yield между ними"""
+        self._splash.setStatus("Загрузка с resources", metadata("App").author)
         self.updateDataPlugins()
-        self.loadConfigs()
+        yield
+        self._splash.setStatus("Загрузка темы", metadata("App").author)
+        self.loadTheme()
+        yield
         
+        for type_name, loader_cls in PreLoader.instances.items():
+            group_name = f"{type_name}s"
+            for target, item in loader_cls.load_group(group_name, self.settings, self):
+                yield
+                self._splash.setStatus(f"Загружается {item.save_name}", metadata("App").author)
+                if target:
+                    self.setWidgetMemory(item.save_name, target)
+                if item:
+                    self.listPlugins.addItem(item)
+                yield
+                
+        self.settingWidget.restore_setting(self.settings)
+        yield
     
     def registered_handler(self, comb, name):
         self.input_bridge.add_hotkey(comb, self.handled_global_shortkey.emit, name)
@@ -220,38 +264,6 @@ class Overlay(QMainWindow, Ui_MainWindow):
             # noinspection PyUnresolvedReferences
             self.interface["ThemeCLI"].change(themeName)
     
-    def loadConfigs(self):
-        self.settings.beginGroup("windows")
-        for win_name in self.settings.childGroups():
-            qApp.processEvents()
-            item = self.listPlugins.findItemBySaveName(win_name)
-            if item is not None:
-                self.listPlugins.remove(item)
-            try:
-                win, item = OWindow.dumper.loaded(self.settings, win_name, self)
-                self.setWidgetMemory(item.save_name, win)
-                self.listPlugins.addItem(item)
-            except ModuleNotFoundError:
-                self.settings.endGroup()
-                qWarning(f"Модуль(Окно) не найден: {win_name}")
-        self.settings.endGroup()
-        self.settings.beginGroup("widgets")
-        for wid_name in self.settings.childGroups():
-            qApp.processEvents()
-            item = self.listPlugins.findItemBySaveName(wid_name)
-            if item:
-                self.listPlugins.remove(item)
-            try:
-                wid, item = OWidget.dumper.loaded(self.settings, wid_name, self)
-                self.setWidgetMemory(item.save_name, wid)
-                self.listPlugins.addItem(item)
-            except ModuleNotFoundError:
-                self.settings.endGroup()
-                qWarning(f"Модуль(Виджет) не найден: {wid_name}")
-        self.settings.endGroup()
-        
-        self.settingWidget.restore_setting(self.settings)
-    
     def saveConfigs(self):
         self.settings.clear()
         for item in self.listPlugins.items():
@@ -285,20 +297,26 @@ class Overlay(QMainWindow, Ui_MainWindow):
             500,
         )
     
+    def is_plugin_loaded(self, module_name: str) -> bool:
+        for item in self.listPlugins.items():
+            QApplication.processEvents()
+            if item.module.__name__ == module_name:
+                return True
+        return False
+    
     def updateDataPlugins(self):
-        self.listPlugins.clear()
-        
         PreLoader.loadConfigs()
         self.pluginLoader.load()
         
         for plugin_name, module in self.pluginLoader.plugins.items():
-            qApp.processEvents()
+            QApplication.processEvents(QEventLoop.ProcessEventsFlag.AllEvents, 50)
             if module is None:
                 e = self.pluginLoader.getError(plugin_name)
                 item = PluginBadItem(plugin_name, e)
                 item.showInfo()
                 self.listPlugins.addItem(item)
                 continue
+                
             pluginTypes = self.pluginLoader.getTypes(plugin_name)
             if pluginTypes:
                 for pluginType in pluginTypes:

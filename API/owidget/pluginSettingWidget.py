@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QFormLayout
 
-from API.PlugSetting import PluginSettingTemplate, SettingConfigData
+from API.pluginSetting import PluginSettingTemplate, SettingConfigData
 
 
 class WidgetConfigData(SettingConfigData): ...

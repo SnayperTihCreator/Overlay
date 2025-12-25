@@ -200,13 +200,12 @@ class ThemeController(metaclass=MetaSingtools):
         return self.currentTheme.getImage(name)
     
     def color(self, name):
-        if self.currentTheme is None: return
+        if self.currentTheme is None: return QColor(0, 0, 0)
         color = getattr(self.currentTheme, name)
-        if callable(color):
-            color = color()
+        if callable(color): color = color()
         
         if isinstance(color, str):
-            return QColor(f"#{color}")
+            return QColor(color if color.startswith("#") else f"#{color}")
         return color
     
     def modulated(self, obj):

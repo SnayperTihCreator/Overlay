@@ -40,7 +40,7 @@ class OWidget(QWidget, APIBaseWidget, ABC):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.process)
         
-        self.loadConfig()
+        QTimer.singleShot(0, self.loadConfig)
     
     def __ready__(self):
         ...
@@ -87,5 +87,5 @@ class OWidget(QWidget, APIBaseWidget, ABC):
         )
     
     @classmethod
-    def createSettingWidget(cls, widget: "OWidget", name_plugin: str, parent):
+    def createSettingWidget(cls, widget: "owidget", name_plugin: str, parent):
         return PluginSettingWidget(widget, name_plugin, parent)

@@ -1,5 +1,5 @@
 from functools import lru_cache
-from API.CLI import CLInterface
+from API.cli import CLInterface
 
 from ColorControl.themeController import ThemeController
 from ColorControl.defaultTheme import DefaultTheme

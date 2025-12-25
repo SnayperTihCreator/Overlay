@@ -38,8 +38,13 @@ class APIBaseWidget(ABC, metaclass=MetaBaseWidget):
     def __ready__(self): ...
     
     def process(self):
-        if self.isVisible():
-            self.__process__()
+        try:
+            if self.isVisible():
+                self.__process__()
+        except Exception as e:
+            self.timer.stop()
+            print(f"Error in plugin {self.config.name}: {e}")
+        
     
     @abstractmethod
     def __process__(self): ...

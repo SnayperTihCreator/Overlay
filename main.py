@@ -47,24 +47,20 @@ if __name__ == "__main__":
         ThemeController().setTheme(DefaultTheme())
         
         splash = GifSplashScreen(":/root/gif/loader.gif")
-        splash.drawText(metadata("App").author, (20, 30), size=10, font="UNCAGE")
-        splash.drawText(version("App"), (20, splash.height() - 20))
+        splash.setStatus(version("App"), metadata("App").author)
         splash.show()
         
-        window = Overlay()
+        window = Overlay(splash)
         
-        
-        def load():
+        def on_finalized():
             try:
-                window.ready()
                 builtins.windowOverlay = window
                 splash.finish(window)
             except Exception as e:
-                qFatal(f"Error {type(e)}: {e}")
+                qFatal(f"Error on finalize: {e}")
                 app.exit()
-                
         
-        
-        QTimer.singleShot(2500, load)
+        window.finished_loading.connect(on_finalized)
+        QTimer.singleShot(500, window.ready)
         
         app.exec()

@@ -30,12 +30,14 @@ class Theme(ABC):
         self.addImagePath("UpArrow", "icon:/main/uparrow.svg")
         self.addImagePath("DownArrow", "icon:/main/downarrow.svg")
         self.addImagePath("Overlay", "icon:/main/overlay.svg")
+        self.addImagePath("ErrorInspect", "icon:/main/error_inspect.svg")
         
         self.addIconTheme("qt://template/icons/checkbox_checked.svg")
         self.addIconTheme("qt://template/icons/checkbox_unchecked.svg")
         self.addIconTheme("qt://template/icons/uparrow.svg")
         self.addIconTheme("qt://template/icons/downarrow.svg")
         self.addIconTheme("qt://template/icons/overlay.svg")
+        self.addIconTheme("qt://template/icons/error_inspect.svg")
         self.postInitTheme()
     
     @property

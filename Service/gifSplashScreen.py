@@ -1,33 +1,71 @@
 import copy
-
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QMovie, QColor, QPainter, QPixmap, QFont
 from PySide6.QtWidgets import QSplashScreen, QApplication
 
 
 class GifSplashScreen(QSplashScreen):
-    def __init__(self, path, opacity=1.0):
-        # Создаем QMovie для загрузки и управления GIF-анимацией
-        self.image = QPixmap(":/root/icons/loader.png")
-        super().__init__(self.image)
-        self.movie = QMovie(path)
+    def __init__(self, path, opacity=1.0, scale_factor=0.5):  # Добавили scale_factor
+        super().__init__(QPixmap())
         
-        self.movie.frameChanged.connect(lambda x: self.repaint())
+        self.movie = QMovie(path)
+        self.movie.jumpToFrame(0)
+        
+        self.text_color = QColor("#ffffff")
+        self.text_font = QFont("Arial", 12)
+        
+        # РАСЧЕТ РАЗМЕРА: уменьшаем оригинальный размер GIF в scale_factor раз
+        orig_size = self.movie.currentPixmap().size()
+        self.scaled_size = orig_size * scale_factor
+        self.setFixedSize(self.scaled_size)
+        self.movie.setScaledSize(self.scaled_size)
+        
+        # ЦЕНТРИРОВАНИЕ
+        screen_geometry = QApplication.primaryScreen().geometry()
+        x = (screen_geometry.width() - self.width()) // 2
+        y = (screen_geometry.height() - self.height()) // 2
+        self.move(x, y)
+        
+        self.movie.frameChanged.connect(self.update)
         self.movie.start()
         
         self.setWindowOpacity(opacity)
-        
-        # Настройки для текста
-        self.message = ""
-        self.text_alignment = Qt.AlignBottom | Qt.AlignCenter
-        self.text_color = QColor("#fff")  # Белый цвет по умолчанию
-        self.text_font = QApplication.font()
-        
-        # Устанавливаем флаги окна для прозрачности
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.SplashScreen)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
+        self.message = ""
         self._draw_texts = []
+    
+    def setStatus(self, text, author):
+        """Обновляет текст состояния загрузки"""
+        self.clearTexts()
+        self.drawText(author, (20, 30), size=10, font="UNCAGE")
+        self.drawText(text, (20, self.height() - 20))
+        self.update()
+    
+    def paintEvent(self, event):
+        with QPainter(self) as painter:
+            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform)
+            painter.setOpacity(self.windowOpacity())
+            painter.drawPixmap(0, 0, self.movie.currentPixmap())
+            if self.message:
+                painter.setOpacity(1.0)
+                painter.setFont(self.text_font)
+                painter.setPen(self.text_color)
+                rect = self.rect().adjusted(0, 0, 0, -10)
+                painter.drawText(rect, self.text_alignment, self.message)
+            
+            for text, pos, color, size, font_name in self._draw_texts:
+                painter.setPen(color or self.text_color)
+                f = QFont(font_name) if font_name else self.text_font
+                if size: f.setPointSize(size)
+                painter.setFont(f)
+                
+                if isinstance(pos, QPoint):
+                    painter.drawText(pos, text)
+                else:
+                    painter.drawText(*pos, text)
     
     def setMessage(self, message, alignment=None, color=None):
         """Установка сообщения для отображения поверх анимации"""
@@ -37,47 +75,10 @@ class GifSplashScreen(QSplashScreen):
         if color:
             self.text_color = color
         self.repaint()
-        
+    
     def drawText(self, text, position, color=None, size=None, font=None):
         self._draw_texts.append((text, position, color, size, font))
     
-    def paintEvent(self, event):
-        # Создаем объект QPainter для рисования
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        
-        # Получаем текущий кадр анимации
-        pixmap = self.movie.currentPixmap().scaled(self.image.size())
-        
-        # Рисуем текущий кадр с учетом прозрачности
-        painter.setOpacity(self.windowOpacity())
-        painter.drawPixmap(0, 0, pixmap)
-        
-        # Рисуем текст поверх анимации
-        if self.message:
-            painter.setOpacity(1.0)  # Полная непрозрачность для текста
-            painter.setFont(self.text_font)
-            painter.setPen(self.text_color)
-            
-            # Получаем размеры области для текста
-            text_rect = self.rect()
-            text_rect.setHeight(text_rect.height() - 10)  # Отступ от нижнего края
-            
-            # Рисуем текст с выравниванием
-            painter.drawText(text_rect, self.text_alignment, self.message)
-        
-        if self._draw_texts:
-            for text, pos, color, size, fontName in self._draw_texts:
-                if color is None: color = self.text_color
-                if size is None: size = self.text_font.pointSize()
-                font = copy.copy(self.text_font) if fontName is None else QFont(fontName)
-                font.setPointSize(size)
-                painter.setFont(font)
-                painter.setPen(color)
-                painter.drawText(*pos, text)
-                
-        painter.end()
-        
     def clearTexts(self):
         self._draw_texts.clear()
     
@@ -86,6 +87,5 @@ class GifSplashScreen(QSplashScreen):
         self.setWindowOpacity(opacity)
     
     def finish(self, main_window):
-        # Останавливаем анимацию при завершении
         self.movie.stop()
-        return super().finish(main_window)
+        super().finish(main_window)

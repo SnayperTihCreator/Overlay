@@ -1,147 +1,170 @@
-from PySide6.QtCore import Qt, QSize, QRect, QEvent, Signal, QPoint
-from PySide6.QtWidgets import QStyledItemDelegate, QApplication, QListView, QStyle
-from PySide6.QtGui import QPixmap, QMouseEvent, QPainter, QPen, QColor, QFont
+from functools import lru_cache
+from PySide6.QtCore import Qt, QSize, QRect, QEvent, Signal, QPoint, QCoreApplication
+from PySide6.QtWidgets import QStyledItemDelegate, QApplication, QListView, QStyle, QMessageBox
+from PySide6.QtGui import QPixmap, QPainter, QPen, QColor
 
 from ColorControl.themeController import ThemeController
-
 from ApiPlugins.pluginItems import PluginItemRole, PluginItem
-from .tooltip import ToolTipPlugin
-
-qApp: QApplication
 
 
 class PluginDelegate(QStyledItemDelegate):
     itemClicked = Signal(PluginItem)
     contextMenuRun = Signal(QPoint)
     
-    def __init__(self, list):
+    def __init__(self, list_view: QListView):
         super().__init__()
-        self.listView: QListView = list
-        self._tooltip = None
+        self.listView = list_view
+        self.listView.installEventFilter(self)
     
-    def paint(self, painter, option, index):
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.ApplicationPaletteChange:
+            self.get_cached_pixmap.cache_clear()
+            self.get_status_icon.cache_clear()
+            self.listView.viewport().update()
+        return False  # Не блокируем событие дальше
+    
+    @lru_cache(maxsize=32)
+    def get_cached_pixmap(self, name: str, active: bool, dpr: float) -> QPixmap:
+        # name тут для разделения разных типов иконок в кэше
+        img_name = "CCheckbox" if active else "UCheckbox"
+        if name == "info": img_name = "ErrorInspect"  # Имя текстуры кнопки в теме
+        
+        path = ThemeController().getPathImage(img_name)
+        if not path: return QPixmap()
+        pixmap = QPixmap(path)
+        size = int(48 * dpr) if name != "info" else int(32 * dpr)
+        return pixmap.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    
+    @lru_cache(maxsize=16)
+    def get_status_icon(self, icon_type: QStyle.StandardPixmap, dpr: float) -> QPixmap:
+        pixmap = QApplication.style().standardPixmap(icon_type)
+        size = int(48 * dpr)
+        return pixmap.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    
+    def paint(self, painter: QPainter, option, index):
         self.initStyleOption(option, index)
+        dpr = painter.device().devicePixelRatioF()
+        
+        painter.save()
+        painter.setRenderHint(QPainter.Antialiasing)
         
         if index.data(PluginItemRole.BadItem):
-            self.paintBadItem(painter, option, index)
+            self.paintBadItem(painter, option, index, dpr)
         else:
-            self.paintNormalItem(painter, option, index)
-    
-    def paintBadItem(self, painter: QPainter, option, index):
-        pluginName: str = index.data(Qt.ItemDataRole.DisplayRole)
-        error: Exception = index.data(PluginItemRole.Error)
-        icon: QPixmap = qApp.style().standardPixmap(QStyle.StandardPixmap.SP_MessageBoxWarning).scaled(48, 48)
+            self.paintNormalItem(painter, option, index, dpr)
         
-        rect = option.rect.adjusted(1, 1, -1, -1)
-        painter.save()
-        painter.setPen(QPen(QColor("#f00"), 4))
-        painter.setBrush("#00000000")
-        painter.drawRoundedRect(rect, 20, 20)
         painter.restore()
+    
+    def paintNormalItem(self, painter: QPainter, option, index, dpr):
+        pluginName = index.data(Qt.ItemDataRole.DisplayRole)
+        typePlugin = index.data(PluginItemRole.TypePluginRole)
+        active = index.data(PluginItemRole.ActiveRole)
+        isClone = index.data(PluginItemRole.Duplication)
         
-        icon_rect = option.rect.adjusted(48, 14, -option.rect.width() + 90, -14)
-        painter.drawPixmap(icon_rect, icon)
+        # 1. Фон и рамка
+        rect = option.rect.adjusted(2, 2, -2, -2)
+        color_alt = ThemeController().color("altText")
+        painter.setPen(QPen(color_alt, 1))
+        painter.drawRoundedRect(rect, 12, 12)
         
-        painter.save()
-        font: QFont = option.font
-        font.setPointSizeF(font.pointSizeF() * 1.25)
+        # 2. Чекбокс (из кэша)
+        cb_pix = self.get_cached_pixmap("cb", active, dpr)
+        cb_rect = QRect(option.rect.left() + 10, option.rect.top() + 11, 48, 48)
+        painter.drawPixmap(cb_rect, cb_pix)
+        
+        # 3. Иконка плагина
+        icon = index.data(Qt.ItemDataRole.DecorationRole) or index.data(PluginItemRole.Icon)
+        if icon and not icon.isNull():
+            icon_rect = QRect(option.rect.left() + 65, option.rect.top() + 11, 48, 48)
+            painter.drawPixmap(icon_rect, icon.scaled(48 * dpr, 48 * dpr, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        
+        # 4. Текст
+        painter.setPen(ThemeController().color("mainText"))
+        font = option.font
+        font.setBold(True)
         painter.setFont(font)
-        text_rect = option.rect.adjusted(100, 0, -100, 0)
-        painter.setPen(ThemeController().color("mainText"))  # Зеленый цвет текста
-        painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, pluginName)
-        painter.restore()
         
-        painter.setPen(ThemeController().color("altText"))  # Фиолетовый цвет текста
-        textClone_rect = option.rect.adjusted(100, 0, 0, 0)
-        painter.drawText(textClone_rect, Qt.AlignBottom | Qt.AlignLeft, f"Error: {type(error).__name__}")
-    
-    def paintNormalItem(self, painter, option, index):
-        pluginName: str = index.data(Qt.ItemDataRole.DisplayRole)
-        icon: QPixmap = index.data(Qt.ItemDataRole.DecorationRole)
-        typePlugin: str = index.data(PluginItemRole.TypePluginRole)
-        active: bool = index.data(PluginItemRole.ActiveRole)
-        isClone: bool = index.data(PluginItemRole.Duplication)
-        if not (icon and not icon.isNull()):
-            icon = index.data(PluginItemRole.Icon)
-        
-        rect = option.rect.adjusted(1, 1, -1, -1)
-        painter.save()
-        painter.setPen(QPen(ThemeController().color("altText"), 4))
-        painter.setBrush("#00000000")
-        painter.drawRoundedRect(rect, 20, 20)
-        painter.restore()
-        
-        icon_rect = option.rect.adjusted(48, 14, -option.rect.width() + 90, -14)
-        painter.drawPixmap(icon_rect, icon)
-        
-        if isClone:
+        if isClone and "_" in pluginName:
             pluginName, idClone = pluginName.rsplit("_", 1)
         else:
             idClone = ""
         
-        painter.save()
-        font: QFont = option.font
-        font.setPointSizeF(font.pointSizeF()*1.25)
-        painter.setFont(font)
-        text_rect = option.rect.adjusted(100, 0, -1, 0)
-        painter.setPen(ThemeController().color("mainText"))
-        painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, pluginName)
-        painter.restore()
+        name_rect = option.rect.adjusted(125, 5, -80, -20)
+        painter.drawText(name_rect, Qt.AlignVCenter | Qt.AlignLeft, pluginName)
         
-        if isClone:
-            textClone_rect = option.rect.adjusted(100, 0, -1, 0)
-            painter.drawText(textClone_rect, Qt.AlignBottom | Qt.AlignLeft, f"id: {idClone}(Clone)")
+        # 5. Подзаголовок и Тип
+        painter.setFont(option.font)
+        painter.setPen(color_alt)
+        if idClone:
+            clone_rect = option.rect.adjusted(125, 0, -10, -8)
+            painter.drawText(clone_rect, Qt.AlignBottom | Qt.AlignLeft, f"ID: {idClone} (Clone)")
         
-        # Рисуем тип плагина (фиолетовый)
-        type_rect = option.rect.adjusted(0, 0, -20, -3)
-        painter.setPen(ThemeController().color("altText"))  # Фиолетовый цвет текста
+        type_rect = option.rect.adjusted(0, 0, -15, -8)
         painter.drawText(type_rect, Qt.AlignBottom | Qt.AlignRight, typePlugin)
-        
-        # Рисуем чекбокс (в виде изображения)
-        checkbox_rect = option.rect.adjusted(0, 14, -option.rect.width() + 48, -14)
-        checkbox_img = ThemeController().getPathImage("CCheckbox" if active else "UCheckbox")
-        pixmap = QPixmap(checkbox_img)
-        pixmap = pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        painter.drawPixmap(checkbox_rect, pixmap)
+    
+    def paintBadItem(self, painter: QPainter, option, index, dpr):
+        pluginName = index.data(Qt.ItemDataRole.DisplayRole)
+        error = index.data(PluginItemRole.Error)
+        rect = option.rect.adjusted(2, 2, -2, -2)
+        painter.setPen(QPen(QColor("#f44336"), 2))
+        painter.drawRoundedRect(rect, 12, 12)
+        warn_icon = self.get_status_icon(QStyle.StandardPixmap.SP_MessageBoxWarning, dpr)
+        painter.drawPixmap(option.rect.left() + 10, option.rect.top() + 11, warn_icon)
+        painter.setPen(ThemeController().color("mainText"))
+        painter.drawText(option.rect.adjusted(70, 5, -60, -20), Qt.AlignVCenter | Qt.AlignLeft, pluginName)
+        info_pix = self.get_cached_pixmap("info", False, dpr)
+        info_rect = QRect(option.rect.right() - 45, option.rect.top() + 19, 32, 32)
+        painter.drawPixmap(info_rect, info_pix)
+        painter.setPen(QColor("#f44336"))
+        painter.drawText(option.rect.adjusted(70, 0, -60, -8), Qt.AlignBottom | Qt.AlignLeft,
+                         f"Error: {type(error).__name__}")
     
     def sizeHint(self, option, index):
-        # Фиксированная высота элемента, как в QML (60px)
         return QSize(option.rect.width(), 70)
     
-    def createEditor(self, parent, option, index):
-        return None
-    
     def editorEvent(self, event, model, option, index):
-        if index.data(PluginItemRole.BadItem):
-            return super().editorEvent(event, model, option, index)
-        checkbox_rect: QRect = option.rect.adjusted(0, 14, -option.rect.width() + 48, -14)
-        if isinstance(event, QMouseEvent) and event.type() == QEvent.Type.MouseButtonPress:
-            if checkbox_rect.contains(event.pos()) and event.button() == Qt.MouseButton.LeftButton:
-                active = index.data(PluginItemRole.ActiveRole)
-                model.setData(index, not active, PluginItemRole.ActiveRole)
-                self.itemClicked.emit(index.data(PluginItemRole.Self))
-                return True
-            elif event.button() == Qt.MouseButton.RightButton:
+        if event.type() == QEvent.Type.MouseButtonPress:
+            pos = event.pos()
+            
+            # Логика для BadItem (кнопка Инфо)
+            if index.data(PluginItemRole.BadItem):
+                info_rect = QRect(option.rect.right() - 45, option.rect.top() + 19, 32, 32)
+                if info_rect.contains(pos) and event.button() == Qt.MouseButton.LeftButton:
+                    self.show_error_dialog(index)
+                    return True
+            
+            # Логика для NormalItem (чекбокс)
+            else:
+                cb_rect = QRect(option.rect.left() + 10, option.rect.top() + 11, 48, 48)
+                if cb_rect.contains(pos) and event.button() == Qt.MouseButton.LeftButton:
+                    active = index.data(PluginItemRole.ActiveRole)
+                    model.setData(index, not active, PluginItemRole.ActiveRole)
+                    self.itemClicked.emit(index.data(PluginItemRole.Self))
+                    return True
+            
+            if event.button() == Qt.MouseButton.RightButton:
                 self.contextMenuRun.emit(event.pos())
                 return True
-        return super().editorEvent(event, model, option, index)
+        
+        return False
+    
+    def show_error_dialog(self, index):
+        """Вызов ванильного диалога с подробностями."""
+        plugin_name = index.data(Qt.ItemDataRole.DisplayRole)
+        error_obj = index.data(PluginItemRole.Error)
+        
+        msg = QMessageBox(self.listView)
+        msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setWindowTitle("Ошибка плагина")
+        msg.setText(f"<b>{plugin_name}</b> не был загружен.")
+        msg.setInformativeText(f"Тип исключения: {type(error_obj).__name__}")
+        msg.setDetailedText(str(error_obj))
+        msg.setStyleSheet(
+            f"QPushButton {{ background-color: {ThemeController().color('altText').name()}; color: white; }}")
+        
+        msg.exec()
     
     def helpEvent(self, event, view, option, index):
-        if event is None or not index.isValid():
+        if index.data(PluginItemRole.BadItem):
             return False
-        
-        match event.type():
-            case QEvent.Type.ToolTip if self.shouldToolTip(event, view, option, index):
-                return True
-            case QEvent.Type.ToolTip if not self.shouldToolTip(event, view, option, index):
-                tooltip_data = index.data(Qt.ItemDataRole.ToolTipRole)
-                tooltip = ToolTipPlugin(option.widget, tooltip_data)
-                tooltip.move(event.globalPos() - QPoint(25, 20))
-                tooltip.show()
-                return True
-        
         return super().helpEvent(event, view, option, index)
-    
-    def shouldToolTip(self, event, view, option, index):
-        tooltip_rect: QRect = option.rect.adjusted(100, 0, -100, 0)
-        return not tooltip_rect.contains(event.pos())

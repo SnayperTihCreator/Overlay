@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QFormLayout, QCheckBox, QWidget
 from PySide6.QtCore import Qt
 
-from API.PlugSetting import PluginSettingTemplate, SettingConfigData
+from API.pluginSetting import PluginSettingTemplate, SettingConfigData
 
 
 class WindowConfigData(SettingConfigData):

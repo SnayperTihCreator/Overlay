@@ -30,6 +30,27 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
             cls.configs |= json5.load(configs_file)
     
     @classmethod
+    def load_group(cls, group_name: str, settings: QSettings, parent):
+        settings.beginGroup(group_name)
+        try:
+            child_groups = settings.childGroups()
+            for item_name in child_groups:
+                try:
+                    old_item = parent.listPlugins.findItemBySaveName(item_name)
+                    if old_item is not None:
+                        parent.listPlugins.remove(old_item)
+                    target, item = cls.loaded(settings, item_name, parent)
+                    yield target, item
+                
+                except ModuleNotFoundError:
+                    qWarning(f"[{group_name}] Модуль не найден для: {item_name}")
+                except Exception as e:
+                    qWarning(f"[{group_name}] Критическая ошибка загрузки {item_name}: {e}")
+        
+        finally:
+            settings.endGroup()
+            
+    @classmethod
     def saveConfigs(cls):
         with open("project://configs/configs_plugins.json5", "w") as configs_file:
             json5.dump(cls.configs, configs_file, ensure_ascii=False, indent=4)

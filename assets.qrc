@@ -12,6 +12,7 @@
         <file alias="uparrow.svg">assets/icons/uparrow.svg</file>
         <file alias="downarrow.svg">assets/icons/downarrow.svg</file>
         <file alias="overlay.svg">assets/icons/overlay.svg</file>
+        <file alias="error_inspect.svg">assets/icons/error_inspect.svg</file>
     </qresource>
     <qresource prefix="root/css/app">
         <file alias="main.css">assets/css/app/main.css</file>

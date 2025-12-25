@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, Signal
 from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QCheckBox, QFormLayout, QComboBox
 
 from uis.settings_ui import Ui_Setting
@@ -10,6 +10,8 @@ from PathControl.themeLoader import ThemeLoader
 
 
 class SettingWidget(QWidget, Ui_Setting):
+    webSocketToggled = Signal(bool)
+    
     def __init__(self, loaderTheme: ThemeLoader, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -72,10 +74,7 @@ class SettingWidget(QWidget, Ui_Setting):
             setting.endGroup()
     
     def checked_pws_active(self, state):
-        if state:
-            self.parent().active_web_sockets()
-        else:
-            self.parent().deactivate_web_sockets()
+        self.webSocketToggled.emit(state)
     
     def _handle_change_theme(self, text):
         if text == "DefaultTheme":
@@ -99,4 +98,6 @@ class SettingWidget(QWidget, Ui_Setting):
         match data["websoc"]:
             case {"btn": state}:
                 if self.pWebSocket_checkbox.isChecked() != state:
+                    self.pWebSocket_checkbox.blockSignals(True)
                     self.pWebSocket_checkbox.setChecked(state)
+                    self.pWebSocket_checkbox.blockSignals(False)

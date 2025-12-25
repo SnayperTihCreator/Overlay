@@ -75,7 +75,7 @@ class PluginBadItem(PluginItem):
     namePlugin: str = field(default=None)
     error: Exception = field(default=None)
     
-    module: NoneType = field(init=False, default=None)
+    module: ModuleType = field(init=False, default=ModuleType("unknown"))
     typeModule: NoneType = field(init=False, default=None)
     active: NoneType = field(init=False, default=None)
     

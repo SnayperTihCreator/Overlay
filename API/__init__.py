@@ -1,8 +1,8 @@
-from .OWindow import *
-from .OWidget import *
-from .BackgroundWorker import BackgroundWorkerManager, BackgroundWorker
+from .owindow import *
+from .owidget import *
+from .oworker import BackgroundWorkerManager, BackgroundWorker
 from .config import Config
-from .CLI import CLInterface
+from .cli import CLInterface
 
 __all__ = [
     "Config",

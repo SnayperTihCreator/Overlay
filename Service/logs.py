@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import sys
 import traceback
 from datetime import datetime
@@ -41,14 +42,21 @@ logging.basicConfig(level=logging.CRITICAL, stream=io.StringIO())
 logger = logging.getLogger("Qt")
 logger.setLevel(logging.DEBUG)
 
-date = datetime.now().strftime("%Y_%m_%d")
-handler = logging.FileHandler(f"./configs/log{date}.log", "w", "utf-8")
+handler = TimedRotatingFileHandler(
+    filename="./configs/app_log.log",
+    when="midnight",
+    interval=1,
+    encoding="utf-8",
+    backupCount=5,
+    delay=True,
+)
+handler.suffix = "%Y-%m-%d"
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
 formatter = logging.Formatter(
     "%(asctime)s - %(name)s - %(levelname)s - %(message)s [%(filename)s: %(lineno)d]",
-    "%Y-%m-%d %H:%M:%S",
+    "%H:%M:%S",
 )
 handler.setFormatter(formatter)
 

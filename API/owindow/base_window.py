@@ -1,8 +1,9 @@
 import uuid
 from abc import ABC
+from typing import Optional
 
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QMainWindow, QGraphicsColorizeEffect, QWidget
+from PySide6.QtWidgets import QGraphicsColorizeEffect, QWidget, QVBoxLayout
 from PySide6.QtCore import Qt, QPoint, QTimer
 from pydantic import BaseModel
 
@@ -16,7 +17,7 @@ from ColorControl.themeController import ThemeController
 from .pluginSettingWindow import PluginSettingWindow, WindowConfigData
 
 
-class OWindow(QMainWindow, APIBaseWidget, ABC):
+class OWindow(QWidget, APIBaseWidget, ABC):
     _config_data_ = WindowConfigData
     
     dumper = WindowPreLoader()
@@ -45,12 +46,13 @@ class OWindow(QMainWindow, APIBaseWidget, ABC):
         
         self.setGeometry(100, 100, 300, 200)
         
+        self.box = QVBoxLayout(self)
+        self.box.setContentsMargins(0, 0, 0, 0)
+        self.box.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.central_widget = QWidget()
-        self.setObjectName("CentralWidget")
-        self.setCentralWidget(self.central_widget)
+        self.box.addWidget(self.central_widget)
         
-        # Устанавливаем размер из конфига
-        self.loadConfig()
+        QTimer.singleShot(0, self.loadConfig)
         
         # Для перетаскивания
         self.hasMoved = True
@@ -58,10 +60,14 @@ class OWindow(QMainWindow, APIBaseWidget, ABC):
         self.reloading = False
         self.offset = QPoint()
         
-        self.colorize_effect = QGraphicsColorizeEffect(self)
-        self.colorize_effect.setColor(QColor(0, 255, 0))  # Зеленый
-        self.colorize_effect.setStrength(0)  # Изначально выключен
-        self.setGraphicsEffect(self.colorize_effect)
+        self.colorize_effect: Optional[QGraphicsColorizeEffect] = None
+    
+    def setCentralWidget(self, widget: QWidget):
+        """Эмуляция QMainWindow для удобства плагинописцев"""
+        if self.central_widget:
+            self.central_widget.deleteLater()
+        self.central_widget = widget
+        self.box.addWidget(widget)
     
     def __process__(self):
         self.reloading = False
@@ -96,7 +102,8 @@ class OWindow(QMainWindow, APIBaseWidget, ABC):
         return self._config_data_(**self.__save_config__())
     
     def restore_config(self, config: dict):
-        self.__restore_config__(self._config_data_(**config))
+        if config:
+            self.__restore_config__(self._config_data_(**config))
     
     def __restore_config__(self, config: BaseModel):
         if not config: return
@@ -110,14 +117,19 @@ class OWindow(QMainWindow, APIBaseWidget, ABC):
     def shortcut_run(self, name):
         pass
     
-    def toggle_input(self, state):
-        if not state:
-            self.setWindowFlags(
-                self.windowFlags() & ~Qt.WindowType.WindowTransparentForInput
-            )
+    def toggle_input(self, state: bool):
+        """Меняем флаги только если они реально отличаются"""
+        current_flags = self.windowFlags()
+        new_flags = current_flags
+        
+        if state:
+            new_flags |= Qt.WindowType.WindowTransparentForInput
         else:
-            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowTransparentForInput)
-        self.show()
+            new_flags &= ~Qt.WindowType.WindowTransparentForInput
+        
+        if current_flags != new_flags:
+            self.setWindowFlags(new_flags)
+            self.show()
     
     def mousePressEvent(self, event):
         if (event.button() == Qt.MouseButton.LeftButton) and self.hasMoved:
@@ -143,13 +155,16 @@ class OWindow(QMainWindow, APIBaseWidget, ABC):
         return super().keyPressEvent(event)
     
     def highlightBorder(self):
+        if not hasattr(self, 'colorize_effect'):
+            self.colorize_effect = QGraphicsColorizeEffect(self)
+            self.colorize_effect.setColor(QColor(0, 255, 0))
+            self.setGraphicsEffect(self.colorize_effect)
         self.colorize_effect.setStrength(0.7)  # Интенсивность
-        # Через 500 мс выключаем
         QTimer.singleShot(500, lambda: self.colorize_effect.setStrength(0))
     
     def shortcut(self, key: str, uname: str):
         self.parent().registered_shortcut(key, uname, self)
     
     @classmethod
-    def createSettingWidget(cls, window: "OWindow", name_plugin: str, parent):
+    def createSettingWidget(cls, window: "owindow", name_plugin: str, parent):
         return PluginSettingWindow(window, name_plugin, parent)
