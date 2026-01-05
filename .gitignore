@@ -8,17 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
-.idea/
-/tools/windows/
-/tools/linux/
-/tools/common/
-/configs
-/.env
+.idea
+.vscode
+.env
 
-/plugins/
-/tools/
-/resource/
-/.cache/
-/assets/gif/loader.mp4
-
-/*-stubs/
+# всякая всячина
+/src/assets/gif/loader.mp4
+*/*-stubs/
+/run-test/

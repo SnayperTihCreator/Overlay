@@ -1,6 +1,0 @@
-[websockets]
-IN = [ 8000, 8010,]
-OUT = [ 8015, 8020,]
-
-[shortkey]
-open = "shift+alt+o"

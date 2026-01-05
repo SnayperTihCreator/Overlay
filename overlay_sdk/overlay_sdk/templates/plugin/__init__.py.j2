@@ -1,0 +1,11 @@
+from .{{ name | camelCase }} import {{ name }}
+
+{% if is_window -%}
+def createWindow(parent):
+    return {{ name }}(parent)
+{% endif %}
+
+{% if is_widget -%}
+def createWidget(parent):
+    return {{ name }}(parent)
+{% endif %}

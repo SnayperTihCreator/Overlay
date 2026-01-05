@@ -1,0 +1,19 @@
+[metadata]
+name = "{{ name }}"
+version = "1.0.0"
+author = "&lt;unknown&gt;"
+description = "&lt;unknown&gt;"
+
+[settings]
+style_file = "style.css"
+
+{% if is_window -%}
+[settings.window]
+width = 220
+height = 75
+opacity = 1.0
+{%- endif %}
+
+{% if is_widget -%}
+[settings.widget]
+{%- endif %}

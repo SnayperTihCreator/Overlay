@@ -1,0 +1,1 @@
+from .linux_wayland import LinuxWaylandFakeInput as LinuxX11FakeInput
