@@ -39,7 +39,7 @@ class PluginList(QListView):
         return self.model_data.items()
     
     def findItemBySaveName(self, saveName):
-        objs = [item for item in self.model_data.items() if item.save_name == saveName]
+        objs = [item for item in self.model_data.items() if isinstance(item, PluginItem) and item.save_name == saveName]
         if objs:
             return objs[0]
         return None

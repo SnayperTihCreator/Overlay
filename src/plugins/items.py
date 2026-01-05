@@ -53,6 +53,9 @@ class PluginItem(PluginBase):
     is_duplicate: bool = field(init=False, default=False, repr=False)
     widget: Optional[APIBaseWidget] = field(init=False, default=None, repr=False)
     
+    def __attrs_post_init__(self):
+        self.plugin_name = self.module.__name__
+    
     @property
     def icon(self):
         """Прослойка, которая берет актуальное имя темы."""
@@ -97,6 +100,7 @@ class PluginBadItem(PluginBase):
     plugin_name = field()
     is_bad: bool = field(init=False, default=True)
     error: Exception | None = field(default=None)
+    module_type: str = field(default="bad_element", init=False, repr=False)
     
     @property
     def icon(self):

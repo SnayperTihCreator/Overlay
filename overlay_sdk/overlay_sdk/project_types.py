@@ -22,6 +22,8 @@ class PluginProject(BaseProject):
                 arcname = entry.relative_to(self.root)
                 self.logger.info(f"copy {entry.as_posix()} as {arcname.as_posix()}")
                 
+                if entry.is_dir():
+                    continue
                 if entry.suffix == ".py":
                     self.logger.info(f"packing module {arcname.as_posix()} as {self.name}/{arcname.as_posix()}")
                     zfile.write(entry, f"{self.name}/{arcname.as_posix()}")

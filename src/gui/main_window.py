@@ -180,7 +180,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         except StopIteration:
             self.finished_loading.emit()
         except Exception as e:
-            qCritical(f"Critical load error: {e}")
+            qCritical(f"Critical load error: \n{''.join(traceback.format_exception(e))}")
     
     def _ready_generator(self):
         """Собственно шаги загрузки с yield между ними"""
@@ -390,8 +390,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         menu.exec(self.listPlugins.viewport().mapToGlobal(pos))
     
     def updateConfigsPlugins(self):
-        ldt = self.dialogSettings.obj.save_status()
-        PreLoader.configs[self.dialogSettings.save_name] = ldt.to_dict()
+        PreLoader.configs.setValue(self.dialogSettings.save_name, self.dialogSettings.obj.save_status())
         PreLoader.saveConfigs()
     
     def duplicateWindowPlugin(self, item: PluginItem):

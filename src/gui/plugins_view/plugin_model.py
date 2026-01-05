@@ -1,6 +1,6 @@
 from PySide6.QtCore import QAbstractListModel, QByteArray, Qt, QModelIndex, Slot
 
-from plugins.items import PluginItemRole, PluginItem, PluginBadItem
+from plugins.items import PluginItemRole, PluginItem, PluginBadItem, PluginBase
 
 
 class PluginDataModel(QAbstractListModel):
@@ -8,8 +8,8 @@ class PluginDataModel(QAbstractListModel):
         super().__init__()
         self._plugins: list[PluginItem | PluginBadItem] = []
     
-    def addItem(self, item: PluginItem):
-        if not isinstance(item, PluginItem): raise TypeError
+    def addItem(self, item: PluginBase):
+        if not isinstance(item, PluginBase): raise TypeError
         self.beginInsertRows(QModelIndex(), len(self._plugins), len(self._plugins))
         self._plugins.append(item)
         self.endInsertRows()
@@ -65,7 +65,7 @@ class PluginDataModel(QAbstractListModel):
     
     def setData(self, index, value, role=Qt.ItemDataRole.DisplayRole):
         if role == PluginItemRole.ACTIVE_ROLE:
-            self.updateStateItem(value)
+            self.updateStateItem(index.row(), value)
     
     def roleNames(self, /):
         names = super().roleNames()

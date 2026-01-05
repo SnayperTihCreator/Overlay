@@ -1,10 +1,10 @@
 import importlib
+import traceback
 from types import ModuleType
 from abc import ABC, abstractmethod, ABCMeta
 
 from PySide6.QtCore import qWarning
 from PySide6.QtWidgets import QMenu
-import json5
 
 from core.common import APIBaseWidget
 from core.settings import LDTSettings, Json5Driver
@@ -24,7 +24,7 @@ class MetaSingToolsPreloader(ABCMeta):
 
 class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
     instances = {}
-    configs = LDTSettings(getAppPath()/"configs"/"configs_plugins.json5", Json5Driver(), preload=False)
+    configs = LDTSettings(getAppPath()/"configs"/"configs_plugins.toml", Json5Driver(), preload=False)
     
     @classmethod
     def loadConfigs(cls):
@@ -49,7 +49,7 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
                 except ModuleNotFoundError:
                     qWarning(f"[{group_name}] Модуль не найден для: {item_name}")
                 except Exception as e:
-                    qWarning(f"[{group_name}] Критическая ошибка загрузки {item_name}: {e}")
+                    qWarning(f"[{group_name}] Критическая ошибка загрузки {item_name}: {traceback.format_exception(e)}")
     
     @classmethod
     def saveConfigs(cls):
@@ -96,15 +96,8 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
     
     @classmethod
     @abstractmethod
-    def overCreateItem(
-            cls,
-            module: ModuleType,
-            name_type: str,
-            checked: bool = False,
-    ) -> PluginItem:
-        item = PluginItem(module=module, active=checked, module_type=name_type)
-        item.plugin_name = module.__name__
-        return item
+    def overCreateItem(cls, module: ModuleType, name_type: str, checked: bool = False) -> PluginItem:
+        return PluginItem(module=module, active=checked, module_type=name_type)
     
     @classmethod
     @abstractmethod
