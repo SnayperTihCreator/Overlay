@@ -24,7 +24,7 @@ class MetaSingToolsPreloader(ABCMeta):
 
 class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
     instances = {}
-    configs = LDTSettings(getAppPath()/"configs"/"configs_plugins.toml", Json5Driver(), preload=False)
+    configs = LDTSettings(getAppPath()/"configs"/"configs_plugins.json5", Json5Driver(), preload=False)
     
     @classmethod
     def loadConfigs(cls):

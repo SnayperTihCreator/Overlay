@@ -19,7 +19,6 @@ dependencies = [
     "pycaw>=20240210; sys_platform == 'win32'",
     "markupsafe>=3.0.2",
     "typer>=0.16.0",
-    "numba>=0.61.2",
     "textual>=3.5.0",
     "pulsectl>=24.12.0; sys_platform == 'linux'",
     "pillow>=11.3.0",
