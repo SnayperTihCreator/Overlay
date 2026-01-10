@@ -7,7 +7,6 @@ requires-python = ">=3.11"
 dependencies = [
     "json5>=0.12.0",
     "psutil>=7.0.0",
-    "pyinstaller>=6.13.0",
     "pywin32>=310; sys_platform == 'win32'",
     "toml>=0.10.2",
     "evdev; sys_platform == 'linux'",
@@ -28,8 +27,21 @@ dependencies = [
     "jinja2>=3.1.6",
     "pyside6==6.10.1",
     "setuptools<81",
-    "pulsectl>=24.12.0; sys_platform == 'linux'",
     "pydantic>=2.11.7",
     "pyi18n-v2>=1.2.2",
     "methodtools>=0.4.7",
 ]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.13.0",
+    "taskipy>=1.14.1",
+]
+
+[tool.uv]
+override-dependencies = ["psutil==7.0.0"]
+managed = true
+
+[tool.taskipy.tasks]
+build = "pyinstaller scripts/overlay.spec --noconfirm"
+build-cli = "pyinstaller scripts/overlay_cli.spec --noconfirm"
