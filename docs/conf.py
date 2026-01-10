@@ -18,7 +18,7 @@ extensions = [
     'myst_parser',
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'autoapi.extension',
+    # 'autoapi.extension',
 ]
 
 source_suffix = {
@@ -44,7 +44,7 @@ myst_enable_extensions = [
     "html_image",
 ]
 
-autoapi_type = 'python'
-autoapi_dirs = []  # путь к вашему коду
-autoapi_root = 'autoapi'
-autoapi_add_toctree_entry = True
+# autoapi_type = 'python'
+# autoapi_dirs = []  # путь к вашему коду
+# autoapi_root = 'autoapi'
+# autoapi_add_toctree_entry = True
