@@ -45,6 +45,6 @@ myst_enable_extensions = [
 ]
 
 autoapi_type = 'python'
-autoapi_dirs = ['../API']  # путь к вашему коду
+autoapi_dirs = []  # путь к вашему коду
 autoapi_root = 'autoapi'
 autoapi_add_toctree_entry = True
