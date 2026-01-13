@@ -3,6 +3,7 @@ import sys
 import os
 import pathlib
 import zipfile
+from typing import TYPE_CHECKING
 
 DISTPATH: str
 SPECPATH: str
@@ -10,15 +11,14 @@ SPECPATH: str
 BASE_DIR = os.path.dirname(SPECPATH)
 sys.path.append(os.path.join(BASE_DIR, 'src'))
 
-from PyInstaller.building.build_main import Analysis
+if TYPE_CHECKING:
+    from PyInstaller.building.build_main import Analysis, logger, PYZ, EXE, COLLECT
 
 from core.main_init import OpenManager
 from core.metadata import version
 from utils.system import getSystem
 # noinspection PyUnresolvedReferences
 import assets_rc
-
-
 
 
 def buildZipFile(dist: pathlib.Path, dir_name: str):
@@ -34,13 +34,13 @@ def buildZipFile(dist: pathlib.Path, dir_name: str):
         logger.info("📁 Архив собран")
 
 
-himpr = ["json", "psutil", "cProfile", "xml.etree.ElementTree", "requests", "numpy", "colorama", "PySide6.QtCharts"]
+hiddenimports = ["requests", "colorama", "PySide6.QtCharts"]
 
 match getSystem():
     case ["win32", _]:
-        himpr.extend(["keyboard"])
+        hiddenimports.extend(["keyboard"])
     case ["linux", _]:
-        himpr.extend(["evdev"])
+        hiddenimports.extend(["evdev"])
 
 with OpenManager():
     a = Analysis(
@@ -48,7 +48,7 @@ with OpenManager():
         pathex=[os.path.join(BASE_DIR, 'src')],
         binaries=[],
         datas=[],
-        hiddenimports=himpr,
+        hiddenimports=hiddenimports,
         hookspath=[],
         hooksconfig={},
         runtime_hooks=[],

@@ -1,7 +1,8 @@
+import re
 import zipfile
 from pathlib import Path
 
-from json5 import dumps
+from toml import dumps
 
 from .core import setup_type, BaseProject
 
@@ -49,6 +50,8 @@ class ThemeProject(BaseProject):
             for entry in self.root.rglob("*"):
                 arcname = entry.relative_to(self.root)
                 if entry.is_file() and not self._exclude_file(arcname):
+                    if self._match_config(entry):
+                        self.add_metadata(entry)
                     zfile.write(entry, arcname)
                 elif entry.is_dir() and not self._exclude_folder(arcname):
                     zfile.mkdir(arcname)
@@ -60,12 +63,25 @@ class ThemeProject(BaseProject):
 
 @setup_type("oaddons")
 class OAddonsProject(BaseProject):
+    def _get_transformed_name(self) -> str:
+        name = self.name.replace(" ", "_")
+        parts = re.split(r'(\[.*?\]|\(.*?\))', name)
+        
+        transformed = ""
+        for part in parts:
+            if part.startswith(('[', '(')):
+                transformed += part
+            else:
+                transformed += part.lower()
+        return transformed
+    
     def _pack(self, dist_path: Path):
-        resultFile = dist_path / "compress" / f"{self.name}.oaddons"
+        t_name = self._get_transformed_name()
+        resultFile = dist_path / "compress" / f"{t_name}.oaddons"
         resultFile.parent.mkdir(parents=True, exist_ok=True)
         
         with zipfile.ZipFile(resultFile, "w") as zfile:
-            zfile.mkdir(self.name)
+            zfile.mkdir(t_name)
             for entry in self.root.rglob("*"):
                 arcname = entry.relative_to(self.root)
                 if entry.is_dir() and self._exclude_file(arcname):
@@ -74,8 +90,10 @@ class OAddonsProject(BaseProject):
                     continue
                 
                 if entry.suffix == ".py":
-                    zfile.write(entry, f"{self.name}/{arcname}")
+                    zfile.write(entry, f"{t_name}/{arcname}")
                 else:
+                    if self._match_config(entry):
+                        self.add_metadata(entry)
                     zfile.write(entry, arcname)
         
         return resultFile

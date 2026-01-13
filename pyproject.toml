@@ -31,10 +31,12 @@ dependencies = [
     "pyi18n-v2>=1.2.2",
     "methodtools>=0.4.7",
     "ldt-nexus[all]>=1.0.0",
+    "psygnal>=0.15.1",
 ]
 
 [dependency-groups]
 dev = [
+    "modulegraph>=0.19.7",
     "pyinstaller>=6.13.0",
     "taskipy>=1.14.1",
 ]
