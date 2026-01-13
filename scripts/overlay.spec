@@ -10,7 +10,7 @@ SPECPATH: str
 BASE_DIR = os.path.dirname(SPECPATH)
 sys.path.append(os.path.join(BASE_DIR, 'src'))
 
-from PyInstaller.building.build_main import Analysis, EXE, COLLECT, PYZ, logger
+from PyInstaller.building.build_main import Analysis
 
 from core.main_init import OpenManager
 from core.metadata import version

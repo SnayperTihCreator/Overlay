@@ -30,6 +30,7 @@ dependencies = [
     "pydantic>=2.11.7",
     "pyi18n-v2>=1.2.2",
     "methodtools>=0.4.7",
+    "ldt-nexus[all]>=1.0.0",
 ]
 
 [dependency-groups]

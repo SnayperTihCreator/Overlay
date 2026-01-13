@@ -5,7 +5,7 @@ from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget
 
-from utils.ldt import LDT
+from ldt import LDT
 
 if TYPE_CHECKING:
     from core.config import Config

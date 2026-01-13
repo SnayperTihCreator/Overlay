@@ -11,7 +11,7 @@ from core.config import Config
 from plugins.preloaders import WindowPreLoader
 from gui.utils import clampAllDesktopP
 from gui.themes import ThemeController
-from utils.ldt import LDT
+from ldt import LDT
 
 from .settings import PluginSettingWindow
 

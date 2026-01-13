@@ -2,7 +2,7 @@
 import os
 import sys
 
-from PyInstaller.building.build_main import Analysis, EXE, PYZ
+from PyInstaller.building.build_main import Analysis
 
 SPECPATH: str
 BASE_DIR = os.path.dirname(SPECPATH)

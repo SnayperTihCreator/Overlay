@@ -14,7 +14,7 @@ version_state = ["unstable", "stable"]
 
 @dataclass(frozen=True)
 class MetaData:
-    name: str = Field(default="<unknown>")
+    name: str = Field("<unknown>")
     version: str = Field(..., pattern=version_pattern)
     author: str = Field(default="<unknown>")
     description: str = Field(default="<no description>")

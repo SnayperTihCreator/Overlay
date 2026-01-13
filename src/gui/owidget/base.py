@@ -8,7 +8,7 @@ from core.common import APIBaseWidget
 from core.config import Config
 from plugins.preloaders import WidgetPreLoader
 from gui.themes import ThemeController
-from utils.ldt import LDT
+from ldt import LDT
 
 from .settings import PluginSettingWidget
 

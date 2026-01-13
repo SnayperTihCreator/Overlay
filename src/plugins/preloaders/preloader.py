@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod, ABCMeta
 
 from PySide6.QtCore import qWarning
 from PySide6.QtWidgets import QMenu
+from ldt import LDT, NexusStore
+from ldt.io.drivers.extra import Json5Driver
 
 from core.common import APIBaseWidget
-from core.settings import LDTSettings, Json5Driver
-from utils.ldt import LDT
 from utils.fs import getAppPath
 from plugins.items import PluginItem
 
@@ -24,7 +24,7 @@ class MetaSingToolsPreloader(ABCMeta):
 
 class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
     instances = {}
-    configs = LDTSettings(getAppPath()/"configs"/"configs_plugins.json5", Json5Driver(), preload=False)
+    configs = NexusStore(getAppPath()/"configs"/"configs_plugins.json5", Json5Driver(), preload=False)
     
     @classmethod
     def loadConfigs(cls):
@@ -35,7 +35,7 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
             cls.configs.sync()
     
     @classmethod
-    def load_group(cls, group_name: str, settings: LDTSettings, parent):
+    def load_group(cls, group_name: str, settings: NexusStore, parent):
         with settings.group_context(group_name):
             child_groups = settings.childGroups()
             for item_name in child_groups:
@@ -56,7 +56,7 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
         cls.configs.sync()
     
     @classmethod
-    def saved(cls, target: APIBaseWidget, item: PluginItem, setting: LDTSettings):
+    def saved(cls, target: APIBaseWidget, item: PluginItem, setting: NexusStore):
         with setting.group_context(item.save_name):
             if target is not None:
                 cls.configs.setValue(item.save_name, target.save_status())
@@ -66,7 +66,7 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
             cls.overSaved(item, setting)
     
     @classmethod
-    def loaded(cls, setting: LDTSettings, name: str, parent):
+    def loaded(cls, setting: NexusStore, name: str, parent):
         with setting.group_context(name):
             active = setting.value("active")
             module = importlib.import_module(setting.value("module"))
@@ -101,17 +101,17 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
     
     @classmethod
     @abstractmethod
-    def overSaved(cls, item: PluginItem, setting: LDTSettings):
+    def overSaved(cls, item: PluginItem, setting: NexusStore):
         pass
     
     @classmethod
     @abstractmethod
-    def overLoaded(cls, setting: LDTSettings, name: str, parent) -> APIBaseWidget:
+    def overLoaded(cls, setting: NexusStore, name: str, parent) -> APIBaseWidget:
         pass
     
     @classmethod
     @abstractmethod
-    def getParameterCreateItem(cls, setting: LDTSettings, name: str, parent):
+    def getParameterCreateItem(cls, setting: NexusStore, name: str, parent):
         return []
     
     @classmethod
@@ -138,12 +138,12 @@ class PreLoader(ABC, metaclass=MetaSingToolsPreloader):
         cls.instances[kwargs.get("type")] = cls
         
     @classmethod
-    def clear(cls, setting: LDTSettings):
+    def clear(cls, setting: NexusStore):
         for name in cls.instances.keys():
             setting.remove(f"{name}s")
     
     @classmethod
-    def save(cls, item: PluginItem, setting: LDTSettings):
+    def save(cls, item: PluginItem, setting: NexusStore):
         preloader: PreLoader = cls.instances[item.module_type.lower()]
         with setting.group_context(f"{item.module_type.lower()}s"):
             try:

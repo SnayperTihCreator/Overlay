@@ -10,12 +10,13 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, qDebug, QMargins, QEvent, Signal, QSize, qWarning, QTimer, QEventLoop, qCritical
 from PySide6.QtGui import QKeyEvent, QAction
+from ldt import NexusStore
+from ldt.io.drivers.extra import TomlDriver
 
 from utils.fs import getAppPath
 from core.loaders import PluginLoader, ThemeLoader, OverlayAddonsLoader
 from core.config import Config
 from core.cli import CLInterface
-from core.settings import LDTSettings, TomlDriver
 from core.cli_modules.theme_cli import ThemeCLI
 from gui.owindow import OWindow
 from gui.owidget import OWidget
@@ -63,7 +64,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.pluginLoader = PluginLoader()
         self.oaddons = OverlayAddonsLoader()
         
-        self.settings = LDTSettings(getAppPath()/"configs"/"settings.toml", TomlDriver())
+        self.settings = NexusStore(getAppPath()/"configs"/"settings.toml", TomlDriver())
         
         self.widgets: dict[str, PluginWidget] = {}
         self.interface: dict[str, CLInterface] = {}

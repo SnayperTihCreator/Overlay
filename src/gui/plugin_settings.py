@@ -1,13 +1,13 @@
 from PySide6.QtCore import QPoint, Qt, Signal, Slot
 from PySide6.QtWidgets import QWidget
-from pydantic import BaseModel, field_serializer, field_validator, ConfigDict
+from ldt import LDT
 
 from core.config import Config
 from core.common import APIBaseWidget
 from uis.dialogSettingsTemplate_ui import Ui_Form
 from utils.fs import getAppPath
 from utils.system import open_file_manager
-from utils.ldt import LDT
+
 
 
 @LDT.serializer(QPoint)

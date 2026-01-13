@@ -138,11 +138,13 @@ def generate_stub(oapi_path: str) -> str:
     
     header = (
         "from __future__ import annotations\n"
-        "from typing import Any, List, Optional, Union, Dict, Callable, Type, Literal\n"
+        "from typing import Any, Optional, Union, Callable, Type, Literal\n"
         "from pathlib import Path\n"
         "import inspect\n\n"
         "# Внешние зависимости\n"
         "from pydantic import BaseModel\n"
+        "from ldt import NexusStore, LDT\n"
+        "from attrs import define, field\n"
         "from PySide6.QtWidgets import QWidget, QFormLayout, QApplication\n"
         "from PySide6.QtGui import QColor, QIcon, QPixmap, QImage, QFont\n"
         "from PySide6.QtCore import QObject, QSize, QEvent\n"

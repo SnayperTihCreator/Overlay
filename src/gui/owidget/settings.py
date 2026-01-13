@@ -1,7 +1,8 @@
 from PySide6.QtWidgets import QFormLayout
+from ldt import LDT
 
 from gui.plugin_settings import PluginSettingTemplate
-from utils.ldt import LDT
+
 
 
 class PluginSettingWidget(PluginSettingTemplate):

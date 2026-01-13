@@ -3,10 +3,10 @@ from enum import IntEnum
 from methodtools import lru_cache
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QCheckBox, QFormLayout, QComboBox
+from ldt import NexusStore
 
 from gui.themes import ThemeController, DefaultTheme
 from core.loaders import ThemeLoader
-from core.settings import LDTSettings
 from uis.settings_ui import Ui_Setting
 
 
@@ -60,12 +60,12 @@ class SettingWidget(QWidget, Ui_Setting):
         page = item.text(column)
         self.stackedWidget.setCurrentIndex(self.pageIds[page])
     
-    def save_setting(self, setting: LDTSettings):
+    def save_setting(self, setting: NexusStore):
         with setting.group_context("settings"):
             with setting.group_context("websockets"):
                 setting.setValue("active", self.pWebSocket_checkbox.isChecked())
     
-    def restore_setting(self, setting: LDTSettings):
+    def restore_setting(self, setting: NexusStore):
         with setting.group_context("settings"):
             with setting.group_context("websockets"):
                 self.pWebSocket_checkbox.setChecked(setting.value("active", False))
