@@ -1,2 +1,2 @@
-from .base import OWidget
+from .base import OWidget, ModeRuns
 from .settings import PluginSettingWidget

@@ -23,6 +23,7 @@ from gui.owidget import OWidget
 from gui.plugin_settings import PluginSettingTemplate
 from gui.themes import ThemeController
 from gui.layouts.auchor_layout import AnchorLayout
+from plugins.flags_installer import FlagsInstaller
 
 from plugins.preloaders import PreLoader
 from plugins.items import PluginItem, PluginBadItem
@@ -51,8 +52,11 @@ class Overlay(QMainWindow, Ui_MainWindow):
     finished_loading = Signal()
     
     def __init__(self, splash: "GifSplashScreen"):
-        self.defaultFlags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint
-        super().__init__(None, self.defaultFlags)
+        super().__init__()
+        
+        self.flagsInstaller = FlagsInstaller.bind(self)
+        self.flagsInstaller.install(Qt.WindowType.Window)
+        
         self._load_generator: Optional[Iterator] = None
         self.setObjectName("OverlayMain")
         self.setupUi(self)
@@ -258,8 +262,8 @@ class Overlay(QMainWindow, Ui_MainWindow):
     def loadTheme(self):
         theme_cli = self.interface["ThemeCLI"] = ThemeCLI(self.themeLoader)
         theme_name = self.settings.value("theme", None)
-        if theme_name is None: return
-        
+        if theme_name is None:
+            return
         theme_cli.change(theme_name)
     
     def saveConfigs(self):
@@ -437,15 +441,16 @@ class Overlay(QMainWindow, Ui_MainWindow):
         self.box.addWidget(widget, anchor, margins)
     
     def hideOverlay(self):
-        self.setWindowFlags(self.defaultFlags)
         self.hide()
         self.tray.show()
     
     def showOverlay(self):
-        self.setWindowFlags(Qt.WindowType.Popup | self.defaultFlags)
+        self.flagsInstaller.install(Qt.WindowType.Popup | Qt.WindowType.Window)
         self.showFullScreen()
         self.tray.hide()
-    
+        self.raise_()
+        self.activateWindow()
+        
     def stopOverlay(self):
         self.webSocketIn.quit()
         self.saveConfigs()

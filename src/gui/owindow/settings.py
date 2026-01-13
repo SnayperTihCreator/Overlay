@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import QFormLayout, QCheckBox
 from PySide6.QtCore import Qt
+from ldt import LDT
 
 from gui.plugin_settings import PluginSettingTemplate
 
@@ -30,10 +31,16 @@ class PluginSettingWindow(PluginSettingTemplate):
         noClicked = bool(self.obj.windowFlags() & Qt.WindowType.WindowTransparentForInput)
         hasMoved = self.obj.hasMoved
         
+        self.no_clicked.blockSignals(True)
+        self.moved.blockSignals(True)
+        
         self.no_clicked.setChecked(noClicked)
         self.moved.setChecked(hasMoved)
+        
+        self.no_clicked.blockSignals(False)
+        self.moved.blockSignals(False)
     
-    def send_data(self):
+    def send_data(self) -> LDT:
         ldt = super().send_data()
         ldt.set("hasMoved", self.moved.isChecked())
         ldt.set("notClicked", self.no_clicked.isChecked())

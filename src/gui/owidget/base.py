@@ -1,6 +1,8 @@
+from __future__ import annotations
 import uuid
 from abc import ABC
 from enum import IntEnum, auto
+from typing import TYPE_CHECKING, Optional
 
 from PySide6.QtCore import Qt, QTimer
 
@@ -11,6 +13,9 @@ from gui.themes import ThemeController
 from ldt import LDT
 
 from .settings import PluginSettingWidget
+
+if TYPE_CHECKING:
+    from gui.main_window import Overlay
 
 
 class ModeRuns(IntEnum):
@@ -24,6 +29,8 @@ class OWidget(APIBaseWidget, ABC):
     
     def __init__(self, config, parent=None):
         super().__init__(parent, Qt.WindowType.Widget)
+        
+        self.overlay: Optional[Overlay] = parent
         
         self.setObjectName(self.__class__.__name__)
         self.setProperty("class", "OverlayWidget")
@@ -75,10 +82,7 @@ class OWidget(APIBaseWidget, ABC):
         ThemeController().updateUid(self.uid)
     
     def gridOverlay(self, anchorX, anchorY):
-        self.parent().addWidget(
-            self,
-            [anchorX, anchorY]
-        )
+        self.overlay.addWidget(self, [anchorX, anchorY])
     
     @classmethod
     def createSettingWidget(cls, widget: "OWidget", name_plugin: str, parent):

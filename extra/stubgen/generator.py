@@ -138,9 +138,11 @@ def generate_stub(oapi_path: str) -> str:
     
     header = (
         "from __future__ import annotations\n"
-        "from typing import Any, Optional, Union, Callable, Type, Literal\n"
+        "from typing import Any, Optional, Union, Callable, Type, Literal, Generic\n"
         "from pathlib import Path\n"
         "import inspect\n\n"
+        "from abc import ABC, abstractmethod\n"
+        "from enum import *\n"
         "# Внешние зависимости\n"
         "from pydantic import BaseModel\n"
         "from ldt import NexusStore, LDT\n"

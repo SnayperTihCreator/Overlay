@@ -1,6 +1,7 @@
+from __future__ import annotations
 import uuid
 from abc import ABC
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QGraphicsColorizeEffect, QWidget, QVBoxLayout
@@ -8,6 +9,7 @@ from PySide6.QtCore import Qt, QPoint, QTimer
 
 from core.common import APIBaseWidget
 from core.config import Config
+from plugins.flags_installer import FlagsInstaller
 from plugins.preloaders import WindowPreLoader
 from gui.utils import clampAllDesktopP
 from gui.themes import ThemeController
@@ -16,11 +18,20 @@ from ldt import LDT
 from .settings import PluginSettingWindow
 
 
+if TYPE_CHECKING:
+    from gui.main_window import Overlay
+
+
 class OWindow(APIBaseWidget, ABC):
     dumper = WindowPreLoader()
     
     def __init__(self, config, parent=None):
         super().__init__(parent)
+        
+        self.overlay: Optional[Overlay] = parent
+        
+        self.flagsInstaller = FlagsInstaller.bind(self)
+        self.flagsInstaller.install(Qt.WindowType.Window)
         
         self.setObjectName(self.__class__.__name__)
         self.setProperty("class", "DraggableWindow")
@@ -31,15 +42,6 @@ class OWindow(APIBaseWidget, ABC):
         self.time_msec = 1000
         
         self.config: Config = config
-        # Настройки окна
-        self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint
-            | Qt.WindowType.Tool
-            | Qt.WindowType.WindowStaysOnTopHint
-            | Qt.WindowType.Window
-        )
-        
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
         self.setGeometry(100, 100, 300, 200)
         
@@ -121,6 +123,9 @@ class OWindow(APIBaseWidget, ABC):
             self.show()
     
     def mousePressEvent(self, event):
+        if self.windowFlags() & Qt.WindowType.WindowTransparentForInput:
+            return
+        
         if (event.button() == Qt.MouseButton.LeftButton) and self.hasMoved:
             self.dragging = True
             self.offset = event.globalPosition().toPoint() - self.pos()
@@ -152,7 +157,7 @@ class OWindow(APIBaseWidget, ABC):
         QTimer.singleShot(500, lambda: self.colorize_effect.setStrength(0))
     
     def shortcut(self, key: str, uname: str):
-        self.parent().registered_shortcut(key, uname, self)
+        self.overlay.registered_shortcut(key, uname, self)
     
     @classmethod
     def createSettingWidget(cls, window: "OWindow", name_plugin: str, parent):

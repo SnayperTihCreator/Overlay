@@ -1,5 +1,5 @@
 # API для создания своих плагинов (окна и виджеты)
-from gui.owidget import OWidget, PluginSettingWidget
+from gui.owidget import OWidget, PluginSettingWidget, ModeRuns
 from gui.owindow import OWindow, PluginSettingWindow, OQMLWindow
 
 # API для получения темы и создание своей
@@ -15,7 +15,7 @@ from utils.system import open_file_manager, getSystem
 from utils.input import EmitterFakeInput, BaseCommonKey, BaseLinuxKey, BaseWindowsKey
 
 __all__ = [
-    "OWidget", "PluginSettingWidget",
+    "OWidget", "PluginSettingWidget", "ModeRuns",
     "OWindow", "PluginSettingWindow", "OQMLWindow",
     
     "Theme", "ThemeController", "modulateImage", "modulateIcon", "modulatePixmap",
