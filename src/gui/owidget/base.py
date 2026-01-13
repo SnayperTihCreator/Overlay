@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt, QTimer
 
 from core.common import APIBaseWidget
 from core.config import Config
+from plugins.flags_installer import FlagsInstaller
 from plugins.preloaders import WidgetPreLoader
 from gui.themes import ThemeController
 from ldt import LDT
@@ -29,6 +30,9 @@ class OWidget(APIBaseWidget, ABC):
     
     def __init__(self, config, parent=None):
         super().__init__(parent, Qt.WindowType.Widget)
+        
+        self.flagsInstaller: FlagsInstaller = FlagsInstaller.bind(self)
+        self.flagsInstaller.install(Qt.WindowType.Widget)
         
         self.overlay: Optional[Overlay] = parent
         

@@ -30,7 +30,7 @@ class OWindow(APIBaseWidget, ABC):
         
         self.overlay: Optional[Overlay] = parent
         
-        self.flagsInstaller = FlagsInstaller.bind(self)
+        self.flagsInstaller: FlagsInstaller = FlagsInstaller.bind(self)
         self.flagsInstaller.install(Qt.WindowType.Window)
         
         self.setObjectName(self.__class__.__name__)

@@ -11,6 +11,9 @@ from core.common import BaseHotkeyHandler
 from core.config import Config
 from core.cli import CLInterface, MetaCliInterface
 from core import default_configs
+
+from plugins.flags_installer import FlagsInstaller
+
 from utils.system import open_file_manager, getSystem
 from utils.input import EmitterFakeInput, BaseCommonKey, BaseLinuxKey, BaseWindowsKey
 
