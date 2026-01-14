@@ -35,6 +35,11 @@ class BaseProject(ABC):
         for item in lst:
             if callback(item): raise ValueError("no validate")
     
+    @abstractmethod
+    def check_integrity(self) -> bool:
+        """Проверяет наличие обязательных файлов перед сборкой"""
+        pass
+    
     @staticmethod
     def _get_hash(path: Path):
         return hashlib.md5(path.read_bytes()).hexdigest() if path.exists() else ""
@@ -114,12 +119,14 @@ class BaseProject(ABC):
     
     @classmethod
     def create_setup_file(cls, kind: str, dist: Path, context: dict):
-        template_path = Path(__file__).parent / "templates" / kind / "setup.py.j2"
-        output_path = dist / template_path.name.removesuffix(".j2")
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        template = cls.env.get_template(f"{kind}/{template_path.name}")
+        output_path = dist / "setup.py"
+        if output_path.exists():
+            cls.logger.warning(f"setup.py already exists in {dist}")
+            return
+        
+        template = cls.env.get_template(f"{kind}/setup.py.j2")
+        dist.mkdir(parents=True, exist_ok=True)
         output_path.write_text(template.render(**context), encoding="utf-8")
-        cls.logger.info(f"create setup file {kind}/{template_path.name}")
     
     @classmethod
     def create_data_file(cls, kind: str, dist: Path, context: dict):

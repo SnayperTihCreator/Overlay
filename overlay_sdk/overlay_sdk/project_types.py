@@ -12,6 +12,9 @@ __all__ = ["PluginProject", "ThemeProject", "OAddonsProject", "PackProject"]
 @setup_type("plugin")
 class PluginProject(BaseProject):
     def _pack(self, dist_path: Path):
+        if not self.check_integrity():
+            raise RuntimeError("Integrity check failed")
+        
         resultFile = dist_path / "compress" / f"{self.name}.plugin"
         resultFile.parent.mkdir(parents=True, exist_ok=True)
         
@@ -38,11 +41,30 @@ class PluginProject(BaseProject):
     
     def _match_config(self, path: Path) -> bool:
         return path.name == "plugin.toml"
+    
+    def check_integrity(self) -> bool:
+        required = ["plugin.toml", "__init__.py"]
+        for f in required:
+            if not (self.root / f).exists():
+                self.logger.error(f"Missing required file: {f}")
+                return False
+        return True
 
 
 @setup_type("theme")
 class ThemeProject(BaseProject):
+    def check_integrity(self) -> bool:
+        required = ["theme.toml", "__init__.py", "theme.py"]
+        for f in required:
+            if not (self.root / f).exists():
+                self.logger.error(f"Missing required file: {f}")
+                return False
+        return True
+    
     def _pack(self, dist_path: Path):
+        if not self.check_integrity():
+            raise RuntimeError("Integrity check failed")
+        
         resultFile = dist_path / "compress" / f"{self.name}.overtheme"
         resultFile.parent.mkdir(parents=True, exist_ok=True)
         
@@ -63,6 +85,14 @@ class ThemeProject(BaseProject):
 
 @setup_type("oaddons")
 class OAddonsProject(BaseProject):
+    def check_integrity(self) -> bool:
+        required = ["oaddons.toml", "__init__.py"]
+        for f in required:
+            if not (self.root / f).exists():
+                self.logger.error(f"Missing required file: {f}")
+                return False
+        return True
+    
     def _get_transformed_name(self) -> str:
         name = self.name.replace(" ", "_")
         parts = re.split(r'(\[.*?\]|\(.*?\))', name)
@@ -76,6 +106,9 @@ class OAddonsProject(BaseProject):
         return transformed
     
     def _pack(self, dist_path: Path):
+        if not self.check_integrity():
+            raise RuntimeError("Integrity check failed")
+        
         t_name = self._get_transformed_name()
         resultFile = dist_path / "compress" / f"{t_name}.oaddons"
         resultFile.parent.mkdir(parents=True, exist_ok=True)
@@ -104,6 +137,10 @@ class OAddonsProject(BaseProject):
 
 @setup_type("pack")
 class PackProject(BaseProject):
+    
+    def check_integrity(self) -> bool:
+        return True
+    
     def _pack(self, dist_path: Path):
         if not (pluginFile := self.options.pop("plugin", False)):
             compress = PluginProject(self.name, self.version, self.root, **self.options)
@@ -167,4 +204,3 @@ class PackProject(BaseProject):
     
     def _match_config(self, path: Path) -> bool:
         return path.name == "plugin.toml"
-    
