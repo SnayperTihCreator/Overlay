@@ -2,6 +2,7 @@ import sys
 import os
 import builtins
 import warnings
+import asyncio
 
 warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="__main__")
@@ -9,6 +10,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="__main__"
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer, qFatal
 from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
+from qasync import QEventLoop
 
 from core.service.print_manager import PrintManager
 from core.metadata import metadata, version
@@ -21,13 +23,17 @@ import assets_rc
 # noinspection PyUnresolvedReferences
 import core.importers
 
-if __name__ == "__main__":
+
+async def main():
     if sys.platform == "linux":
         os.environ["QT_QPA_PLATFORM"] = "xcb"
     
     QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Software)
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
+    
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
     
     tools_folder = ToolsIniter("tools")
     tools_folder.load()
@@ -48,7 +54,6 @@ if __name__ == "__main__":
         
         window = Overlay(splash)
         
-        
         def on_finalized():
             try:
                 builtins.windowOverlay = window
@@ -57,8 +62,19 @@ if __name__ == "__main__":
                 qFatal(f"Error on finalize: {e}")
                 app.exit()
         
-        
         window.finished_loading.connect(on_finalized)
         QTimer.singleShot(500, window.ready)
         
-        app.exec()
+        try:
+            with loop:
+                loop.run_forever()
+        finally:
+            pass
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except asyncio.CancelledError:
+        sys.exit(0)
+        
+

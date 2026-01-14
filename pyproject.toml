@@ -32,6 +32,7 @@ dependencies = [
     "methodtools>=0.4.7",
     "ldt-nexus[all]>=1.0.0",
     "psygnal>=0.15.1",
+    "qasync>=0.28.0",
 ]
 
 [dependency-groups]
@@ -40,6 +41,9 @@ dev = [
     "pyinstaller>=6.13.0",
     "taskipy>=1.14.1",
 ]
+
+[project.scripts]
+build = ""
 
 [tool.uv]
 override-dependencies = ["psutil==7.0.0"]
