@@ -6,17 +6,19 @@ from .hotkey_stub import StubHotkey
 
 
 class HotkeyManager:
-    def __init__(self, oaddons_loader, hotkey_name):
-        if hotkey_name is None:
+    def __init__(self):
+        try:
+            import OExtension.hotkey as hotkey_module
+            self._hotkey_module = hotkey_module
+            self._handler = hotkey_module.HotkeyHandler()
+            self._hotkey_name = hotkey_module.__name__
+            qInfo(f"module load {self._hotkey_name}")
+        except ImportError as e:
+            print(e)
             qInfo("not find hotkey handler")
             self._hotkey_name = "stub hotkey"
             self._hotkey_module = None
             self._handler: BaseHotkeyHandler = StubHotkey()
-        else:
-            qInfo(f"module load {hotkey_name}")
-            self._hotkey_name = hotkey_name
-            self._hotkey_module = oaddons_loader.import_module(hotkey_name)
-            self._handler: BaseHotkeyHandler = self._hotkey_module.HotkeyHandler()
     
     def add_hotkey(self, combo: str, callback: Callable, uname: str):
         """Добавляет горячую клавишу."""

@@ -81,7 +81,7 @@ class OWidget(APIBaseWidget, ABC):
     
     def load_config(self):
         ThemeController().register(self,
-                                   f"plugin://{self.config.name}/{self.config.data.widget.styleFile}",
+                                   f"plugin://{self.config.name}/{self.config.data.settings.style_file}",
                                    False)
         ThemeController().updateUid(self.uid)
     

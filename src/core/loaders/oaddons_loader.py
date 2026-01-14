@@ -1,66 +1,59 @@
+import os
 import zipimport
-from fnmatch import fnmatch
-from typing import Optional
-
+import re
+import sys
 from fs import open_fs
-
-from utils.system import getSystem
-from utils.fs import getAppPath
 from core.errors import OAddonsNotFound, OAddonsInit
 
-from .base import Loader
 
-
-class OverlayAddonsLoader(Loader):
+class OverlayAddonsLoader:
     def __init__(self):
-        super().__init__()
-        self.folder = getAppPath() / "resource"
         self.fs = open_fs("resource://overlay_addons", create=True)
-        self.available_platforms = [
-            "win32",
-            "linux"
-        ]
     
-    def load(self):
-        pass
-    
-    def find_prefix(self, prefix):
-        for file in self.list():
-            if fnmatch(file, f"{prefix}.oaddons"):
+    def _find_addon_file(self, addon_name: str) -> str:
+        """Ищет .oaddons файл в папке resource."""
+        for file in self.fs.listdir(""):
+            clean = re.sub(r'(\.oaddons|\[.*?\])', '', file).strip()
+            if clean == addon_name:
                 return file
-        raise ValueError(f"Not found to {prefix}")
+        return None
     
-    def find_platform_prefix(self, prefix) -> Optional[str]:
-        platform, window = getSystem()
-        
-        # Сначала ищем наиболее специфичный вариант
-        specific_key = f"{prefix}_{platform}_{window}"
-        if specific_key in self.list():
-            return specific_key
-        
-        # Затем ищем вариант для текущей платформы с любым оконным менеджером
-        platform_any_key = f"{prefix}_{platform}_any"
-        if platform_any_key in self.list():
-            return platform_any_key
-        
-        # Наконец, ищем наиболее общий вариант
-        any_any_key = f"{prefix}_any_any"
-        if any_any_key in self.list():
-            return any_any_key
-        
-        # Если ничего не найдено
-        return
+    def exists(self, addon_name: str) -> bool:
+        return self._find_addon_file(addon_name) is not None
     
-    def import_module(self, name):
-        path = self.folder / f"{name}.oaddons"
-        if not path.exists():
-            raise OAddonsNotFound(name)
+    def import_module(self, fullname: str):
+        addon_name = fullname.split(".")[-1]
+        filename = self._find_addon_file(addon_name)
+        
+        if not filename:
+            raise OAddonsNotFound(fullname)
+        
         try:
-            importer = zipimport.zipimporter(str(path))
-            module = importer.load_module(name)
+            zip_path = self.fs.getsyspath(filename)
+            if os.name == 'nt' and zip_path.startswith('/'):
+                zip_path = zip_path.lstrip('/')
+            
+            # Твои рабочие фиксы
+            inner_path = os.path.join(zip_path, addon_name).replace("\\", "/")
+            
+            try:
+                importer = zipimport.zipimporter(inner_path)
+            except zipimport.ZipImportError:
+                # Фикс с расширением, который ты нашел
+                importer = zipimport.zipimporter(zip_path + ".oaddons")
+            
+            # Твой фикс с basename
+            module = importer.load_module(os.path.basename(zip_path))
+            
+            # ЕДИНСТВЕННОЕ ДОПОЛНЕНИЕ:
+            # Маскируем модуль под OExtension.name, чтобы работали импорты внутри архива
+            module.__name__ = fullname
+            module.__package__ = fullname.rpartition('.')[0]
+            
+            sys.modules[fullname] = module
             return module
-        except zipimport.ZipImportError as e:
-            raise OAddonsInit(name, e)
-    
-    def list(self) -> list[str]:
-        return self.fs.listdir("")
+        
+        except Exception as e:
+            if fullname in sys.modules:
+                del sys.modules[fullname]
+            raise OAddonsInit(fullname, e)

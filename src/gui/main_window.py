@@ -150,8 +150,7 @@ class Overlay(QMainWindow, Ui_MainWindow):
         
         self.handled_global_shortkey.connect(self.handled_shortcut)
         
-        hotkey_name = self.oaddons.find_platform_prefix("hotkey")
-        self.input_bridge = HotkeyManager(self.oaddons, hotkey_name)
+        self.input_bridge = HotkeyManager()
         if not self.settings.contains("shortkey.open"):
             self.settings.setValue("shortkey.open", "shift+alt+o")
         self.registered_handler(self.settings.value("shortkey.open"), "toggle_show")
@@ -446,10 +445,11 @@ class Overlay(QMainWindow, Ui_MainWindow):
     
     def showOverlay(self):
         self.flagsInstaller.install(Qt.WindowType.Popup | Qt.WindowType.Window)
-        self.showFullScreen()
+        screen_geometry = self.screen().geometry()
+        self.setGeometry(screen_geometry)
+        self.show()
         self.tray.hide()
         self.raise_()
-        self.activateWindow()
         
     def stopOverlay(self):
         self.webSocketIn.quit()
