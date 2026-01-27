@@ -12,7 +12,9 @@ BASE_DIR = os.path.dirname(SPECPATH)
 sys.path.append(os.path.join(BASE_DIR, 'src'))
 
 if TYPE_CHECKING:
-    from PyInstaller.building.build_main import Analysis, logger, PYZ, EXE, COLLECT
+    from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
+    
+from PyInstaller.building.utils import logger
 
 from core.main_init import OpenManager
 from core.metadata import version

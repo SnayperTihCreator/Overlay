@@ -1,8 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
 import sys
+from typing import TYPE_CHECKING
 
-from PyInstaller.building.build_main import Analysis
+if TYPE_CHECKING:
+    from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
+
+from PyInstaller.building.utils import logger
 
 SPECPATH: str
 BASE_DIR = os.path.dirname(SPECPATH)
