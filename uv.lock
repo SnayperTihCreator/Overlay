@@ -217,21 +217,14 @@ wheels = [
 
 [[package]]
 name = "ldt-nexus"
-version = "1.0.1"
+version = "1.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/81/81/464677e54fb272a5fb1dbefb9706a1c111d07f7118c5292d8121b922ce10/ldt_nexus-1.0.1.tar.gz", hash = "sha256:57cec01d8eacbce8eea53ed376e9775f6242a30993de4166b109a6f2815adb8f", size = 8103, upload-time = "2026-01-10T20:41:59.698Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ed/5d/57ecdf7cb561b14dcc205a2d9c4ddf4a595951a070282a3513148b9cbe6b/ldt_nexus-1.0.2.tar.gz", hash = "sha256:e129cf8a60095ade251282a67fca793f2d1c3539660d745a7c236ed66f093795", size = 8342, upload-time = "2026-01-24T00:16:55.811Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/19/33593ca9bf11d725a42b0d10237b235ccb89070878cbcda2d1fd7c0c7487/ldt_nexus-1.0.1-py3-none-any.whl", hash = "sha256:f85495de5953b6824512f73cbf536a0b97485d70e11a502e2eb6b34b5d78f7d2", size = 11171, upload-time = "2026-01-10T20:41:58.597Z" },
-]
-
-[package.optional-dependencies]
-all = [
-    { name = "json5" },
-    { name = "pyyaml" },
-    { name = "toml" },
+    { url = "https://files.pythonhosted.org/packages/3e/39/d91d5cbd977240cdeaa54b40791d11efda44e013505049f858b44a1f52e7/ldt_nexus-1.0.2-py3-none-any.whl", hash = "sha256:a5c307fe909603b2f6ccca3339fd90b6de0df0189d6bdf5a0e8d0dd53310156c", size = 11614, upload-time = "2026-01-24T00:16:54.043Z" },
 ]
 
 [[package]]
@@ -480,7 +473,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "json5" },
     { name = "keyboard" },
-    { name = "ldt-nexus", extra = ["all"] },
+    { name = "ldt-nexus" },
     { name = "markupsafe" },
     { name = "methodtools" },
     { name = "opencv-python" },
@@ -491,7 +484,6 @@ dependencies = [
     { name = "pycaw", marker = "sys_platform == 'win32'" },
     { name = "pycv3" },
     { name = "pydantic" },
-    { name = "pyi18n-v2" },
     { name = "pyside6" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "pyyaml" },
@@ -519,7 +511,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "json5", specifier = ">=0.12.0" },
     { name = "keyboard", specifier = ">=0.13.5" },
-    { name = "ldt-nexus", extras = ["all"], specifier = ">=1.0.0" },
+    { name = "ldt-nexus", specifier = ">=1.0.2" },
     { name = "markupsafe", specifier = ">=3.0.2" },
     { name = "methodtools", specifier = ">=0.4.7" },
     { name = "opencv-python", specifier = ">=4.12.0.88" },
@@ -530,7 +522,6 @@ requires-dist = [
     { name = "pycaw", marker = "sys_platform == 'win32'", specifier = ">=20240210" },
     { name = "pycv3", specifier = ">=1.2.0" },
     { name = "pydantic", specifier = ">=2.11.7" },
-    { name = "pyi18n-v2", specifier = ">=1.2.2" },
     { name = "pyside6", specifier = "==6.10.1" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=310" },
     { name = "pyyaml", specifier = ">=6.0.2" },
@@ -859,18 +850,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
-]
-
-[[package]]
-name = "pyi18n-v2"
-version = "1.2.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/45/c9/b7da06f31595185aa01f1b2ad4d0bc187f499278cc98b5b29bc5d5f6ce61/pyi18n-v2-1.2.2.tar.gz", hash = "sha256:96919717c933f6cfa4abfd496ce9f6d0ccad0ac74361475883b2e236fc5c14e7", size = 17628, upload-time = "2024-06-21T05:24:39.024Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/61/62315bfda77798c049e2b7d3ea9182b93597ef7804460659d84fd131f661/pyi18n_v2-1.2.2-py3-none-any.whl", hash = "sha256:1a5f64f4d1fde0a559876288849893384ac0ef25ba8df06ff7eac25ac368e556", size = 18981, upload-time = "2024-06-21T05:24:36.912Z" },
 ]
 
 [[package]]

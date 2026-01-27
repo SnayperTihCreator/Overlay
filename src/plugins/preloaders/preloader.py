@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod, ABCMeta
 from PySide6.QtCore import qWarning
 from PySide6.QtWidgets import QMenu
 from ldt import LDT, NexusStore
-from ldt.io.drivers.extra import Json5Driver
+from ldt.io_drives.drivers.extra import Json5Driver
 
 from core.common import APIBaseWidget
 from utils.fs import getAppPath

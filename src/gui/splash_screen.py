@@ -9,6 +9,7 @@ class GifSplashScreen(QSplashScreen):
         super().__init__(QPixmap())
         
         self.movie = QMovie(path)
+        self.movie.setCacheMode(QMovie.CacheAll)
         self.movie.jumpToFrame(0)
         
         self.text_color = QColor("#ffffff")
@@ -26,12 +27,13 @@ class GifSplashScreen(QSplashScreen):
         y = (screen_geometry.height() - self.height()) // 2
         self.move(x, y)
         
-        self.movie.frameChanged.connect(self.update)
+        self.movie.frameChanged.connect(self.repaint)
         self.movie.start()
         
         self.setWindowOpacity(opacity)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.SplashScreen)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.SplashScreen)
+        self.setAttribute(Qt.WA_NoSystemBackground, True)
         
         self.message = ""
         self._draw_texts = []
@@ -41,31 +43,36 @@ class GifSplashScreen(QSplashScreen):
         self.clearTexts()
         self.drawText(author, (20, 30), size=10, font="UNCAGE")
         self.drawText(text, (20, self.height() - 20))
-        self.update()
+        self.repaint()
     
     def paintEvent(self, event):
-        with QPainter(self) as painter:
-            painter.setRenderHint(QPainter.Antialiasing)
-            painter.setRenderHint(QPainter.SmoothPixmapTransform)
-            painter.setOpacity(self.windowOpacity())
-            painter.drawPixmap(0, 0, self.movie.currentPixmap())
-            if self.message:
-                painter.setOpacity(1.0)
-                painter.setFont(self.text_font)
-                painter.setPen(self.text_color)
-                rect = self.rect().adjusted(0, 0, 0, -10)
-                painter.drawText(rect, self.text_alignment, self.message)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        
+        painter.setCompositionMode(QPainter.CompositionMode_Source)
+        painter.fillRect(self.rect(), Qt.transparent)
+        
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        
+        pixmap = self.movie.currentPixmap()
+        if not pixmap.isNull():
+            painter.drawPixmap(self.rect(), pixmap)
+        
+        painter.setOpacity(1.0)
+        for text, pos, color, size, font_name in self._draw_texts:
+            painter.setPen(color or self.text_color)
+            f = QFont(font_name) if font_name else self.text_font
+            if size: f.setPointSize(size)
+            painter.setFont(f)
             
-            for text, pos, color, size, font_name in self._draw_texts:
-                painter.setPen(color or self.text_color)
-                f = QFont(font_name) if font_name else self.text_font
-                if size: f.setPointSize(size)
-                painter.setFont(f)
-                
-                if isinstance(pos, QPoint):
-                    painter.drawText(pos, text)
-                else:
-                    painter.drawText(*pos, text)
+            if isinstance(pos, QPoint):
+                painter.drawText(pos, text)
+            else:
+                painter.drawText(pos[0], pos[1], text)
+        
+        painter.end()
     
     def setMessage(self, message, alignment=None, color=None):
         """Установка сообщения для отображения поверх анимации"""

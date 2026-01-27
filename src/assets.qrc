@@ -34,4 +34,8 @@
     <qresource prefix="app">
         <file alias="overlay.toml">assets/overlay.toml</file>
     </qresource>
+    <qresource prefix="i18n">
+        <file alias="ru.yaml">assets/locale/ru.yaml</file>
+        <file alias="en.yaml">assets/locale/en.yaml</file>
+    </qresource>
 </RCC>

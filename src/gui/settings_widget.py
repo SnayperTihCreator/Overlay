@@ -1,12 +1,14 @@
+import asyncio
 from enum import IntEnum
 
 from methodtools import lru_cache
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QCheckBox, QFormLayout, QComboBox
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtWidgets import QWidget, QTreeWidgetItem, QCheckBox, QFormLayout, QComboBox, QLabel
 from ldt import NexusStore
 
 from gui.themes import ThemeController, DefaultTheme
 from core.loaders import ThemeLoader
+from core.application import OverlayApplication
 from uis.settings_ui import Ui_Setting
 
 
@@ -26,16 +28,53 @@ class SettingWidget(QWidget, Ui_Setting):
         self.defaultTheme = DefaultTheme()
         self.treeWidget.itemClicked.connect(self.handler_item)
         
+        pageCommon = self.treeWidget.topLevelItem(0)
+        pageCommon.setData(0, Qt.ItemDataRole.UserRole, 0)
+        
+        pageWebSocket = self.treeWidget.topLevelItem(1)
+        pageWebSocket.setData(0, Qt.ItemDataRole.UserRole, 1)
+        
         self.initPageCommon()
         self.initPageWebSocket()
+        OverlayApplication.INSTANCE().bind_translate(self)
+        
+    def retranslate(self):
+        header = self.treeWidget.headerItem()
+        header.setText(0, OverlayApplication.text("settings.title"))
+        
+        pageCommon = self.treeWidget.topLevelItem(0)
+        pageCommon.setText(0, OverlayApplication.text("settings.page.common.title"))
+        
+        try:
+            labelCBST: QLabel = self.boxCommon.labelForField(self.comboBoxSelectTheme)
+            if labelCBST:
+                labelCBST.setText(OverlayApplication.text("settings.page.common.theme"))
+            
+            labelCBSL: QLabel = self.boxCommon.labelForField(self.comboBoxSelectLang)
+            if labelCBSL:
+                labelCBSL.setText(OverlayApplication.text("settings.page.common.lang"))
+        except AttributeError:
+            print("speed init")
+        
+        pageWebSocket = self.treeWidget.topLevelItem(1)
+        pageWebSocket.setText(0, OverlayApplication.text("settings.page.websocket.title"))
     
     # noinspection PyAttributeOutsideInit
     def initPageCommon(self):
-        self.pageIds["Common"] = self.stackedWidget.indexOf(self.pageCommon)
+        self.pageIds[0] = self.stackedWidget.indexOf(self.pageCommon)
         self.boxCommon = QFormLayout(self.pageCommon)
+        
         self.comboBoxSelectTheme = QComboBox()
         self.boxCommon.addRow("Тема", self.comboBoxSelectTheme)
         self.comboBoxSelectTheme.currentTextChanged.connect(self._handle_change_theme)
+        
+        self.comboBoxSelectLang = QComboBox()
+        self.boxCommon.addRow("Lang", self.comboBoxSelectLang)
+        
+        self.comboBoxSelectLang.addItems(OverlayApplication.supported_langs())
+        self.comboBoxSelectLang.setCurrentText(OverlayApplication.get_current_lang())
+        self.comboBoxSelectLang.currentTextChanged.connect(OverlayApplication.set_language)
+        
         self.initComboBoxSelectTheme()
     
     def initComboBoxSelectTheme(self):
@@ -50,14 +89,14 @@ class SettingWidget(QWidget, Ui_Setting):
     
     # noinspection PyAttributeOutsideInit
     def initPageWebSocket(self):
-        self.pageIds["WebSockets"] = self.stackedWidget.indexOf(self.pageWebSocket)
+        self.pageIds[1] = self.stackedWidget.indexOf(self.pageWebSocket)
         self.boxWebSocket = QFormLayout(self.pageWebSocket)
         self.pWebSocket_checkbox = QCheckBox("WebSocket")
         self.boxWebSocket.addRow(self.pWebSocket_checkbox)
         self.pWebSocket_checkbox.toggled.connect(self.checked_pws_active)
     
     def handler_item(self, item: QTreeWidgetItem, column):
-        page = item.text(column)
+        page = item.data(0, Qt.ItemDataRole.UserRole)
         self.stackedWidget.setCurrentIndex(self.pageIds[page])
     
     def save_setting(self, setting: NexusStore):

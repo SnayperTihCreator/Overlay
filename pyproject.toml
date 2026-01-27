@@ -28,11 +28,10 @@ dependencies = [
     "pyside6==6.10.1",
     "setuptools<81",
     "pydantic>=2.11.7",
-    "pyi18n-v2>=1.2.2",
     "methodtools>=0.4.7",
-    "ldt-nexus[all]>=1.0.0",
     "psygnal>=0.15.1",
     "qasync>=0.28.0",
+    "ldt-nexus>=1.0.2",
 ]
 
 [dependency-groups]

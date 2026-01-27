@@ -1,0 +1,14 @@
+settings:
+  page:
+    common:
+      title: "Common"
+      theme: "Theme"
+      lang: "Language"
+    websocket:
+      title: "WebSocket"
+  title: "Settings"
+
+screen:
+  load_resource: "Loading resources"
+  load_theme: "Loading a theme"
+  load_plugin: "{plugin_name} is being loaded"

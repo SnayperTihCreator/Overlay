@@ -1,0 +1,14 @@
+settings:
+  page:
+    common:
+      title: "Общие"
+      theme: "Темы"
+      lang: "Язык"
+    websocket:
+      title: "ВебСокет"
+  title: "Настройки"
+
+screen:
+  load_resource: "Загрузка ресурсов"
+  load_theme: "Загрузка темы"
+  load_plugin: "Загружается {plugin_name}"

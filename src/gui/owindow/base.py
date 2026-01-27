@@ -149,7 +149,7 @@ class OWindow(APIBaseWidget, ABC):
         return super().keyPressEvent(event)
     
     def highlightBorder(self):
-        if not hasattr(self, 'colorize_effect'):
+        if self.colorize_effect is None:
             self.colorize_effect = QGraphicsColorizeEffect(self)
             self.colorize_effect.setColor(QColor(0, 255, 0))
             self.setGraphicsEffect(self.colorize_effect)
