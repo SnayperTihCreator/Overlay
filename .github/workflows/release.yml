@@ -77,5 +77,3 @@ jobs:
             dist/OverlayCLI-*
           overwrite: true
           generate_release_notes: true # GitHub сам напишет список изменений
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

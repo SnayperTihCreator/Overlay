@@ -3,6 +3,7 @@ from typing import Callable
 from PySide6.QtCore import qInfo
 from core.common import BaseHotkeyHandler
 from .hotkey_stub import StubHotkey
+from .errors import OAddonsNotFound
 
 
 class HotkeyManager:
@@ -13,7 +14,7 @@ class HotkeyManager:
             self._handler = hotkey_module.HotkeyHandler()
             self._hotkey_name = hotkey_module.__name__
             qInfo(f"module load {self._hotkey_name}")
-        except ImportError as e:
+        except (ImportError, OAddonsNotFound) as e:
             print(e)
             qInfo("not find hotkey handler")
             self._hotkey_name = "stub hotkey"

@@ -54,6 +54,7 @@ class OverlayAddonsLoader:
             return module
         
         except Exception as e:
+            print(type(e), e)
             if fullname in sys.modules:
                 del sys.modules[fullname]
             raise OAddonsInit(fullname, e)
