@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
 from functools import cached_property
+import logging
 
 from attrs import define, field
 
 from core.default_configs import MetaData
+
+logger = logging.getLogger(__name__)
 
 
 @define(frozen=True, hash=True, order=True)
@@ -21,10 +24,16 @@ class MetaDataFinder(ABC):
         def _parseName(self, path) -> ParseName:
             match path.split("::"):
                 case [name]:
-                    return ParseName(*self._conversion_table_[name])
+                    try:
+                        return ParseName(*self._conversion_table_[name])
+                    except KeyError:
+                        logger.warning(f"Metadata alias not found: '{name}'")
+                        return ParseName(name, "unknown")
+                
                 case [_type, name]:
                     return ParseName(name, _type)
                 case _:
+                    logger.warning(f"Invalid metadata path format: '{path}'")
                     return ParseName("", "")
         
         @cached_property

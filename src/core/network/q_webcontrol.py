@@ -1,11 +1,14 @@
 from typing import Optional
 import uuid
+import logging
 
 from PySide6.QtNetwork import QHostAddress
 from PySide6.QtWebSockets import QWebSocketServer, QWebSocket
-from PySide6.QtCore import QObject, Signal, Slot, qDebug, qWarning
+from PySide6.QtCore import QObject, Signal, Slot
 
 from .webcontrol import find_free_port
+
+logger = logging.getLogger(__name__)
 
 
 class ServerWebSockets(QObject):
@@ -20,10 +23,15 @@ class ServerWebSockets(QObject):
     
     def start(self):
         self._server = QWebSocketServer("Overlay WebSockets", QWebSocketServer.SslMode.NonSecureMode)
+        
         if not self._server.listen(QHostAddress("127.0.0.1"), self.free_port):
-            qWarning(f"Сервер не запущен\nОшибка: {self._server.error()}: {self._server.errorString()}")
+            err_code = self._server.error()
+            err_msg = self._server.errorString()
+            logger.error(f"Server failed to start. Code: {err_code}, Message: {err_msg}")
             return False
-        qDebug(f"Сервер запущен на: {self._server.serverUrl().toString()}")
+        
+        url = self._server.serverUrl().toString()
+        logger.info(f"Server started at: {url}")
         
         self._server.newConnection.connect(self.actNewConnection)
         return True
@@ -35,50 +43,60 @@ class ServerWebSockets(QObject):
         if not self._server:
             return
         
-        qDebug("Остановка сервера...")
+        logger.info("Stopping server...")
         
-        # Закрываем все клиентские подключения
-        for client in self.clients.values():
-            client.close()
-            client.deleteLater()
+        for uid, client in self.clients.items():
+            try:
+                client.close()
+                client.deleteLater()
+            except Exception as e:
+                logger.warning(f"Error closing client {uid}: {e}")
         
         self.clients.clear()
         
-        # Останавливаем сервер
         self._server.close()
         self._server.deleteLater()
         self._server = None
         
-        qDebug(f"Сервер остановлен")
+        logger.info("Server stopped.")
     
     @Slot()
     def actNewConnection(self):
         client = self._server.nextPendingConnection()
         if client:
-            qDebug(f"Клиент подключился:")
             uid = uuid.uuid4().hex
             self.clients[uid] = client
+            
+            logger.info(f"New client connected. ID: {uid}")
+            
             client.textMessageReceived.connect(lambda msg: self.actSendMessage(msg, uid))
             client.disconnected.connect(lambda: self.actDisconnectClient(uid))
     
     @Slot(str, str)
     def actSendMessage(self, msg: str, uid: str):
-        qDebug(f"Клиент прислал сообщение: {msg}")
+        logger.debug(f"Received message from {uid}: {msg}")
         self.message_received.emit(msg, uid)
     
     @Slot(str)
     def actDisconnectClient(self, uid: str):
-        client = self.clients[uid]
         if uid in self.clients:
+            client = self.clients[uid]
             del self.clients[uid]
-        client.deleteLater()
-        qDebug("Клиент отключился")
+            client.deleteLater()
+            logger.info(f"Client disconnected. ID: {uid}")
     
     def sendConfirmState(self, uid: str):
         self.sendMassage(uid, "[bold green]Done[/bold green]")
     
     def sendErrorState(self, uid: str, e: Exception):
+        logger.warning(f"Sending error state to client {uid}: {e}")
         self.sendMassage(uid, f"[bold red]Error {type(e).__name__}: {e}[/bold red]")
     
     def sendMassage(self, uid: str, msg: str):
-        self.clients[uid].sendTextMessage(msg)
+        try:
+            if uid in self.clients:
+                self.clients[uid].sendTextMessage(msg)
+            else:
+                logger.warning(f"Cannot send message: Client {uid} not found.")
+        except Exception as e:
+            logger.error(f"Failed to send message to {uid}: {e}", exc_info=True)

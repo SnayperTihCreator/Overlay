@@ -1,11 +1,14 @@
 from pathlib import Path
 from zipimport import zipimporter
+import logging
 
 from fs import open_fs
 
 from utils.fs import getAppPath
 
 from .base import Loader
+
+logger = logging.getLogger(__name__)
 
 
 class PluginLoader(Loader):
@@ -17,6 +20,7 @@ class PluginLoader(Loader):
         self.plugins = {}
         self.types_plugins = {}
         self.errors = {}
+        logger.info(f"PluginLoader initialized. Folder: {self.folder}")
     
     def load(self):
         for plugin in self.folder.glob("*.plugin"):
@@ -28,10 +32,14 @@ class PluginLoader(Loader):
                 self.plugins[plugin_name] = module
                 self.types_plugins[plugin_name] = types
                 self.errors[plugin_name] = None
+                logger.info(f"Plugin '{plugin_name}' loaded. Types: {types}")
             except Exception as e:
                 self.plugins[plugin_name] = None
                 self.types_plugins[plugin_name] = []
                 self.errors[plugin_name] = e
+                logger.warning(f"Failed to load plugin '{plugin_name}': {e}")
+                logger.error(f"Critical error loading plugin '{plugin_name}'", exc_info=True)
+        logger.info(f"Plugin loading finished. Total loaded: {len(self.plugins)}")
     
     def getTypes(self, plugin_name):
         return self.types_plugins[plugin_name]
