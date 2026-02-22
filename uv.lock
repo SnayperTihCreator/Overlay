@@ -217,19 +217,19 @@ wheels = [
 
 [[package]]
 name = "ldt-nexus"
-version = "1.1.0"
+version = "1.1.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fd/27/31a73725613e3cf6ce728f0491fb152130f0a128b7d2298d0cce9bb2c9c2/ldt_nexus-1.1.0.tar.gz", hash = "sha256:b7df8eefedc758740abc945ece46c7e54a414901256dd89197460d8fc32197f7", size = 12258, upload-time = "2026-02-22T21:37:49.427Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/9c/a2930d8947b1b8b29c4873141f883237dc562196b693dcd48d6e0acf1d19/ldt_nexus-1.1.1.tar.gz", hash = "sha256:569800616000095b2a9b4bb36327dc7245e5c464aebeec2a07afabe48dd779c7", size = 12247, upload-time = "2026-02-22T22:07:11.57Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/86/b6/e377281540840112b7f7427136a049e812bfb7f44d459978113d21cd6fd7/ldt_nexus-1.1.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:fcf951f32b1667fba430e12f9b6d7fc2d61e74dc6c56f1db0f64ff6aab80d99e", size = 254657, upload-time = "2026-02-22T21:37:38.358Z" },
-    { url = "https://files.pythonhosted.org/packages/af/ca/8417d0c93294200ed2fa44ae4e4d97a08d8b374c82e2f1ec4a5902e1e52a/ldt_nexus-1.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:d8dc99378b76bb786416047d0beb6dc1d97457bd6be97bc20af1ec35717f2554", size = 144510, upload-time = "2026-02-22T21:37:39.961Z" },
-    { url = "https://files.pythonhosted.org/packages/08/97/3d7521b95b0e178c25e9689c1af789e5779a5f6af4e841d7b246eef70604/ldt_nexus-1.1.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:26ccf23966ec4b48f268145911ffdc9ceaf9394075c14eafe6203f026bcb809e", size = 253402, upload-time = "2026-02-22T21:37:41.155Z" },
-    { url = "https://files.pythonhosted.org/packages/a1/73/1cd67bed5d24b6096c5bef8d866db18ed481b690746355daf2aeec6eaec6/ldt_nexus-1.1.0-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:79fad3a17aa19f4d628cf24d9fa9a332673e836f40f7a2af47f6c141093b7b68", size = 288662, upload-time = "2026-02-22T21:37:42.346Z" },
-    { url = "https://files.pythonhosted.org/packages/17/93/0a7b586903b32c101b15870e621cb6b293556904f7f37a37f56e459422b5/ldt_nexus-1.1.0-cp312-cp312-win_amd64.whl", hash = "sha256:f22cdb57bb972900ea84be4baed3bcbf3b3d97db544ef533abcaf436fc866a40", size = 143470, upload-time = "2026-02-22T21:37:43.505Z" },
-    { url = "https://files.pythonhosted.org/packages/8a/9b/f702078fd8701cea93761ff63905d088ed5ca104c6968aae8bc6d5664aca/ldt_nexus-1.1.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:30468c0b9886142262d5f08f61587305c4508df8256e89265178c13f68f93f7b", size = 252980, upload-time = "2026-02-22T21:37:44.565Z" },
-    { url = "https://files.pythonhosted.org/packages/4e/0c/2510b2fe9955acd59a756d7e90d0ad894d023b9769ac73fb92f89bda3c62/ldt_nexus-1.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:fe1720a44740e82f1503a57194de63e26f883b83e7195a637b193aff9c0dbaab", size = 143184, upload-time = "2026-02-22T21:37:45.764Z" },
-    { url = "https://files.pythonhosted.org/packages/95/0d/1944c75b848c5cea0d59c4951ecf15a9903f180d76688ff9ffa5b6f3b310/ldt_nexus-1.1.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:5ab3fafcf8930b32bceefe672040307f32477203dd5051f870d5f5525bc6c2cf", size = 253654, upload-time = "2026-02-22T21:37:47.048Z" },
-    { url = "https://files.pythonhosted.org/packages/9f/d7/711671781cb53dfa90f9e1d94720dea8d2f965ae92bdedab0f000ed8bcb9/ldt_nexus-1.1.0-cp314-cp314-win_amd64.whl", hash = "sha256:bb36c67511cfb67b43964dc0656a5e9568f96626a4136b7bbde68d1e55d3ec57", size = 143762, upload-time = "2026-02-22T21:37:48.133Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/8e/5cab48c4a6fd154e21f2bf69d1b8f2b793e7b81d27cf4cd3d7c7b076b3f1/ldt_nexus-1.1.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:3d218e02dea9771b9966dd06ebe215fa99eabf0397c5015f2bbecd12fe5ff199", size = 254852, upload-time = "2026-02-22T22:06:56.009Z" },
+    { url = "https://files.pythonhosted.org/packages/90/cc/92b75cab3defff2e8804d850ec7a37f2d7df4031368e7e0dcf8c6643e3ec/ldt_nexus-1.1.1-cp311-cp311-win_amd64.whl", hash = "sha256:a5b27633594b5befd2ee2d3362ee51f9ce9e94be066ad87f54fa783d9ec8f861", size = 144680, upload-time = "2026-02-22T22:06:57.888Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/b4/17e8aa5680306f72a92c093b8b8e4a9257c95535405af422a5851b99353b/ldt_nexus-1.1.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:13ead5e6d322f78fa91d3746b621b80ff2284b1a7da6ef81fd1139f96775e51d", size = 253724, upload-time = "2026-02-22T22:06:59.459Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/1d/84d901b54906e55eb1d0b38e4992b25d9be7535d6a00538025cd546e59dc/ldt_nexus-1.1.1-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:3489a481da9a3d950f7ebf6511ca58fe1abda2d70251f019ad9d9856f0ca9e3c", size = 288922, upload-time = "2026-02-22T22:07:01.23Z" },
+    { url = "https://files.pythonhosted.org/packages/02/c7/cca845e0b5d64d9b586597511f9909825a1348a814d5ece22ee6b334e6ce/ldt_nexus-1.1.1-cp312-cp312-win_amd64.whl", hash = "sha256:311a3ef410f9d5c2c7178e19f2150917b326a6c895b881496c97893f6e0d86dc", size = 143965, upload-time = "2026-02-22T22:07:02.888Z" },
+    { url = "https://files.pythonhosted.org/packages/36/0d/d17e42d479cc2ffd9b794e49cbf0b796d21a73518488c86b0501eb60429a/ldt_nexus-1.1.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:0dd87d37ee9b5938331666da7c306c4756c153111cc95899eb34ca9f5830bdee", size = 253544, upload-time = "2026-02-22T22:07:04.469Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/f9/075ddf80de5e85129f7343254c68e9b633bf6bfde3ba10420d5e5b9d9b62/ldt_nexus-1.1.1-cp313-cp313-win_amd64.whl", hash = "sha256:9d750b957ffffcb8f16a6c21e41be742c42557d17d0c6f656ef5f5208df4038b", size = 143578, upload-time = "2026-02-22T22:07:06.34Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/a3/670f0238aac46d6ea97e16d7eefbab23657c7d135f8fc4d2d15d9968c92c/ldt_nexus-1.1.1-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:2b6c061399e6da14f67c765f24061a8c9f5dad5ea4943e15a87584f3ec38fe66", size = 254061, upload-time = "2026-02-22T22:07:07.97Z" },
+    { url = "https://files.pythonhosted.org/packages/64/c8/ea615a5714053ceb9a26f637c5ca56cf4ac7b865b0960f72ab59aae71120/ldt_nexus-1.1.1-cp314-cp314-win_amd64.whl", hash = "sha256:b3c04b4533dd093aad1dfb15c888df83753818a4e3d0dd9e15ebe67e062714cc", size = 143973, upload-time = "2026-02-22T22:07:09.471Z" },
 ]
 
 [[package]]
@@ -516,7 +516,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "json5", specifier = ">=0.12.0" },
     { name = "keyboard", specifier = ">=0.13.5" },
-    { name = "ldt-nexus", specifier = ">=1.1.0" },
+    { name = "ldt-nexus", specifier = ">=1.1.1" },
     { name = "markupsafe", specifier = ">=3.0.2" },
     { name = "methodtools", specifier = ">=0.4.7" },
     { name = "opencv-python", specifier = ">=4.12.0.88" },
