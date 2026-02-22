@@ -217,14 +217,19 @@ wheels = [
 
 [[package]]
 name = "ldt-nexus"
-version = "1.0.2"
+version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "attrs" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ed/5d/57ecdf7cb561b14dcc205a2d9c4ddf4a595951a070282a3513148b9cbe6b/ldt_nexus-1.0.2.tar.gz", hash = "sha256:e129cf8a60095ade251282a67fca793f2d1c3539660d745a7c236ed66f093795", size = 8342, upload-time = "2026-01-24T00:16:55.811Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/27/31a73725613e3cf6ce728f0491fb152130f0a128b7d2298d0cce9bb2c9c2/ldt_nexus-1.1.0.tar.gz", hash = "sha256:b7df8eefedc758740abc945ece46c7e54a414901256dd89197460d8fc32197f7", size = 12258, upload-time = "2026-02-22T21:37:49.427Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3e/39/d91d5cbd977240cdeaa54b40791d11efda44e013505049f858b44a1f52e7/ldt_nexus-1.0.2-py3-none-any.whl", hash = "sha256:a5c307fe909603b2f6ccca3339fd90b6de0df0189d6bdf5a0e8d0dd53310156c", size = 11614, upload-time = "2026-01-24T00:16:54.043Z" },
+    { url = "https://files.pythonhosted.org/packages/86/b6/e377281540840112b7f7427136a049e812bfb7f44d459978113d21cd6fd7/ldt_nexus-1.1.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:fcf951f32b1667fba430e12f9b6d7fc2d61e74dc6c56f1db0f64ff6aab80d99e", size = 254657, upload-time = "2026-02-22T21:37:38.358Z" },
+    { url = "https://files.pythonhosted.org/packages/af/ca/8417d0c93294200ed2fa44ae4e4d97a08d8b374c82e2f1ec4a5902e1e52a/ldt_nexus-1.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:d8dc99378b76bb786416047d0beb6dc1d97457bd6be97bc20af1ec35717f2554", size = 144510, upload-time = "2026-02-22T21:37:39.961Z" },
+    { url = "https://files.pythonhosted.org/packages/08/97/3d7521b95b0e178c25e9689c1af789e5779a5f6af4e841d7b246eef70604/ldt_nexus-1.1.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:26ccf23966ec4b48f268145911ffdc9ceaf9394075c14eafe6203f026bcb809e", size = 253402, upload-time = "2026-02-22T21:37:41.155Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/73/1cd67bed5d24b6096c5bef8d866db18ed481b690746355daf2aeec6eaec6/ldt_nexus-1.1.0-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:79fad3a17aa19f4d628cf24d9fa9a332673e836f40f7a2af47f6c141093b7b68", size = 288662, upload-time = "2026-02-22T21:37:42.346Z" },
+    { url = "https://files.pythonhosted.org/packages/17/93/0a7b586903b32c101b15870e621cb6b293556904f7f37a37f56e459422b5/ldt_nexus-1.1.0-cp312-cp312-win_amd64.whl", hash = "sha256:f22cdb57bb972900ea84be4baed3bcbf3b3d97db544ef533abcaf436fc866a40", size = 143470, upload-time = "2026-02-22T21:37:43.505Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/9b/f702078fd8701cea93761ff63905d088ed5ca104c6968aae8bc6d5664aca/ldt_nexus-1.1.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:30468c0b9886142262d5f08f61587305c4508df8256e89265178c13f68f93f7b", size = 252980, upload-time = "2026-02-22T21:37:44.565Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/0c/2510b2fe9955acd59a756d7e90d0ad894d023b9769ac73fb92f89bda3c62/ldt_nexus-1.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:fe1720a44740e82f1503a57194de63e26f883b83e7195a637b193aff9c0dbaab", size = 143184, upload-time = "2026-02-22T21:37:45.764Z" },
+    { url = "https://files.pythonhosted.org/packages/95/0d/1944c75b848c5cea0d59c4951ecf15a9903f180d76688ff9ffa5b6f3b310/ldt_nexus-1.1.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:5ab3fafcf8930b32bceefe672040307f32477203dd5051f870d5f5525bc6c2cf", size = 253654, upload-time = "2026-02-22T21:37:47.048Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/d7/711671781cb53dfa90f9e1d94720dea8d2f965ae92bdedab0f000ed8bcb9/ldt_nexus-1.1.0-cp314-cp314-win_amd64.whl", hash = "sha256:bb36c67511cfb67b43964dc0656a5e9568f96626a4136b7bbde68d1e55d3ec57", size = 143762, upload-time = "2026-02-22T21:37:48.133Z" },
 ]
 
 [[package]]
@@ -511,7 +516,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "json5", specifier = ">=0.12.0" },
     { name = "keyboard", specifier = ">=0.13.5" },
-    { name = "ldt-nexus", specifier = ">=1.0.2" },
+    { name = "ldt-nexus", specifier = ">=1.1.0" },
     { name = "markupsafe", specifier = ">=3.0.2" },
     { name = "methodtools", specifier = ">=0.4.7" },
     { name = "opencv-python", specifier = ">=4.12.0.88" },

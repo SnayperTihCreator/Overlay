@@ -24,6 +24,8 @@ from utils.fs import ToolsIniter, getAppPath
 import assets_rc
 # noinspection PyUnresolvedReferences
 import core.importers
+# noinspection PyUnresolvedReferences
+import core.logger
 
 
 async def main():

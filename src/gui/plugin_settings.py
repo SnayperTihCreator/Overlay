@@ -1,3 +1,6 @@
+from __future__ import annotations
+import logging
+
 from PySide6.QtCore import QPoint, Qt, Signal, Slot
 from PySide6.QtWidgets import QWidget
 from ldt import LDT
@@ -8,94 +11,152 @@ from uis.dialogSettingsTemplate_ui import Ui_Form
 from utils.fs import getAppPath
 from utils.system import open_file_manager
 
+logger = logging.getLogger(__name__)
 
 
 @LDT.serializer(QPoint)
 def _(p: QPoint):
-    return {"x": p.x(), "y": p.y()}
+    try:
+        return {"x": p.x(), "y": p.y()}
+    except Exception as e:
+        logger.error(f"Failed to serialize QPoint: {e}", exc_info=True)
+        return {"x": 0, "y": 0}
 
 
 @LDT.deserializer(QPoint)
 def _(data: dict):
-    return QPoint(data["x"], data["y"])
+    try:
+        return QPoint(data.get("x", 0), data.get("y", 0))
+    except Exception as e:
+        logger.error(f"Failed to deserialize QPoint: {e}", exc_info=True)
+        return QPoint(0, 0)
 
 
 class PluginSettingTemplate(QWidget, Ui_Form):
     """
-    Общий виджет настроек виджетов, окон и т.д.
+    Generic settings widget for plugins, windows, etc.
     """
     
     saved_configs = Signal()
     
-    def __init__(self, obj, name_plugin: str, parent=None):
+    def __init__(self, obj: APIBaseWidget, name_plugin: str, parent=None):
         """
-        Инициализирует виджет настроек.
+        Initializes the settings widget.
 
-        :param obj: объект, чьи настройки управляются виджетом (должен быть подклассом APIBaseWidget)
-        :type obj: APIBaseWidget
-        :param name_plugin: имя плагина в формате "имя_версии"
-        :type name_plugin: str
-        :param parent: родительский виджет (по умолчанию None)
-        :type parent: QWidget, optional
+        :param obj: The object whose settings are managed (must be subclass of APIBaseWidget)
+        :param name_plugin: Plugin name in format "name_version"
+        :param parent: Parent widget (default None)
         """
         super().__init__(parent, Qt.WindowType.Widget)
-        self.config: Config = Config("PluginSetting", "setting")
-        self.setObjectName(self.__class__.__name__)
-        self.setProperty("class", "OverlayWidget")
-        self.setupUi(self)
         
-        self.obj: APIBaseWidget = obj
-        self.save_name = name_plugin
-        name_plugin = "{0}({1})".format(*name_plugin.rsplit("_", 1))
-        self.labelNamePlugin.setText(name_plugin)
+        try:
+            logger.debug(f"Initializing settings for plugin: {name_plugin}")
+            
+            self.config: Config = Config("PluginSetting", "setting")
+            self.setObjectName(self.__class__.__name__)
+            self.setProperty("class", "OverlayWidget")
+            self.setupUi(self)
+            
+            self.obj: APIBaseWidget = obj
+            self.save_name = name_plugin
+            
+            # Format name: "plugin_1.0" -> "plugin(1.0)"
+            try:
+                if "_" in name_plugin:
+                    formatted_name = "{0}({1})".format(*name_plugin.rsplit("_", 1))
+                else:
+                    formatted_name = name_plugin
+                self.labelNamePlugin.setText(formatted_name)
+            except Exception as e:
+                logger.warning(f"Failed to format plugin name '{name_plugin}': {e}")
+                self.labelNamePlugin.setText(name_plugin)
+            
+            self.btnOpenFolderPlugin.pressed.connect(self.openFolderPlugin)
+            self.buttonBox.accepted.connect(self.confirming)
+            self.buttonBox.rejected.connect(self.canceling)
+            
+            logger.info(f"Settings widget initialized for {self.save_name}")
         
-        self.btnOpenFolderPlugin.pressed.connect(self.openFolderPlugin)
-        self.buttonBox.accepted.connect(self.confirming)
-        self.buttonBox.rejected.connect(self.canceling)
+        except Exception as e:
+            logger.error(f"Critical error initializing PluginSettingTemplate: {e}", exc_info=True)
     
     @Slot()
     def openFolderPlugin(self):
         """
-        Открывает файловый менеджер в папке плагина.
+        Opens the file manager in the plugin folder.
         """
-        open_file_manager(getAppPath() / "plugins" / f"{self.obj.config.name}.plugin")
+        try:
+            if not self.obj or not self.obj.config:
+                logger.warning("Cannot open folder: Object or Config is missing")
+                return
+            
+            plugin_path = getAppPath() / "plugins" / f"{self.obj.config.name}.plugin"
+            logger.info(f"Opening plugin folder: {plugin_path}")
+            open_file_manager(plugin_path)
+        
+        except Exception as e:
+            logger.error(f"Failed to open plugin folder: {e}", exc_info=True)
     
     @Slot()
     def confirming(self):
         """
-        Слот для подтверждения изменений настроек.
+        Slot to confirm setting changes.
         """
-        self.obj.load_status(self.send_data())
-        self.saved_configs.emit()
+        try:
+            logger.debug(f"Confirming changes for {self.save_name}")
+            data = self.send_data()
+            self.obj.load_status(data)
+            self.saved_configs.emit()
+            logger.info("Settings saved successfully")
+        except Exception as e:
+            logger.error(f"Failed to confirm settings changes: {e}", exc_info=True)
     
     @Slot()
     def canceling(self):
         """
-        Слот для отмены изменений настроек.
+        Slot to cancel setting changes.
         """
-        self.loader()
+        try:
+            logger.debug("Canceling changes, reloading previous state")
+            self.loader()
+        except Exception as e:
+            logger.error(f"Failed to cancel changes: {e}", exc_info=True)
     
     def loader(self):
         """
-        Загружает текущие значения объекта.
+        Loads the current values from the object into the UI.
         """
-        self.spinBoxX.setValue(self.obj.x())
-        self.spinBoxY.setValue(self.obj.y())
+        try:
+            if self.obj:
+                self.spinBoxX.setValue(self.obj.x())
+                self.spinBoxY.setValue(self.obj.y())
+            else:
+                logger.warning("Attempted to load settings but target object is None")
+        except Exception as e:
+            logger.error(f"Failed to load settings into UI: {e}", exc_info=True)
     
     def send_data(self) -> LDT:
         """
-        Формирует LDT с текущими настройками виджета.
+        Creates an LDT object with the current widget settings.
 
-        :return: LDT с настройками
-        :rtype: LDT
+        :return: LDT with settings
         """
-        ldt = LDT()
-        ldt.set("position", QPoint(self.spinBoxX.value(), self.spinBoxY.value()))
-        return ldt
+        try:
+            ldt = LDT()
+            position = QPoint(self.spinBoxX.value(), self.spinBoxY.value())
+            ldt.set("position", position)
+            return ldt
+        except Exception as e:
+            logger.error(f"Failed to generate settings data: {e}", exc_info=True)
+            return LDT()
     
     def reload_config(self):
         """
-        Перезагружает конфигурацию и обновляет интерфейс.
+        Reloads configuration and updates the interface.
         """
-        self.config.reload()
-        self.loader()
+        try:
+            logger.info("Reloading configuration...")
+            self.config.reload()
+            self.loader()
+        except Exception as e:
+            logger.error(f"Failed to reload config: {e}", exc_info=True)

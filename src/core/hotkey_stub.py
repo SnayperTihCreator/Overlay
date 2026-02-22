@@ -1,20 +1,23 @@
+import logging
 from typing import Callable
 
-from PySide6.QtCore import qInfo
-
 from core.common import BaseHotkeyHandler
+
+logger = logging.getLogger(__name__)
 
 
 class StubHotkey(BaseHotkeyHandler):
     def __init__(self):
         super().__init__()
     
-    def start(self): ...
+    def start(self):
+        logger.debug("StubHotkey handler started (inactive).")
     
-    def stop(self): ...
+    def stop(self):
+        logger.debug("StubHotkey handler stopped.")
     
     def add_hotkey(self, combo: str, callback: Callable, uname: str):
-        qInfo(f"stub add_hotkey {combo}: (uname: {uname})")
+        logger.info(f"Stub: Mocking hotkey addition: '{combo}' (id: {uname})")
     
-    def remove_hotkey(self, combo, uname: str):
-        qInfo(f"stub remove_hotkey {combo}: {uname}")
+    def remove_hotkey(self, combo: str, uname: str):
+        logger.info(f"Stub: Mocking hotkey removal: '{combo}' (id: {uname})")

@@ -1,12 +1,15 @@
 from __future__ import annotations
-from typing import Literal, Type, TypeVar, Generic
+import logging
 import io
-import traceback
+from typing import Literal, Type, TypeVar, Generic
 
 from attrs import define, field
 import toml
 
 from .default_configs import *
+
+# Setup logger
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseConfig)
 
@@ -14,8 +17,8 @@ T = TypeVar("T", bound=BaseConfig)
 @define
 class Config(Generic[T]):
     """
-    Класс для управления конфигурационными файлами различных ресурсов.
-    Поддерживает строгую типизацию через Generics и Overloads.
+    Class for managing configuration files of various resources.
+    Supports strict typing via Generics.
     """
     
     _resource_name: str = field(alias="resource")
@@ -42,11 +45,16 @@ class Config(Generic[T]):
             case "setting":
                 return BaseConfig
             case _:
-                raise TypeError(f"Неизвестный формат конфигураций - {resource_type}")
+                msg = f"Unknown config format: {resource_type}"
+                logger.error(msg)
+                raise TypeError(msg)
     
     def _load_config(self) -> T:
-        """Загружает конфигурацию, используя модифицированный open."""
+        """Loads configuration using (modified) open function."""
         configFile = None
+        
+        logger.debug(f"Loading config: {self._resource_name} (type: {self._resource_type})")
+        
         try:
             match self._resource_type:
                 case "apps":
@@ -57,29 +65,41 @@ class Config(Generic[T]):
                     configFile = io.StringIO()
                 case "theme":
                     configFile = open(f"resource://theme/{self.name}/{self._config_name}.toml", encoding="utf-8")
-
-            return self._scheme(**toml.load(configFile))
+            
+            data = toml.load(configFile)
+            logger.info(f"Config loaded successfully: {self._resource_name}")
+            return self._scheme(**data)
         
         except FileNotFoundError as e:
             if self._resource_type == "apps":
-                # Создание дефолтного конфига для приложений
-                with open(f"project://configs/{self._config_name}.toml", "w", encoding="UTF-8") as file:
-                    # Пытаемся вызвать model_dump (Pydantic) или превратить attrs в dict
-                    default_data = self._scheme().model_dump() if hasattr(self._scheme, 'model_dump') else {}
-                    toml.dump(default_data, file)
-                return self._scheme()
+                logger.warning(f"App config not found. Creating default: {self._config_name}")
+                
+                try:
+                    with open(f"project://configs/{self._config_name}.toml", "w", encoding="UTF-8") as file:
+                        # Serialize default scheme
+                        default_instance = self._scheme()
+                        default_data = default_instance.model_dump() if hasattr(default_instance, 'model_dump') else {}
+                        toml.dump(default_data, file)
+                    
+                    return self._scheme()
+                except Exception as write_err:
+                    logger.error(f"Failed to write default config: {write_err}", exc_info=True)
+                    return self._scheme()
+            
+            logger.warning(f"Config file not found for: {self._resource_name}")
             raise e
-        except Exception:
-            print(f"Ошибка в конфигурации {self._resource_name}:")
-            traceback.print_exc()
+        
+        except Exception as e:
+            logger.error(f"Failed to load config '{self._resource_name}': {e}", exc_info=True)
             return self._scheme()
+        
         finally:
             if configFile is not None:
                 configFile.close()
     
     @property
     def data(self) -> T:
-        """Возвращает экземпляр конфига с сохранением типа (T)."""
+        """Returns the config instance maintaining type T."""
         return self._config
     
     @property
@@ -91,10 +111,11 @@ class Config(Generic[T]):
         return self._resource_type
     
     def reload(self):
-        """Перезагружает данные из файла."""
+        """Reloads data from file."""
+        logger.debug(f"Reloading config for {self.name}...")
         self._config = self._load_config()
     
     @classmethod
     def configApplication(cls) -> Config[AppConfig]:
-        """Фабричный метод для приложения."""
+        """Factory method for Application config."""
         return cls("Overlay", "apps")
